@@ -1,6 +1,13 @@
 <!DOCTYPE html>
 <html lang="it">
 <head>
+<!-- Google Tag Manager -->
+<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+})(window,document,'script','dataLayer','GTM-KR8NJGXM');</script>
+<!-- End Google Tag Manager -->
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="description" content="Unghia incarnita a Torino? Il Dr. Federico Grassi la risolve definitivamente con la fenolizzazione. 310 recensioni, 97% di successo, garanzia recidiva. Prenota online.">
@@ -50,7 +57,7 @@ a{text-decoration:none;color:inherit}
   --cream:#F5F0E8;
   --gray:#5A5A5A;
   --gray-light:#E4E4E0;
-  --amber:#BA7517;
+  --amber:#FBBC04;
   --r-sm:8px;
   --r-md:14px;
   --r-lg:20px;
@@ -146,16 +153,14 @@ body{
   color:var(--gray);margin-bottom:28px;
 }
 .proof{display:flex;align-items:center;gap:10px;margin-bottom:28px}
-.stars{color:var(--amber);font-size:16px;letter-spacing:2px}
+.stars{color:var(--amber);font-size:20px;letter-spacing:3px}
 .proof p{font-size:14px;color:var(--gray)}
 .proof p strong{color:var(--black)}
 .feat-list{list-style:none;margin-bottom:36px;display:flex;flex-direction:column;gap:11px}
-.feat-list li{display:flex;align-items:flex-start;gap:10px;font-size:15px;color:var(--black);line-height:1.45}
+.feat-list li{display:flex;align-items:center;gap:10px;font-size:16px;font-weight:500;color:var(--black);line-height:1.45}
 .feat-icon{
-  width:22px;height:22px;border-radius:50%;
-  background:var(--teal);color:var(--white);
-  flex-shrink:0;display:flex;align-items:center;justify-content:center;
-  font-size:12px;font-weight:700;margin-top:1px;
+  color:var(--teal);font-size:20px;font-weight:700;
+  flex-shrink:0;line-height:1.2;margin-top:0;
 }
 .cta-group{display:flex;align-items:center;gap:20px;flex-wrap:wrap}
 .btn-primary{
@@ -205,9 +210,11 @@ body{
 .float-card-2{background:var(--teal)}
 
 @media(max-width:860px){
-  .hero{grid-template-columns:1fr;min-height:auto;padding-top:40px;padding-bottom:40px}
-  .hero-right{display:none}
-  .hero-left{padding:40px 0 0}
+  .hero{grid-template-columns:1fr;min-height:auto;padding-top:40px;padding-bottom:0}
+  .hero-left{padding:40px 0 24px}
+  .hero-right{display:block;height:280px;margin:0 calc(var(--p-x) * -1)}
+  .hero-img-wrap{height:280px;border-radius:0;box-shadow:none}
+  .float-card-1,.float-card-2{display:none}
 }
 
 /* ── STATS STRIP ── */
@@ -498,12 +505,74 @@ details p{font-size:15px;color:var(--gray);line-height:1.75;margin-top:14px}
   .fade-up{opacity:1;transform:none}
   .reviews-track,.badge-dot{animation:none}
 }
+
+/* ── COOKIE BANNER ── */
+#cookie-banner{
+  position:fixed;bottom:0;left:0;right:0;z-index:9999;
+  background:#006D6D;color:#FAFAF8;
+  padding:16px clamp(16px,4vw,48px);
+  display:flex;align-items:center;justify-content:space-between;
+  gap:16px;flex-wrap:wrap;
+  box-shadow:0 -4px 24px rgba(0,0,0,.15);
+  transform:translateY(100%);
+  transition:transform .4s ease;
+}
+#cookie-banner.visible{transform:translateY(0)}
+#cookie-banner p{
+  font-size:13px;line-height:1.6;
+  color:rgba(255,255,255,.85);
+  max-width:680px;margin:0;flex:1;
+}
+#cookie-banner p a{
+  color:#7DCFCF;text-decoration:underline;
+}
+.cookie-btns{display:flex;gap:10px;flex-shrink:0;flex-wrap:wrap}
+.btn-cookie-accept{
+  background:#FAFAF8;color:#006D6D;
+  border:none;padding:10px 22px;border-radius:100px;
+  font-size:14px;font-weight:500;cursor:pointer;
+  transition:opacity .2s;white-space:nowrap;
+}
+.btn-cookie-accept:hover{opacity:.9}
+.btn-cookie-reject{
+  background:transparent;color:#FAFAF8;
+  border:1.5px solid rgba(255,255,255,.5);
+  padding:10px 22px;border-radius:100px;
+  font-size:14px;font-weight:500;cursor:pointer;
+  transition:border-color .2s;white-space:nowrap;
+}
+.btn-cookie-reject:hover{border-color:#FAFAF8}
+@media(max-width:640px){
+  #cookie-banner{padding-bottom:90px}
+  .cookie-btns{width:100%}
+  .btn-cookie-accept,.btn-cookie-reject{flex:1;text-align:center}
+}
+
 </style>
 </head>
 <body>
 
 <!-- NAV -->
+<!-- Google Tag Manager (noscript) -->
+<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-KR8NJGXM"
+height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+<!-- End Google Tag Manager (noscript) -->
 <header>
+
+<!-- COOKIE BANNER CUSTOM GDPR -->
+<div id="cookie-banner" role="dialog" aria-live="polite" aria-label="Consenso cookie">
+  <p>
+    Utilizziamo cookie tecnici e, con il tuo consenso, cookie analitici (Google Analytics) per migliorare l'esperienza sul sito.
+    Puoi accettare o rifiutare. Leggi la nostra
+    <a href="https://www.iubenda.com/privacy-policy/85990568" target="_blank" rel="noopener">Privacy Policy</a> e
+    <a href="https://www.iubenda.com/privacy-policy/85990568/cookie-policy" target="_blank" rel="noopener">Cookie Policy</a>.
+  </p>
+  <div class="cookie-btns">
+    <button class="btn-cookie-reject" id="cookie-reject">Rifiuta</button>
+    <button class="btn-cookie-accept" id="cookie-accept">Accetta</button>
+  </div>
+</div>
+
 <nav class="nav" aria-label="Navigazione principale">
   <a href="/" class="nav-logo">
     <img src="/uis_logo_scritto.webp" alt="UnghiaincarnitaStop — Dr. Federico Grassi Podologo Torino" height="36" width="auto" loading="eager">
@@ -537,11 +606,11 @@ details p{font-size:15px;color:var(--gray);line-height:1.75;margin-top:14px}
       <p><strong>310 recensioni</strong> Google · Via Filadelfia 200, Torino</p>
     </div>
     <ul class="feat-list" aria-label="Vantaggi del trattamento">
-      <li><span class="feat-icon" aria-hidden="true">✓</span>Nessun punto, nessuna sutura</li>
-      <li><span class="feat-icon" aria-hidden="true">✓</span>Anestesista qualificato incluso nel prezzo</li>
-      <li><span class="feat-icon" aria-hidden="true">✓</span>Cammini subito dopo il trattamento</li>
-      <li><span class="feat-icon" aria-hidden="true">✓</span>Garanzia recidiva: ti ritrattamo gratis</li>
-      <li><span class="feat-icon" aria-hidden="true">✓</span>Medicazioni post-trattamento incluse</li>
+      <li><span class="feat-icon" aria-hidden="true">→</span>Nessun punto, nessuna sutura</li>
+      <li><span class="feat-icon" aria-hidden="true">→</span>Anestesista qualificato incluso nel prezzo</li>
+      <li><span class="feat-icon" aria-hidden="true">→</span>Cammini subito dopo il trattamento</li>
+      <li><span class="feat-icon" aria-hidden="true">→</span>Garanzia recidiva: ti ritrattamo gratis</li>
+      <li><span class="feat-icon" aria-hidden="true">→</span>Medicazioni post-trattamento incluse</li>
     </ul>
     <div class="cta-group">
       <a href="https://calendly.com/federico-grassi-unghiaincarnitastop/30min" class="btn-primary" target="_blank" rel="noopener">
@@ -837,12 +906,18 @@ details p{font-size:15px;color:var(--gray);line-height:1.75;margin-top:14px}
 </div>
 
 <footer class="footer-bottom">
-  <img src="/uis_logo_full.webp" alt="UnghiaincarnitaStop logo" height="52" width="auto" loading="lazy" style="opacity:.85">
-  <p>© 2026 UnghiaincarnitaStop — Dr. Federico Grassi Podologo · P.IVA: inserire</p>
-  <nav class="footer-links" aria-label="Link footer">
-    <a href="https://unghiaincarnitastop.it/politica-sulla-privacy">Privacy Policy</a>
-    <a href="https://unghiaincarnitastop.it/home">Vai al sito principale</a>
-  </nav>
+  <div style="width:100%;text-align:center;margin-bottom:20px">
+    <img src="/uis_logo_full.webp" alt="UnghiaincarnitaStop logo" height="110" width="auto" loading="lazy" style="display:inline-block;max-width:280px">
+  </div>
+  <div style="width:100%;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
+    <p>© 2026 UnghiaincarnitaStop — Dr. Federico Grassi Podologo · P.IVA: inserire</p>
+    <nav class="footer-links" aria-label="Link footer">
+      <a href="https://www.iubenda.com/privacy-policy/85990568" class="iubenda-white iubenda-noiframe iubenda-embed" title="Privacy Policy">Privacy Policy</a>
+      <a href="https://www.iubenda.com/privacy-policy/85990568/cookie-policy" class="iubenda-white iubenda-noiframe iubenda-embed" title="Cookie Policy">Cookie Policy</a>
+      <script type="text/javascript">(function (w,d) {var loader = function () {var s = d.createElement("script"), tag = d.getElementsByTagName("script")[0]; s.src="https://cdn.iubenda.com/iubenda.js"; tag.parentNode.insertBefore(s,tag);}; if(w.addEventListener){w.addEventListener("load", loader, false);}else if(w.attachEvent){w.attachEvent("onload", loader);}else{w.onload = loader;}})(window, document);</script>
+      <a href="https://unghiaincarnitastop.it/home">Vai al sito principale</a>
+    </nav>
+  </div>
 </footer>
 </main>
 
@@ -879,6 +954,94 @@ async function loadReviews() {
   }
 }
 loadReviews();
+
+
+// ── GA4 EVENTS ──
+window.dataLayer = window.dataLayer || [];
+
+function pushEvent(name, params) {
+  window.dataLayer.push({ event: name, ...params });
+}
+
+// 1. CTA click — tutti i bottoni prenota
+document.querySelectorAll('a[href*="calendly"], .btn-primary, .btn-nav, .sticky-bar a').forEach(el => {
+  el.addEventListener('click', function() {
+    pushEvent('cta_click', {
+      cta_text: this.textContent.trim().substring(0, 50),
+      cta_location: this.closest('section')?.id || this.closest('header') ? 'navbar' : 'footer'
+    });
+  });
+});
+
+// 2. Phone click
+document.querySelectorAll('a[href^="tel"]').forEach(el => {
+  el.addEventListener('click', function() {
+    pushEvent('phone_click', { phone_number: '+393334217550' });
+  });
+});
+
+// 3. FAQ open
+document.querySelectorAll('details').forEach(el => {
+  el.addEventListener('toggle', function() {
+    if (this.open) {
+      pushEvent('faq_open', {
+        faq_question: this.querySelector('summary')?.textContent.trim().substring(0, 80)
+      });
+    }
+  });
+});
+
+// 4. YouTube video play
+window.addEventListener('message', function(e) {
+  if (e.data && typeof e.data === 'string') {
+    try {
+      const data = JSON.parse(e.data);
+      if (data.event === 'infoDelivery' && data.info && data.info.playerState === 1) {
+        pushEvent('video_play', { video_title: 'Fenolizzazione Dr. Grassi' });
+      }
+    } catch(err) {}
+  }
+});
+
+// 5. Scroll depth 25/50/75/90
+const scrollMilestones = { 25: false, 50: false, 75: false, 90: false };
+window.addEventListener('scroll', function() {
+  const pct = Math.round((window.scrollY / (document.body.scrollHeight - window.innerHeight)) * 100);
+  [25, 50, 75, 90].forEach(m => {
+    if (pct >= m && !scrollMilestones[m]) {
+      scrollMilestones[m] = true;
+      pushEvent('scroll_depth', { scroll_percentage: m });
+    }
+  });
+}, { passive: true });
+
+// 6. Recensioni visible
+const reviewsSection = document.getElementById('recensioni');
+if (reviewsSection) {
+  const reviewObs = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        pushEvent('recensioni_view', { section: 'reviews_carousel' });
+        reviewObs.disconnect();
+      }
+    });
+  }, { threshold: 0.3 });
+  reviewObs.observe(reviewsSection);
+}
+
+// 7. Sezione garanzia visible
+const garanziaSection = document.getElementById('garanzia');
+if (garanziaSection) {
+  const garObs = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        pushEvent('garanzia_view', { section: 'garanzia_cta' });
+        garObs.disconnect();
+      }
+    });
+  }, { threshold: 0.5 });
+  garObs.observe(garanziaSection);
+}
 
 // ── FADE-UP ON SCROLL ──
 const io = new IntersectionObserver((entries) => {
@@ -918,6 +1081,50 @@ const s = document.createElement('script');
 s.type = 'application/ld+json';
 s.textContent = JSON.stringify(sd);
 document.head.appendChild(s);
+
+// ── COOKIE BANNER GDPR ──
+(function() {
+  const CONSENT_KEY = 'uis_cookie_consent';
+  const banner = document.getElementById('cookie-banner');
+  const consent = localStorage.getItem(CONSENT_KEY);
+
+  // Mostra banner solo se non ha ancora scelto
+  if (!consent) {
+    setTimeout(() => banner.classList.add('visible'), 600);
+  }
+
+  // Se aveva già accettato, carica GTM
+  if (consent === 'accepted') {
+    loadGTM();
+  }
+
+  document.getElementById('cookie-accept').addEventListener('click', function() {
+    localStorage.setItem(CONSENT_KEY, 'accepted');
+    banner.classList.remove('visible');
+    loadGTM();
+    // Notifica dataLayer
+    window.dataLayer = window.dataLayer || [];
+    window.dataLayer.push({ event: 'cookie_consent_accepted' });
+  });
+
+  document.getElementById('cookie-reject').addEventListener('click', function() {
+    localStorage.setItem(CONSENT_KEY, 'rejected');
+    banner.classList.remove('visible');
+    window.dataLayer = window.dataLayer || [];
+    window.dataLayer.push({ event: 'cookie_consent_rejected' });
+  });
+
+  function loadGTM() {
+    // GTM già caricato nel head — sblocca solo il consenso
+    window.dataLayer = window.dataLayer || [];
+    window.dataLayer.push({
+      'event': 'consent_update',
+      'analytics_storage': 'granted',
+      'ad_storage': 'denied'
+    });
+  }
+})();
+
 </script>
 </body>
 </html>
