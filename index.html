@@ -156,14 +156,16 @@ body{
 .stars{color:var(--amber);font-size:20px;letter-spacing:3px}
 .proof p{font-size:14px;color:var(--gray)}
 .proof p strong{color:var(--black)}
-.feat-list{list-style:none;margin-bottom:36px;display:flex;flex-direction:column;gap:11px}
-.feat-list li{display:flex;align-items:center;gap:10px;font-size:16px;font-weight:500;color:var(--black);line-height:1.45}
+.feat-list{list-style:none;margin-bottom:32px;display:flex;flex-direction:column;gap:8px}
+.feat-list li{display:flex;align-items:flex-start;gap:12px;font-size:15px;font-weight:500;color:var(--black);line-height:1.5;padding:8px 0;border-bottom:0.5px solid var(--gray-light)}
+.feat-list li:last-child{border-bottom:none}
 .feat-icon{
-  color:var(--teal);font-size:20px;font-weight:700;
-  flex-shrink:0;line-height:1.2;margin-top:0;
+  color:var(--teal);font-size:16px;font-weight:700;
+  flex-shrink:0;line-height:1.5;margin-top:0;
+  min-width:20px;
 }
 .cta-group{display:flex;align-items:center;gap:20px;flex-wrap:wrap}
-.btn-primary{
+.btn-primary{letter-spacing:.06em;text-transform:uppercase;
   background:var(--teal);color:var(--white);
   border:none;padding:16px 36px;border-radius:100px;
   font-size:16px;font-weight:500;
@@ -210,10 +212,11 @@ body{
 .float-card-2{background:var(--teal)}
 
 @media(max-width:860px){
-  .hero{grid-template-columns:1fr;min-height:auto;padding-top:40px;padding-bottom:0}
-  .hero-left{padding:40px 0 24px}
-  .hero-right{display:block;height:280px;margin:0 calc(var(--p-x) * -1)}
-  .hero-img-wrap{height:280px;border-radius:0;box-shadow:none}
+  .hero{grid-template-columns:1fr;min-height:auto;padding-top:40px;padding-bottom:0;padding-left:0;padding-right:0}
+  .hero-left{padding:40px var(--p-x) 24px}
+  .hero-right{display:block;height:auto;margin:0;width:100%}
+  .hero-img-wrap{height:auto;border-radius:0;box-shadow:none;width:100%}
+  .hero-img-wrap img{height:260px;width:100%;object-fit:cover;object-position:center 15%;display:block}
   .float-card-1,.float-card-2{display:none}
 }
 
@@ -303,7 +306,7 @@ body{
 .step-num{
   font-family:'Playfair Display',serif;
   font-size:56px;font-weight:900;
-  color:var(--teal-pale);line-height:1;
+  color:var(--teal);opacity:.25;line-height:1;
   margin-bottom:16px;
 }
 .step-title{font-size:19px;font-weight:500;margin-bottom:10px;color:var(--black)}
@@ -483,7 +486,7 @@ details p{font-size:15px;color:var(--gray);line-height:1.75;margin-top:14px}
   padding:12px 20px;
   gap:12px;
 }
-.sticky-bar .btn-primary{flex:1;padding:14px;font-size:15px;text-align:center}
+.sticky-bar .btn-primary{letter-spacing:.06em;text-transform:uppercase;flex:1;padding:14px;font-size:15px;text-align:center}
 .sticky-tel{
   width:50px;height:50px;border-radius:50%;flex-shrink:0;
   border:1.5px solid var(--teal);color:var(--teal);
@@ -548,6 +551,23 @@ details p{font-size:15px;color:var(--gray);line-height:1.75;margin-top:14px}
   .btn-cookie-accept,.btn-cookie-reject{flex:1;text-align:center}
 }
 
+
+/* Override stile iubenda footer links */
+.footer-links .iubenda-embed{
+  background:transparent !important;
+  border:1px solid rgba(255,255,255,.3) !important;
+  color:rgba(255,255,255,.5) !important;
+  padding:4px 10px !important;
+  border-radius:4px !important;
+  font-size:13px !important;
+  display:inline-block !important;
+  text-decoration:none !important;
+  transition:border-color .2s,color .2s !important;
+}
+.footer-links .iubenda-embed:hover{
+  border-color:rgba(255,255,255,.6) !important;
+  color:rgba(255,255,255,.8) !important;
+}
 </style>
 </head>
 <body>
@@ -595,7 +615,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       L'unico specialista in Piemonte
     </div>
     <h1 class="hero-h1" id="hero-title">
-      Unghia incarnita<br>a Torino?<br><em>Finisce qui.</em>
+      <strong>Unghia incarnita</strong><br>a <strong>Torino</strong>?<br><em>Finisce qui.</em>
     </h1>
     <p class="hero-sub">Per sempre, in 15 minuti.</p>
     <p style="font-size:15px;color:var(--gray);margin-bottom:20px;font-weight:500">
@@ -606,15 +626,15 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <p><strong>310 recensioni</strong> Google · Via Filadelfia 200, Torino</p>
     </div>
     <ul class="feat-list" aria-label="Vantaggi del trattamento">
-      <li><span class="feat-icon" aria-hidden="true">→</span>Nessun punto, nessuna sutura</li>
-      <li><span class="feat-icon" aria-hidden="true">→</span>Anestesista qualificato incluso nel prezzo</li>
-      <li><span class="feat-icon" aria-hidden="true">→</span>Cammini subito dopo il trattamento</li>
-      <li><span class="feat-icon" aria-hidden="true">→</span>Garanzia recidiva: ti ritrattamo gratis</li>
-      <li><span class="feat-icon" aria-hidden="true">→</span>Medicazioni post-trattamento incluse</li>
+      <li><span class="feat-icon" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#006D6D" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>Nessun punto. Nessuna sutura</li>
+      <li><span class="feat-icon" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#006D6D" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>Anestesista qualificato incluso nel prezzo</li>
+      <li><span class="feat-icon" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#006D6D" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>Cammini subito dopo il trattamento</li>
+      <li><span class="feat-icon" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#006D6D" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>Garanzia recidiva — ti ritrattIamo gratis</li>
+      <li><span class="feat-icon" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#006D6D" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>Medicazioni post trattamento incluse</li>
     </ul>
     <div class="cta-group">
       <a href="https://calendly.com/federico-grassi-unghiaincarnitastop/30min" class="btn-primary" target="_blank" rel="noopener">
-        👉 Prenota la prima visita
+        PRENOTA LA PRIMA VISITA →
       </a>
       <a href="tel:+393334217550" class="cta-phone">
         📞 333 421 7550
@@ -678,8 +698,8 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
           Sei del <em>club<br>dei recidivi?</em>
         </h2>
         <div class="problema-text">
-          <p>Hai già trattato l'unghia incarnita. <strong>È tornata.</strong> Hai provato cerotti, rimedi, altri podologi a Torino. Il dolore è ancora lì.</p>
-          <p>Non è colpa tua. La maggior parte dei trattamenti tradizionali elimina il sintomo, non la causa. Dopo qualche mese l'unghia incarnita ritorna — e tu ricomincia da capo.</p>
+          <p>Hai già trattato l'<strong>unghia incarnita a Torino</strong>. <strong>È tornata.</strong> Hai provato cerotti, rimedi, altri podologi a Torino. Il dolore è ancora lì.</p>
+          <p>Non è colpa tua. La maggior parte dei trattamenti tradizionali elimina il sintomo, non la causa. Dopo qualche mese l'<strong>unghia incarnita</strong> ritorna — e tu ricominci da capo.</p>
           <p>La <strong>fenolizzazione</strong> funziona diversamente: distrugge la matrice ungueale responsabile della ricrescita. L'unghia non torna. Fine.</p>
         </div>
       </div>
@@ -714,7 +734,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         <h2 class="section-h2" id="video-title">
           La fenolizzazione<br>spiegata in <em>90 secondi</em>
         </h2>
-        <p class="video-text">La fenolizzazione — conosciuta anche come "tecnica spagnola" — è la procedura con il più alto tasso di successo e il più basso tasso di recidive per il trattamento dell'unghia incarnita. Il Dr. Grassi la spiega passo dopo passo.</p>
+        <p class="video-text">La fenolizzazione — conosciuta anche come "tecnica spagnola" — è la procedura con il più alto tasso di successo e il più basso tasso di recidive per il trattamento dell'<strong>unghia incarnita</strong>. Il Dr. Grassi la spiega passo dopo passo.</p>
       </div>
       <div class="video-wrap fade-up">
         <iframe
@@ -753,7 +773,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <div class="step-card fade-up">
         <p class="step-num">03</p>
         <h3 class="step-title">Cammini subito</h3>
-        <p class="step-desc">Nessun punto, nessuna sutura. Solo una medicazione. Esci dallo studio camminando normalmente. Le medicazioni post-trattamento sono incluse.</p>
+        <p class="step-desc">Nessun punto. Nessuna sutura. Solo una medicazione. Esci dallo studio camminando normalmente. Le medicazioni post-trattamento sono incluse.</p>
         <span class="step-tag">Medicazioni incluse</span>
       </div>
     </div>
@@ -769,28 +789,28 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     </h2>
     <div class="diff-grid">
       <div class="diff-card fade-up">
-        <div class="diff-icon-wrap" aria-hidden="true">🛡️</div>
+        <div class="diff-icon-wrap" aria-hidden="true"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#006D6D" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg></div>
         <div>
           <h3 class="diff-title">Garanzia recidiva</h3>
-          <p class="diff-desc">Se l'unghia incarnita torna dopo il trattamento, ti ritrattamo gratuitamente. Senza condizioni. Nessun altro in Piemonte lo offre.</p>
+          <p class="diff-desc">Se l'unghia incarnita torna dopo il trattamento, ti ritrattIamo gratuitamente. Senza condizioni. Nessun altro in Piemonte lo offre.</p>
         </div>
       </div>
       <div class="diff-card fade-up">
-        <div class="diff-icon-wrap" aria-hidden="true">👨‍⚕️</div>
+        <div class="diff-icon-wrap" aria-hidden="true"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#006D6D" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><circle cx="12" cy="13" r="3"/><line x1="12" y1="10" x2="12" y2="8"/><line x1="10.5" y1="13" x2="8" y2="13"/></svg></div>
         <div>
           <h3 class="diff-title">Anestesista qualificato</h3>
           <p class="diff-desc">Non una semplice iniezione. Un anestesista professionista esegue l'anestesia locale. Trattamento completamente indolore, garantito.</p>
         </div>
       </div>
       <div class="diff-card fade-up">
-        <div class="diff-icon-wrap" aria-hidden="true">📍</div>
+        <div class="diff-icon-wrap" aria-hidden="true"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#006D6D" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg></div>
         <div>
           <h3 class="diff-title">L'unico in Piemonte</h3>
           <p class="diff-desc">Il Dr. Grassi è il riferimento regionale per la fenolizzazione. Pazienti da Torino, Cuneo, Novara, Asti, Nichelino, Collegno e tutta la provincia.</p>
         </div>
       </div>
       <div class="diff-card fade-up">
-        <div class="diff-icon-wrap" aria-hidden="true">⚡</div>
+        <div class="diff-icon-wrap" aria-hidden="true"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#006D6D" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><polyline points="9 16 11 18 15 14"/></svg></div>
         <div>
           <h3 class="diff-title">Prenota in 2 minuti</h3>
           <p class="diff-desc">Niente form, niente attese in segreteria. Scegli il tuo slot online e confermi subito. Prima visita disponibile entro 72 ore.</p>
@@ -832,7 +852,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   <div class="section-inner" style="margin-bottom:40px">
     <p class="eyebrow fade-up">Recensioni Google verificate</p>
     <h2 class="section-h2 fade-up" id="reviews-title">
-      310 persone che<br><em>non soffrono più.</em>
+      310 persone con <strong>unghia incarnita</strong><br><em>che non soffrono più.</em>
     </h2>
   </div>
   <div class="reviews-overflow" aria-label="Carosello recensioni pazienti">
@@ -844,17 +864,17 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 <!-- GARANZIA CTA -->
 <section class="garanzia-bg" id="garanzia" aria-labelledby="garanzia-title">
   <div class="garanzia-inner fade-up">
-    <div class="garanzia-icon" aria-hidden="true">🛡️</div>
+    <div class="garanzia-icon" aria-hidden="true"><svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg></div>
     <h2 class="garanzia-h2" id="garanzia-title">
       Hai già provato.<br>
       È tornata.<br>
       Questa volta no.
     </h2>
     <p class="garanzia-text">
-      Se dopo il trattamento con il Dr. Grassi l'unghia incarnita si ripresenta, ti ritrattamo gratuitamente. Senza condizioni. Senza domande. Questa è la garanzia.
+      Se dopo il trattamento con il Dr. Grassi l'unghia incarnita si ripresenta, ti ritrattIamo gratuitamente. Senza condizioni. Senza domande. Questa è la garanzia.
     </p>
     <a href="https://calendly.com/federico-grassi-unghiaincarnitastop/30min" class="btn-white" target="_blank" rel="noopener">
-      👉 Prenota la prima visita
+      PRENOTA LA PRIMA VISITA →
     </a>
     <p class="garanzia-note">Dr. Federico Grassi — Podologo specializzato nel trattamento dell'unghia incarnita<br>Prima visita disponibile entro 72 ore · Via Filadelfia 200, Torino</p>
   </div>
