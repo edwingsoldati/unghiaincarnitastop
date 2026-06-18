@@ -846,7 +846,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         <div class="diff-icon-wrap" aria-hidden="true"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#006D6D" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg></div>
         <div>
           <h3 class="diff-title">Garanzia recidiva</h3>
-          <p class="diff-desc">Se l'unghia incarnita torna dopo il trattamento, ti ritrattIamo gratuitamente. Senza condizioni.</p>
+          <p class="diff-desc">Se l'unghia incarnita torna dopo il trattamento, ti ritrattiamo gratuitamente. Senza condizioni.</p>
         </div>
       </div>
       <div class="diff-card fade-up">
@@ -925,7 +925,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       Questa volta no.
     </h2>
     <p class="garanzia-text">
-      Se dopo il trattamento con il Dr. Grassi l'unghia incarnita si ripresenta, ti ritrattIamo gratuitamente. Senza condizioni. Senza domande. Questa è la garanzia.
+      Se dopo il trattamento con il Dr. Grassi l'unghia incarnita si ripresenta, ti ritrattiamo gratuitamente. Senza condizioni. Senza domande. Questa è la garanzia.
     </p>
     <a href="https://calendly.com/federico-grassi-unghiaincarnitastop/30min" class="btn-white" target="_blank" rel="noopener">
       PRENOTA LA PRIMA VISITA →
@@ -989,7 +989,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <a href="https://www.iubenda.com/privacy-policy/85990568" class="iubenda-white iubenda-noiframe iubenda-embed" title="Privacy Policy">Privacy Policy</a>
       <a href="https://www.iubenda.com/privacy-policy/85990568/cookie-policy" class="iubenda-white iubenda-noiframe iubenda-embed" title="Cookie Policy">Cookie Policy</a>
       <script type="text/javascript">(function (w,d) {var loader = function () {var s = d.createElement("script"), tag = d.getElementsByTagName("script")[0]; s.src="https://cdn.iubenda.com/iubenda.js"; tag.parentNode.insertBefore(s,tag);}; if(w.addEventListener){w.addEventListener("load", loader, false);}else if(w.attachEvent){w.attachEvent("onload", loader);}else{w.onload = loader;}})(window, document);</script>
-      <a href="https://unghiaincarnitastop.it/home">Vai al sito principale</a>
     </nav>
   </div>
 </footer>
@@ -1209,6 +1208,32 @@ document.head.appendChild(s);
   }
 })();
 
+</script>
+
+<script>
+// ── GCLID CAPTURE ──
+// 1. Salva gclid in sessionStorage appena l'utente arriva sul sito
+(function() {
+  var params = new URLSearchParams(window.location.search);
+  var gclid = params.get('gclid');
+  if (gclid) {
+    sessionStorage.setItem('gclid', gclid);
+    sessionStorage.setItem('gclid_ts', Date.now());
+  }
+})();
+
+// 2. Su ogni click Calendly: appende gclid come utm_content all'URL
+document.querySelectorAll('a[href*="calendly.com"]').forEach(function(el) {
+  el.addEventListener('click', function(e) {
+    var gclid = sessionStorage.getItem('gclid');
+    if (!gclid) return;
+    var url = new URL(this.href);
+    url.searchParams.set('utm_source', 'google');
+    url.searchParams.set('utm_medium', 'cpc');
+    url.searchParams.set('utm_content', 'gclid_' + gclid);
+    this.href = url.toString();
+  });
+});
 </script>
 </body>
 </html>

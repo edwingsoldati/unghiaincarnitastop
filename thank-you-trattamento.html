@@ -221,6 +221,35 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 <script>
 window.dataLayer = window.dataLayer || [];
 
+// ── GCLID RECOVERY ──
+(function() {
+  var params = new URLSearchParams(window.location.search);
+  var utmContent = params.get('utm_content') || '';
+  var gclid = '';
+
+  if (utmContent.startsWith('gclid_')) {
+    gclid = utmContent.replace('gclid_', '');
+  } else {
+    gclid = sessionStorage.getItem('gclid') || '';
+  }
+
+  if (gclid) {
+    var APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzrQAGyQVNhVCihYxM2HiIG6n8rudrI3OVtYMjjIahqMEti_uILmuLJS4hZD8SZhrTi/exec';
+    fetch(APPS_SCRIPT_URL, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        gclid: gclid,
+        conversion_type: 'trattamento_fenolizzazione',
+        timestamp: new Date().toISOString(),
+        page: window.location.href
+      })
+    });
+    window.dataLayer.push({ gclid: gclid, conversion_type: 'trattamento_fenolizzazione' });
+  }
+})();
+
 // Evento conversione trattamento
 window.dataLayer.push({
   event: 'thank_you_trattamento',
