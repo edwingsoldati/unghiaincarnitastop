@@ -223,8 +223,9 @@ input.invalid{border-color:var(--rosso)}
     <label>Email *</label>
     <input type="email" id="email" placeholder="mario.rossi@email.com">
     <div class="err" id="err-email">Inserire un'email valida</div>
-    <label>Codice Fiscale</label>
+    <label>Codice Fiscale *</label>
     <input type="text" id="cf" placeholder="RSSMRA80A01L219D" style="text-transform:uppercase" maxlength="16">
+    <div class="err" id="err-cf">Inserire un codice fiscale valido (16 caratteri)</div>
   </div>
 
   <div class="card">
@@ -306,9 +307,15 @@ input.invalid{border-color:var(--rosso)}
     <div style="margin-top:6px;background:var(--grigio);border-radius:8px;padding:14px;border:1.5px dashed var(--bordo)" id="doc-upload-area">
       <div style="text-align:center;margin-bottom:10px;font-size:13px;color:var(--testo-soft)">📷 Carica fronte documento identità tutore</div>
       <input type="file" id="doc_tutore" accept="image/*,application/pdf" style="display:none" onchange="onDocUpload('doc_tutore','prev-doc-tutore','lbl-doc-tutore')">
-      <button onclick="document.getElementById('doc_tutore').click()" style="width:100%;padding:10px;background:#fff;border:1.5px solid var(--blu);border-radius:8px;color:var(--blu);font-weight:600;cursor:pointer;font-size:14px">
-        📎 Seleziona file
-      </button>
+      <input type="file" id="doc_tutore_cam" accept="image/*" capture="environment" style="display:none" onchange="onDocUpload('doc_tutore','prev-doc-tutore','lbl-doc-tutore','doc_tutore_cam')">
+      <div style="display:flex;gap:8px">
+        <button onclick="document.getElementById('doc_tutore_cam').click()" style="flex:1;padding:10px;background:var(--blu);border:1.5px solid var(--blu);border-radius:8px;color:#fff;font-weight:600;cursor:pointer;font-size:14px">
+          📷 Scatta foto
+        </button>
+        <button onclick="document.getElementById('doc_tutore').click()" style="flex:1;padding:10px;background:#fff;border:1.5px solid var(--blu);border-radius:8px;color:var(--blu);font-weight:600;cursor:pointer;font-size:14px">
+          📎 Seleziona file
+        </button>
+      </div>
       <div id="lbl-doc-tutore" style="font-size:12px;color:var(--testo-soft);margin-top:6px;text-align:center">Nessun file selezionato</div>
       <img id="prev-doc-tutore" style="display:none;max-width:100%;border-radius:8px;margin-top:8px;border:1px solid var(--bordo)">
     </div>
@@ -340,9 +347,15 @@ input.invalid{border-color:var(--rosso)}
       <label style="margin-top:10px">Documento identità secondo genitore</label>
       <div style="margin-top:6px;background:var(--grigio);border-radius:8px;padding:12px;border:1.5px dashed var(--bordo)">
         <input type="file" id="doc_tutore2" accept="image/*,application/pdf" style="display:none" onchange="onDocUpload('doc_tutore2','prev-doc-tutore2','lbl-doc-tutore2')">
-        <button onclick="document.getElementById('doc_tutore2').click()" style="width:100%;padding:9px;background:#fff;border:1.5px solid var(--blu);border-radius:8px;color:var(--blu);font-weight:600;cursor:pointer;font-size:13px">
-          📎 Seleziona file
-        </button>
+        <input type="file" id="doc_tutore2_cam" accept="image/*" capture="environment" style="display:none" onchange="onDocUpload('doc_tutore2','prev-doc-tutore2','lbl-doc-tutore2','doc_tutore2_cam')">
+        <div style="display:flex;gap:8px">
+          <button onclick="document.getElementById('doc_tutore2_cam').click()" style="flex:1;padding:9px;background:var(--blu);border:1.5px solid var(--blu);border-radius:8px;color:#fff;font-weight:600;cursor:pointer;font-size:13px">
+            📷 Scatta foto
+          </button>
+          <button onclick="document.getElementById('doc_tutore2').click()" style="flex:1;padding:9px;background:#fff;border:1.5px solid var(--blu);border-radius:8px;color:var(--blu);font-weight:600;cursor:pointer;font-size:13px">
+            📎 Seleziona file
+          </button>
+        </div>
         <div id="lbl-doc-tutore2" style="font-size:12px;color:var(--testo-soft);margin-top:5px;text-align:center">Nessun file selezionato</div>
         <img id="prev-doc-tutore2" style="display:none;max-width:100%;border-radius:8px;margin-top:8px;border:1px solid var(--bordo)">
       </div>
@@ -363,9 +376,15 @@ input.invalid{border-color:var(--rosso)}
       <label>Documento identità del minore <span style="color:var(--testo-soft);font-size:11px">(opzionale ma consigliato)</span></label>
       <div style="margin-top:6px;background:var(--grigio);border-radius:8px;padding:12px;border:1.5px dashed var(--bordo)">
         <input type="file" id="doc_minore" accept="image/*,application/pdf" style="display:none" onchange="onDocUpload('doc_minore','prev-doc-minore','lbl-doc-minore')">
-        <button onclick="document.getElementById('doc_minore').click()" style="width:100%;padding:9px;background:#fff;border:1.5px solid var(--blu);border-radius:8px;color:var(--blu);font-weight:600;cursor:pointer;font-size:13px">
-          📎 Seleziona file
-        </button>
+        <input type="file" id="doc_minore_cam" accept="image/*" capture="environment" style="display:none" onchange="onDocUpload('doc_minore','prev-doc-minore','lbl-doc-minore','doc_minore_cam')">
+        <div style="display:flex;gap:8px">
+          <button onclick="document.getElementById('doc_minore_cam').click()" style="flex:1;padding:9px;background:var(--blu);border:1.5px solid var(--blu);border-radius:8px;color:#fff;font-weight:600;cursor:pointer;font-size:13px">
+            📷 Scatta foto
+          </button>
+          <button onclick="document.getElementById('doc_minore').click()" style="flex:1;padding:9px;background:#fff;border:1.5px solid var(--blu);border-radius:8px;color:var(--blu);font-weight:600;cursor:pointer;font-size:13px">
+            📎 Seleziona file
+          </button>
+        </div>
         <div id="lbl-doc-minore" style="font-size:12px;color:var(--testo-soft);margin-top:5px;text-align:center">Nessun file selezionato</div>
         <img id="prev-doc-minore" style="display:none;max-width:100%;border-radius:8px;margin-top:8px;border:1px solid var(--bordo)">
       </div>
@@ -663,9 +682,9 @@ input.invalid{border-color:var(--rosso)}
 ═══════════════════════════════════════════ -->
 <div class="step" id="step6">
   <div class="card success-wrap">
-    <div class="success-icon">✓</div>
-    <div class="success-title">Documenti firmati e inviati</div>
-    <div class="success-sub">Hai ricevuto via email copia di tutti i documenti firmati con il codice univoco della tua firma.</div>
+    <div class="success-icon" id="esito-icona">✓</div>
+    <div class="success-title" id="esito-titolo">Documenti firmati e inviati</div>
+    <div class="success-sub" id="esito-sottotitolo">Hai ricevuto via email copia di tutti i documenti firmati con il codice univoco della tua firma.</div>
     <div class="recap-box" id="recap-finale"></div>
     <div style="font-size:11px;color:var(--testo-soft);margin-top:16px;line-height:1.7">
       Per informazioni: <strong>Tel. 333.421.75.50</strong><br>
@@ -796,10 +815,55 @@ function updateProgress(n){
 
 function formatData(d){ if(!d)return'---'; const[y,m,g]=d.split('-'); return g+'/'+m+'/'+y; }
 
-function onDocUpload(inputId,prevId,lblId){
-  const file=document.getElementById(inputId).files[0];
-  if(!file) return;
-  document.getElementById(lblId).textContent=file.name;
+function comprimiImmagine(file, maxDim, qualita){
+  return new Promise((resolve, reject)=>{
+    if(!file.type.startsWith('image/')){ resolve(file); return; }
+    const img=new Image();
+    const url=URL.createObjectURL(file);
+    img.onload=()=>{
+      URL.revokeObjectURL(url);
+      let {width,height}=img;
+      if(width>maxDim||height>maxDim){
+        if(width>height){ height=Math.round(height*maxDim/width); width=maxDim; }
+        else{ width=Math.round(width*maxDim/height); height=maxDim; }
+      }
+      const canvas=document.createElement('canvas');
+      canvas.width=width; canvas.height=height;
+      const ctx=canvas.getContext('2d');
+      if(!ctx){ resolve(file); return; }
+      ctx.drawImage(img,0,0,width,height);
+      canvas.toBlob(blob=>{
+        if(!blob){ resolve(file); return; }
+        resolve(new File([blob], file.name.replace(/\.[^.]+$/,'')+'.jpg', {type:'image/jpeg'}));
+      }, 'image/jpeg', qualita);
+    };
+    img.onerror=()=>{ URL.revokeObjectURL(url); resolve(file); };
+    img.src=url;
+  });
+}
+
+async function onDocUpload(inputId,prevId,lblId,srcInputId){
+  const inputEl=document.getElementById(srcInputId||inputId);
+  const fileOriginale=inputEl.files[0];
+  if(!fileOriginale) return;
+  const lblEl=document.getElementById(lblId);
+  const MAX_MB=40;
+  if(fileOriginale.size>MAX_MB*1024*1024){
+    lblEl.textContent='File troppo grande (max '+MAX_MB+'MB). Riprova con una foto più leggera.';
+    lblEl.style.color='#8b2020';
+    inputEl.value='';
+    return;
+  }
+  lblEl.style.color='';
+  lblEl.textContent='Elaborazione in corso...';
+  let file;
+  try{
+    file=await comprimiImmagine(fileOriginale, 1600, 0.72);
+  }catch(e){
+    console.warn('Compressione fallita, uso file originale:',e);
+    file=fileOriginale;
+  }
+  lblEl.textContent=file.name+' ('+Math.round(file.size/1024)+' KB)';
   const reader=new FileReader();
   reader.onload=e=>{
     const b64=e.target.result.split(',')[1];
@@ -808,6 +872,10 @@ function onDocUpload(inputId,prevId,lblId){
     if(inputId==='doc_minore') docMinoreB64=b64;
     const prev=document.getElementById(prevId);
     if(file.type.startsWith('image/')){ prev.src=e.target.result; prev.style.display='block'; }
+  };
+  reader.onerror=()=>{
+    lblEl.textContent='Errore nella lettura del file. Riprova.';
+    lblEl.style.color='#8b2020';
   };
   reader.readAsDataURL(file);
 }
@@ -827,6 +895,10 @@ function step1Next(){
   else{showErr('err-email',false);markInv('email',false);}
   if(!radioVals['piede']){showErr('err-piede',true);ok=false;}
   else showErr('err-piede',false);
+  const cfVal=v('cf').toUpperCase();
+  const cfOk=/^[A-Z0-9]{16}$/.test(cfVal);
+  if(!cfOk){showErr('err-cf',true);markInv('cf',true);ok=false;}
+  else{showErr('err-cf',false);markInv('cf',false);}
   if(!ok) return;
   dati={
     nome:v('nome'),cognome:v('cognome'),
@@ -1266,33 +1338,69 @@ async function invia(){
   Object.keys(sinoVals).forEach(k=>{ basePayload['sino_'+k]=sinoVals[k]; });
   PATOLOGIE.forEach((p,i)=>{ basePayload['pat_'+i+'_label']=p; basePayload['pat_'+i+'_val']=sinoVals['pat_'+i]||'---'; });
 
+  const sendOnce=async(p)=>{
+    try{
+      const res=await fetch(APPS_SCRIPT_URL,{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify(p)
+      });
+      if(!res.ok) return {ok:false, error:'HTTP '+res.status};
+      let j; try{ j=await res.json(); }catch(e){ return {ok:false, error:'Risposta non valida'}; }
+      return {ok: j.success===true, error: j.error||j.warning||null};
+    }catch(e){
+      return {ok:false, error:e.message};
+    }
+  };
   const send=async(p)=>{
-    await fetch(APPS_SCRIPT_URL,{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify(p)
-    });
+    let r=await sendOnce(p);
+    if(!r.ok){
+      await new Promise(res=>setTimeout(res,1500));
+      r=await sendOnce(p);
+    }
+    return r;
   };
 
+  let esitoConsenso={ok:false,error:'Non tentato'};
+  let esitoAnamnesi={ok:false,error:'Non tentato'};
+  let esitoRicetta={ok:false,error:'Non tentato'};
+  let esitoDocumenti=null;
+  let erroreBloccante=null;
+
+  btn.innerHTML='<span class="spinner"></span>Generazione PDF 1/3...';
   try{
-    btn.innerHTML='<span class="spinner"></span>Generazione PDF 1/3...';
     const pdf1b64=(await generaPDF1(dati,firmaHash,firmaTs)).split(',')[1];
-    btn.innerHTML='<span class="spinner"></span>Generazione PDF 2/3...';
-    const pdf2b64=(await generaPDF2(dati,sinoVals,firmaHash,firmaTs)).split(',')[1];
-    btn.innerHTML='<span class="spinner"></span>Generazione PDF 3/3...';
-    const pdf3b64=(await generaPDF3(dati,firmaTs)).split(',')[1];
-
     btn.innerHTML='<span class="spinner"></span>Invio 1/3...';
-    await send({...basePayload,tipo:'consenso_onicectomia',pdf_base64:pdf1b64});
-    btn.innerHTML='<span class="spinner"></span>Invio 2/3...';
-    await send({...basePayload,tipo:'autoanamnesi_anestesia',pdf_base64:pdf2b64});
-    btn.innerHTML='<span class="spinner"></span>Invio 3/3...';
-    await send({...basePayload,tipo:'ricetta_betadine',pdf_base64:pdf3b64});
+    esitoConsenso=await send({...basePayload,tipo:'consenso_onicectomia',pdf_base64:pdf1b64});
+  }catch(e){
+    console.warn('Errore PDF/invio 1:',e);
+    esitoConsenso={ok:false, error:'Generazione PDF fallita: '+(e.message||'errore sconosciuto')};
+  }
 
-    // Quarta chiamata: documenti identità separati (solo se presenti)
-    if(docTutoreB64||docTutore2B64||docMinoreB64){
-      btn.innerHTML='<span class="spinner"></span>Caricamento documenti identità...';
-      await send({
+  btn.innerHTML='<span class="spinner"></span>Generazione PDF 2/3...';
+  try{
+    const pdf2b64=(await generaPDF2(dati,sinoVals,firmaHash,firmaTs)).split(',')[1];
+    btn.innerHTML='<span class="spinner"></span>Invio 2/3...';
+    esitoAnamnesi=await send({...basePayload,tipo:'autoanamnesi_anestesia',pdf_base64:pdf2b64});
+  }catch(e){
+    console.warn('Errore PDF/invio 2:',e);
+    esitoAnamnesi={ok:false, error:'Generazione PDF fallita: '+(e.message||'errore sconosciuto')};
+  }
+
+  btn.innerHTML='<span class="spinner"></span>Generazione PDF 3/3...';
+  try{
+    const pdf3b64=(await generaPDF3(dati,firmaTs)).split(',')[1];
+    btn.innerHTML='<span class="spinner"></span>Invio 3/3...';
+    esitoRicetta=await send({...basePayload,tipo:'ricetta_betadine',pdf_base64:pdf3b64});
+  }catch(e){
+    console.warn('Errore PDF/invio 3:',e);
+    esitoRicetta={ok:false, error:'Generazione PDF fallita: '+(e.message||'errore sconosciuto')};
+  }
+
+  if(docTutoreB64||docTutore2B64||docMinoreB64){
+    btn.innerHTML='<span class="spinner"></span>Caricamento documenti identità...';
+    try{
+      esitoDocumenti=await send({
         nome:dati.nome,
         cognome:dati.cognome,
         data_nascita:dati.data_nascita,
@@ -1302,19 +1410,41 @@ async function invia(){
         doc_tutore2_b64:docTutore2B64||'',
         doc_minore_b64:docMinoreB64||'',
       });
+    }catch(e){
+      console.warn('Errore documenti identità:',e);
+      esitoDocumenti={ok:false, error:e.message||'errore sconosciuto'};
     }
-  }catch(e){ console.warn('Errore:',e); }
+  }
+
+  const tuttoOk = esitoConsenso.ok && esitoAnamnesi.ok && esitoRicetta.ok && (esitoDocumenti===null || esitoDocumenti.ok) && !erroreBloccante;
+  const pill=(ok)=> ok ? '<span style="color:#2d6a2d;font-weight:600">✓ Inviato</span>' : '<span style="color:#8b2020;font-weight:600">✗ Non riuscito</span>';
 
   const nc=dati.nome+' '+dati.cognome;
-  document.getElementById('recap-finale').innerHTML=
+  let recapHtml=
     '<div class="recap-row"><span>Paziente</span><span>'+nc+'</span></div>'+
     (isMinorenne?'<div class="recap-row"><span>Tutore</span><span>'+datiTutore.nome+' '+datiTutore.cognome+'</span></div>':'')+
     '<div class="recap-row"><span>Trattamento</span><span>Onicectomia – Piede '+dati.piede+'</span></div>'+
     '<div class="recap-row"><span>Data</span><span>'+new Date().toLocaleDateString('it-IT')+'</span></div>'+
     '<div class="recap-row"><span>Email</span><span>'+dati.email+'</span></div>'+
     '<div class="recap-row"><span>Codice firma</span><span style="font-family:monospace;font-size:10px">'+firmaHash.substring(0,28)+'...</span></div>'+
-    '<div class="recap-row"><span>PDF inviati</span><span>3 documenti ✓</span></div>'+
-    '<div class="recap-row"><span>Drive</span><span>Cartella paziente + documenti ✓</span></div>';
+    '<div class="recap-row"><span>Consenso</span><span>'+pill(esitoConsenso.ok)+'</span></div>'+
+    '<div class="recap-row"><span>Autoanamnesi</span><span>'+pill(esitoAnamnesi.ok)+'</span></div>'+
+    '<div class="recap-row"><span>Ricetta</span><span>'+pill(esitoRicetta.ok)+'</span></div>'+
+    (esitoDocumenti?'<div class="recap-row"><span>Documenti identità</span><span>'+pill(esitoDocumenti.ok)+'</span></div>':'');
+
+  document.getElementById('recap-finale').innerHTML=recapHtml;
+
+  if(tuttoOk){
+    document.getElementById('esito-icona').textContent='✓';
+    document.getElementById('esito-titolo').textContent='Documenti firmati e inviati';
+    document.getElementById('esito-sottotitolo').textContent='Hai ricevuto via email copia di tutti i documenti firmati con il codice univoco della tua firma.';
+  }else{
+    document.getElementById('esito-icona').textContent='⚠';
+    document.getElementById('esito-icona').style.color='#8b2020';
+    document.getElementById('esito-titolo').textContent='Invio incompleto';
+    document.getElementById('esito-titolo').style.color='#8b2020';
+    document.getElementById('esito-sottotitolo').textContent='Alcuni documenti potrebbero non essere arrivati. Ti preghiamo di contattare lo studio al numero qui sotto per verificare, senza ricompilare il form.';
+  }
   goStep(6);
 }
 </script>
