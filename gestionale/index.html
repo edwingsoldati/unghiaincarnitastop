@@ -2258,6 +2258,19 @@ async function inviaDocRapido() {
     if (data.success) {
       openDocPrint(data.html);
       showToast('✅ Documento aperto — pronto per la stampa');
+      // Offri invio WhatsApp se il paziente ha un numero
+      const phone = currentPatient && (currentPatient.phone || currentPatient.telefono);
+      if (phone) {
+        const phoneClean = phone.replace(/\D/g, '').replace(/^0039/, '39').replace(/^0/, '39');
+        const tipoLabel = { presenza: 'attestato di presenza', giustifica: 'giustifica', sport: 'esenzione sport scolastica' }[cfg.tipo] || 'documento';
+        const waMsg = encodeURIComponent(`Gentile ${cfg.nome}, le invio l'${tipoLabel} generato oggi. La saluto, Dott. Federico Grassi – Podologo.`);
+        const waUrl = `https://wa.me/${phoneClean}?text=${waMsg}`;
+        setTimeout(() => {
+          if (confirm(`📱 Vuoi aprire WhatsApp per inviare il documento a ${cfg.nome}?\n${phone}`)) {
+            window.open(waUrl, '_blank');
+          }
+        }, 800);
+      }
     } else {
       showToast('❌ ' + (data.error || 'Errore'));
     }
