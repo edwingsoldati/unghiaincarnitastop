@@ -165,6 +165,19 @@ html, body {
   cursor: pointer;
   display: flex; align-items: center; gap: 5px;
 }
+.day-nav-btn {
+  background: white;
+  color: var(--teal-dark);
+  border: 1.5px solid var(--teal);
+  border-radius: 50%;
+  width: 34px; height: 34px;
+  font-size: 20px;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  line-height: 1;
+}
 
 .agenda-stats {
   display: grid;
@@ -1044,11 +1057,12 @@ html, body {
   <!-- ========== SCREEN: AGENDA ========== -->
   <section id="screen-agenda" class="screen active">
     <div class="agenda-date-bar">
-      <div>
+      <button class="day-nav-btn" onclick="changeDay(-1)" title="Giorno precedente">‹</button>
+      <div style="flex:1;text-align:center;">
         <div class="agenda-date-label" id="agendaDateLabel">Oggi</div>
         <div class="agenda-date-sub" id="agendaDateSub">Carico agenda...</div>
       </div>
-      <button class="refresh-btn" onclick="loadAgenda()">↻ Aggiorna</button>
+      <button class="day-nav-btn" onclick="changeDay(1)" title="Giorno successivo">›</button>
     </div>
 
     <div class="agenda-stats">
@@ -1201,6 +1215,9 @@ html, body {
       <button class="btn btn-primary btn-full" onclick="generaAttPresenza()">
         🖨️ Genera e Stampa Attestato di Presenza
       </button>
+      <button class="btn btn-outline btn-full" style="margin-top:8px;" onclick="inviaCopiaMePresenza()">
+        📧 Invia copia a me (ilmiocoachonline@gmail.com)
+      </button>
     </div>
 
     <div style="height:1px; background:var(--gray-light); margin:8px 16px 20px;"></div>
@@ -1239,6 +1256,9 @@ html, body {
       <button class="btn btn-primary btn-full" onclick="generaAttSport()">
         🖨️ Genera e Stampa Esenzione Sport
       </button>
+      <button class="btn btn-outline btn-full" style="margin-top:8px;" onclick="inviaCopiaMeSport()">
+        📧 Invia copia a me (ilmiocoachonline@gmail.com)
+      </button>
     </div>
 
     <div style="height:1px; background:var(--gray-light); margin:8px 16px 20px;"></div>
@@ -1259,6 +1279,9 @@ html, body {
       </div>
       <button class="btn btn-outline btn-full" onclick="generaGiustifica()">
         🖨️ Genera Giustifica Assicurazione
+      </button>
+      <button class="btn btn-outline btn-full" style="margin-top:8px;" onclick="inviaCopiaMeGiustifica()">
+        📧 Invia copia a me (ilmiocoachonline@gmail.com)
       </button>
     </div>
 
@@ -1376,6 +1399,9 @@ html, body {
 
       <button class="btn btn-primary btn-full" onclick="generaRelazione()" style="background:linear-gradient(135deg,#6A1B9A,#4A148C);">
         🖨️ Genera Relazione Clinica
+      </button>
+      <button class="btn btn-outline btn-full" style="margin-top:8px;" onclick="inviaCopiaMeRelazione()">
+        📧 Invia copia a me (ilmiocoachonline@gmail.com)
       </button>
     </div>
   </section>
@@ -1728,6 +1754,7 @@ let appointments = [];
 let patients = [];
 let isRecording = false;
 let recognition = null;
+let currentDayOffset = 0; // 0=oggi, 1=domani, -1=ieri
 
 // ==================== INIT ====================
 document.addEventListener('DOMContentLoaded', () => {
@@ -1739,17 +1766,35 @@ document.addEventListener('DOMContentLoaded', () => {
   updatePreventivo();
 });
 
+function getOffsetDate(offset) {
+  const d = new Date();
+  d.setDate(d.getDate() + offset);
+  return d;
+}
+
+function changeDay(delta) {
+  currentDayOffset += delta;
+  initDate();
+  loadAgenda();
+}
+
 function initDate() {
-  const now = new Date();
+  const d = getOffsetDate(currentDayOffset);
   const opts = { weekday: 'long', day: 'numeric', month: 'long' };
-  const dateStr = now.toLocaleDateString('it-IT', opts);
-  document.getElementById('agendaDateLabel').textContent = 'Oggi — ' +
+  const dateStr = d.toLocaleDateString('it-IT', opts);
+  let prefix;
+  if (currentDayOffset === 0) prefix = 'Oggi';
+  else if (currentDayOffset === 1) prefix = 'Domani';
+  else if (currentDayOffset === -1) prefix = 'Ieri';
+  else if (currentDayOffset > 0) prefix = 'Tra ' + currentDayOffset + ' giorni';
+  else prefix = Math.abs(currentDayOffset) + ' giorni fa';
+  document.getElementById('agendaDateLabel').textContent = prefix + ' — ' +
     dateStr.charAt(0).toUpperCase() + dateStr.slice(1);
 
   const months = ['Gennaio','Febbraio','Marzo','Aprile','Maggio','Giugno',
                   'Luglio','Agosto','Settembre','Ottobre','Novembre','Dicembre'];
   document.getElementById('adminPeriodo').textContent =
-    months[now.getMonth()] + ' ' + now.getFullYear();
+    months[new Date().getMonth()] + ' ' + new Date().getFullYear();
 }
 
 // ==================== NAVIGATION ====================
@@ -1779,11 +1824,14 @@ function closeModal(id) {
 // ==================== AGENDA / CALENDLY ====================
 async function loadAgenda() {
   const listEl = document.getElementById('appointmentsList');
-  listEl.innerHTML = '<div class="section-title">Appuntamenti di oggi</div>' +
+  const d = getOffsetDate(currentDayOffset);
+  const dateISO = d.toISOString().split('T')[0];
+  const dayLabel = currentDayOffset === 0 ? 'oggi' : currentDayOffset === 1 ? 'domani' : dateISO;
+  listEl.innerHTML = `<div class="section-title">Appuntamenti del ${dayLabel}</div>` +
     '<div class="empty-state"><div class="empty-icon">🔄</div><p>Caricamento da Calendly...</p></div>';
 
   try {
-    const res = await fetch(`${WORKER_URL}/api/agenda/today`);
+    const res = await fetch(`${WORKER_URL}/api/agenda/today?date=${dateISO}`);
     const data = await res.json();
 
     const raw = data.events || data.appointments || [];
@@ -1844,7 +1892,8 @@ function renderAppointments(events) {
   const now = new Date();
   const currentHour = now.getHours() + now.getMinutes()/60;
 
-  let html = '<div class="section-title">Appuntamenti di oggi</div>';
+  const _dayLabel = currentDayOffset === 0 ? 'oggi' : currentDayOffset === 1 ? 'domani' : getOffsetDate(currentDayOffset).toLocaleDateString('it-IT',{day:'numeric',month:'long'});
+  let html = `<div class="section-title">Appuntamenti del ${_dayLabel}</div>`;
 
   events.forEach(ev => {
     if (ev.type === 'break') {
@@ -2581,49 +2630,78 @@ function copyPreventivo() {
 }
 
 // ==================== DASHBOARD ====================
-function initDashboard() {
-  // Demo data
-  document.getElementById('kpiRicavi').textContent = '€3.850';
-  document.getElementById('kpiOp').textContent = '4';
-  document.getElementById('kpiVisite').textContent = '18';
-  document.getElementById('kpiTxRate').textContent = '22%';
-  document.getElementById('kpiRicaviTrend').textContent = '+12% vs mese scorso';
-  document.getElementById('kpiOpTrend').textContent = '4 op. questo mese';
-  document.getElementById('kpiVisiteTrend').textContent = '18 totali';
-  document.getElementById('kpiTxTrend').textContent = '4/18 operative';
+async function initDashboard() {
+  // Prima mostra i dati di oggi (già caricati o li carica ora)
+  // Poi aggiorna i KPI con dati reali
+  try {
+    const today = new Date().toISOString().split('T')[0];
+    const res = await fetch(`${WORKER_URL}/api/agenda/today?date=${today}`);
+    const data = await res.json();
+    const raw = data.events || data.appointments || [];
+    const evts = raw.map(e => ({
+      ...e,
+      name: e.name || e.nome || '',
+      time: e.time || e.ora || '',
+      type: e.type || 'visita',
+      email: e.email || '',
+      phone: e.phone || e.telefono || '',
+    }));
 
-  // Bar chart
-  const days = ['L','M','M','G','V','S','D'];
-  const vals = [850, 100, 1200, 200, 950, 100, 450];
-  const maxVal = Math.max(...vals);
+    const visite = evts.filter(e => e.type !== 'break').length;
+    const ops = evts.filter(e => ['fenolizzazione','mono','bi','2dita_mono','2dita_bi'].some(t => (e.type||'').includes(t))).length;
+    const incOggi = evts.reduce((sum, e) => {
+      if (e.type === 'break') return sum;
+      const k = e.type in PREZZI ? e.type : 'visita';
+      return sum + (PREZZI[k] || PREZZI.visita);
+    }, 0);
+    const txRate = visite > 0 ? Math.round((ops / visite) * 100) : 0;
 
-  const barChart = document.getElementById('barChart');
-  const barLabels = document.getElementById('barLabels');
+    document.getElementById('kpiRicavi').textContent = '€' + incOggi.toLocaleString('it-IT');
+    document.getElementById('kpiOp').textContent = ops;
+    document.getElementById('kpiVisite').textContent = visite;
+    document.getElementById('kpiTxRate').textContent = txRate + '%';
+    document.getElementById('kpiRicaviTrend').textContent = 'Incasso stimato oggi';
+    document.getElementById('kpiOpTrend').textContent = ops + ' op. oggi';
+    document.getElementById('kpiVisiteTrend').textContent = visite + ' pazienti oggi';
+    document.getElementById('kpiTxTrend').textContent = ops + '/' + visite + ' operative';
 
-  barChart.innerHTML = vals.map((v, i) => {
-    const h = Math.round((v / maxVal) * 56);
-    const isToday = i === new Date().getDay() - 1;
-    return `<div class="mini-bar ${isToday?'active':''}" style="height:${h}px;" title="€${v}"></div>`;
-  }).join('');
+    // Bar chart — altezze basate sulle ore dei pazienti di oggi
+    const days = ['L','M','M','G','V','S','D'];
+    const dayIdx = (new Date().getDay() + 6) % 7; // 0=lun
+    const vals = [0,0,0,0,0,0,0];
+    vals[dayIdx] = incOggi || 100;
+    const maxVal = Math.max(...vals, 100);
 
-  barLabels.innerHTML = days.map((d, i) => {
-    const isToday = i === new Date().getDay() - 1;
-    return `<span style="${isToday?'font-weight:700;color:var(--teal)':''}}">${d}</span>`;
-  }).join('');
+    const barChart = document.getElementById('barChart');
+    const barLabels = document.getElementById('barLabels');
+    barChart.innerHTML = vals.map((v, i) => {
+      const h = Math.max(4, Math.round((v / maxVal) * 56));
+      const isToday = i === dayIdx;
+      return `<div class="mini-bar ${isToday?'active':''}" style="height:${h}px;" title="€${v}"></div>`;
+    }).join('');
+    barLabels.innerHTML = days.map((d, i) => {
+      const isToday = i === dayIdx;
+      return `<span style="${isToday?'font-weight:700;color:var(--teal)':''}">${d}</span>`;
+    }).join('');
 
-  // Alerts
-  const alerts = [
-    { type: 'danger', icon: '⚠️', text: '<strong>Giulia Ferrari</strong> — Follow-up 2 in scadenza · non ha ancora prenotato il controllo post-op' },
-    { type: 'warn', icon: '⏰', text: '<strong>Marco Bianchi</strong> — Nessuna visita da 45 giorni · possibile follow-up perso' },
-    { type: 'info', icon: '⭐', text: '<strong>3 pazienti</strong> hanno completato il percorso — invia richiesta recensione Google' },
-  ];
+    // Alerts basati sui dati reali
+    const alertsHtml = evts.length > 0
+      ? `<div class="alert-item"><div class="alert-icon info">📅</div><div class="alert-text"><strong>${visite} pazienti</strong> in agenda oggi · ${ops} operazioni programmate</div><span style="color:var(--gray-light);font-size:14px;">›</span></div>`
+      : `<div class="alert-item"><div class="alert-icon info">📅</div><div class="alert-text">Nessun appuntamento trovato per oggi</div></div>`;
 
-  document.getElementById('alertList').innerHTML = alerts.map(a => `
-    <div class="alert-item">
-      <div class="alert-icon ${a.type}">${a.icon}</div>
-      <div class="alert-text">${a.text}</div>
-      <span style="color:var(--gray-light);font-size:14px;">›</span>
-    </div>`).join('');
+    document.getElementById('alertList').innerHTML = alertsHtml;
+
+  } catch(e) {
+    // Fallback se il worker non risponde
+    document.getElementById('kpiRicavi').textContent = '—';
+    document.getElementById('kpiOp').textContent = '—';
+    document.getElementById('kpiVisite').textContent = '—';
+    document.getElementById('kpiTxRate').textContent = '—';
+    document.getElementById('kpiRicaviTrend').textContent = 'Dati non disponibili';
+    document.getElementById('kpiOpTrend').textContent = '';
+    document.getElementById('kpiVisiteTrend').textContent = '';
+    document.getElementById('kpiTxTrend').textContent = '';
+  }
 }
 
 function exportData() {
@@ -2774,6 +2852,105 @@ async function generaRelazione() {
   } catch (e) {
     showToast('❌ Errore connessione Worker');
   }
+}
+
+// ==================== INVIA COPIA A ME ====================
+const OWNER_EMAIL = 'ilmiocoachonline@gmail.com';
+
+async function _inviaCopiaMeDoc(endpoint, payload, tipoLabel) {
+  showToast('⏳ Generazione e invio in corso...');
+  try {
+    // 1. Genera il PDF/HTML
+    const res = await fetch(`${WORKER_URL}${endpoint}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    const data = await res.json();
+    if (!data.success) { showToast('❌ ' + (data.error || 'Errore generazione')); return; }
+
+    // 2. Invia l'HTML via email al dottore
+    const resEmail = await fetch(`${WORKER_URL}/api/email/invia-documento`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        to: OWNER_EMAIL,
+        subject: `[Copia] ${tipoLabel} — ${payload.paziente || ''} — ${new Date().toLocaleDateString('it-IT')}`,
+        html: data.html,
+      }),
+    });
+    const emailData = await resEmail.json();
+    if (emailData.success) {
+      showToast(`✅ Copia inviata a ${OWNER_EMAIL}`);
+    } else {
+      // Fallback: apre la finestra stampa e avvisa
+      openDocPrint(data.html);
+      showToast('📄 Aperto per stampa — invio email non disponibile');
+    }
+  } catch(e) {
+    showToast('❌ Errore connessione Worker');
+  }
+}
+
+async function inviaCopiaMePresenza() {
+  const paziente = document.getElementById('apPaziente').value.trim();
+  const dataVisita = document.getElementById('apDataVisita').value;
+  const oraInizio = document.getElementById('apOraInizio').value;
+  const oraFine = document.getElementById('apOraFine').value;
+  if (!paziente) { showToast('⚠️ Inserisci il nome del paziente'); return; }
+  if (!dataVisita) { showToast('⚠️ Inserisci la data della visita'); return; }
+  await _inviaCopiaMeDoc('/api/attestato-presenza/genera', {
+    paziente, dataVisita,
+    oraInizio: oraInizio || '', oraFine: oraFine || '',
+    dataDocumento: new Date().toISOString().split('T')[0],
+  }, 'Attestato di Presenza');
+}
+
+async function inviaCopiaMeSport() {
+  const paziente = document.getElementById('asPaziente').value.trim();
+  const dataInizio = document.getElementById('asDataInizio').value;
+  const latoEl = document.querySelector('input[name="asLato"]:checked');
+  const lato = latoEl ? latoEl.value : '';
+  if (!paziente) { showToast('⚠️ Inserisci il nome del paziente'); return; }
+  if (!lato) { showToast('⚠️ Seleziona: destro, sinistro o bilateralmente'); return; }
+  if (!dataInizio) { showToast('⚠️ Inserisci la data di inizio esenzione'); return; }
+  await _inviaCopiaMeDoc('/api/attestato-sport/genera', {
+    paziente, lato, dataInizio,
+    dataDocumento: new Date().toISOString().split('T')[0],
+  }, 'Esenzione Sport');
+}
+
+async function inviaCopiaMeGiustifica() {
+  const paziente = document.getElementById('gjPaziente').value.trim();
+  const trattamento = document.getElementById('gjTrattamento').value.trim();
+  if (!paziente) { showToast('⚠️ Inserisci il nome del paziente'); return; }
+  await _inviaCopiaMeDoc('/api/giustifica/genera', { paziente, trattamento }, 'Giustifica Assicurazione');
+}
+
+async function inviaCopiaMeRelazione() {
+  const paziente = document.getElementById('rcPaziente').value.trim();
+  if (!paziente) { showToast('⚠️ Inserisci il nome del paziente'); return; }
+  const payload = {
+    paziente,
+    dataNascita:    document.getElementById('rcDataNascita').value || '',
+    codiceFiscale:  document.getElementById('rcCF').value.trim().toUpperCase() || '',
+    dataIntervento: document.getElementById('rcDataIntervento').value || '',
+    dataDocumento:  new Date().toISOString().split('T')[0],
+    alluceDestro:   document.getElementById('rcAlluceDestro').checked,
+    alluceSinistro: document.getElementById('rcAlluceSinistro').checked,
+    alluceBilat:    document.getElementById('rcAlluceBilat').checked,
+    margineMediale:  document.getElementById('rcMargMediale').checked,
+    margineLaterale: document.getElementById('rcMargLaterale').checked,
+    margineEntrambi: document.getElementById('rcMargEntrambi').checked,
+    quadroClinico: document.getElementById('rcQuadroClinico').value.trim(),
+    sedeDestro:   document.getElementById('rcSedeDestro').checked,
+    sedeSinistro: document.getElementById('rcSedeSinistro').checked,
+    sedeEntrambi: document.getElementById('rcSedeEntrambi').checked,
+    margineTrattMediale:  document.getElementById('rcMTrattMediale').checked,
+    margineTrattLaterale: document.getElementById('rcMTrattLaterale').checked,
+    margineTrattEntrambi: document.getElementById('rcMTrattEntrambi').checked,
+  };
+  await _inviaCopiaMeDoc('/api/relazione/genera', payload, 'Relazione Clinica');
 }
 
 // ==================== FATTURA ====================
