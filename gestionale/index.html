@@ -1786,10 +1786,21 @@ async function loadAgenda() {
     const res = await fetch(`${WORKER_URL}/api/agenda/today`);
     const data = await res.json();
 
-    if (data.events && data.events.length > 0) {
-      appointments = data.events;
-      renderAppointments(data.events);
-      updateAgendaStats(data.events);
+    const raw = data.events || data.appointments || [];
+    // Normalizza i campi dal worker (nome/ora/tipo → name/time/type)
+    const evts = raw.map(e => ({
+      ...e,
+      name: e.name || e.nome || '',
+      time: e.time || e.ora || '',
+      type: e.type || (e.tipo ? 'visita' : 'visita'),
+      email: e.email || '',
+      phone: e.phone || e.telefono || '',
+      note: e.note || e.notes || '',
+    }));
+    if (evts.length > 0) {
+      appointments = evts;
+      renderAppointments(evts);
+      updateAgendaStats(evts);
     } else {
       // DEMO DATA quando Worker non ancora attivo
       loadDemoAgenda();
