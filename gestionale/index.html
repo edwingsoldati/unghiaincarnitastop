@@ -1049,6 +1049,9 @@ html, body {
     <button class="nav-tab" data-screen="documenti" onclick="switchScreen('documenti',this)">
       <span class="tab-icon">📄</span>Documenti
     </button>
+    <button class="nav-tab" data-screen="crm" onclick="switchScreen('crm',this)">
+      <span class="tab-icon">🎯</span>CRM
+    </button>
     <button class="nav-tab" data-screen="admin" onclick="switchScreen('admin',this)">
       <span class="tab-icon">📊</span>Admin
     </button>
@@ -1405,6 +1408,96 @@ html, body {
       </button>
     </div>
   </section>
+
+  <!-- ========== SCREEN: CRM ========== -->
+  <section id="screen-crm" class="screen">
+    <div style="padding:14px 16px 0 16px; display:flex; align-items:center; justify-content:space-between;">
+      <div>
+        <div style="font-family:'Playfair Display',serif; font-size:20px; color:var(--teal-dark); margin-bottom:2px;">Follow-up Pazienti</div>
+        <div class="text-gray">Pazienti da richiamare o da monitorare</div>
+      </div>
+      <button class="btn btn-primary" style="padding:8px 14px; font-size:13px;" onclick="loadCRM()">🔄 Aggiorna</button>
+    </div>
+
+    <!-- Filtri stato -->
+    <div style="display:flex; gap:8px; padding:12px 16px 0; overflow-x:auto; white-space:nowrap;">
+      <button class="tag tag-teal" id="crmFiltroAll" onclick="crmFiltro('all',this)" style="cursor:pointer; padding:6px 14px; font-size:12px;">Tutti</button>
+      <button class="tag" id="crmFiltroRichiamare" onclick="crmFiltro('da_richiamare',this)" style="cursor:pointer; padding:6px 14px; font-size:12px; background:#FFF8E1; color:#F9A825;">Da richiamare</button>
+      <button class="tag" id="crmFiltroInAttesa" onclick="crmFiltro('in_attesa',this)" style="cursor:pointer; padding:6px 14px; font-size:12px; background:#E3F2FD; color:#1565C0;">In attesa risposta</button>
+      <button class="tag" id="crmFiltroPrevInviato" onclick="crmFiltro('preventivo_inviato',this)" style="cursor:pointer; padding:6px 14px; font-size:12px; background:#EDE7F6; color:#4527A0;">Preventivo inviato</button>
+      <button class="tag" id="crmFiltroPianificata" onclick="crmFiltro('operazione_pianificata',this)" style="cursor:pointer; padding:6px 14px; font-size:12px; background:#E8F5E9; color:#2E7D32;">Op. pianificata</button>
+    </div>
+
+    <div id="crmList" style="padding:12px 16px;"></div>
+  </section>
+
+  <!-- Modal CRM Paziente -->
+  <div class="modal-overlay" id="modalCRM">
+    <div class="modal-sheet" style="max-height:92vh; overflow-y:auto;">
+      <div class="modal-handle"></div>
+      <div class="modal-title" id="crmModalTitle">Scheda CRM</div>
+
+      <div style="padding:0 20px 24px;">
+        <!-- Dati anagrafici -->
+        <div style="margin-bottom:16px;">
+          <div class="form-label" style="margin-bottom:6px;">Telefono</div>
+          <div id="crmPhone" style="font-size:15px; font-weight:600; color:var(--teal-dark);"></div>
+        </div>
+
+        <!-- Stato CRM -->
+        <div class="form-group">
+          <label class="form-label">Stato Follow-up</label>
+          <select class="form-select" id="crmStato">
+            <option value="da_richiamare">📞 Da richiamare</option>
+            <option value="in_attesa">⏳ In attesa risposta</option>
+            <option value="preventivo_inviato">📧 Preventivo inviato</option>
+            <option value="operazione_pianificata">🗓️ Operazione pianificata</option>
+            <option value="completato">✅ Completato / operato</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Priorità</label>
+          <select class="form-select" id="crmPriorita">
+            <option value="normale">Normale</option>
+            <option value="alta">🔴 Alta</option>
+            <option value="bassa">⬇️ Bassa</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Data ultimo contatto</label>
+          <input class="form-input" type="date" id="crmUltimoContatto">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Prossimo follow-up</label>
+          <input class="form-input" type="date" id="crmProssimoFollowup">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Importo preventivo inviato (€)</label>
+          <input class="form-input" type="number" id="crmImportoPreventivo" placeholder="es. 350">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Note CRM (storico contatti, obiezioni, ecc.)</label>
+          <textarea class="form-textarea" id="crmNote" rows="4" placeholder="Es: chiamata 12/09, interessata ma vuole pensarci. Richiamo il 20..."></textarea>
+        </div>
+
+        <button class="btn btn-primary btn-full" onclick="salvaCRM()">💾 Salva</button>
+
+        <div style="margin-top:16px; padding-top:16px; border-top:1px solid #eee;">
+          <div class="form-label" style="margin-bottom:10px;">Azioni rapide</div>
+          <div style="display:flex; flex-direction:column; gap:8px;">
+            <button class="btn btn-outline btn-full" onclick="chiamaPazienteCRM()">📞 Chiama</button>
+            <button class="btn btn-outline btn-full" onclick="whatsappPazienteCRM()">💬 WhatsApp</button>
+            <button class="btn btn-outline btn-full" onclick="apriSchedaCompletaCRM()">📋 Apri scheda completa</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <!-- ========== SCREEN: ADMIN ========== -->
   <section id="screen-admin" class="screen">
@@ -3081,6 +3174,194 @@ document.addEventListener('touchmove', (e) => {
   if (e.target.closest('.screen, .screen-slide, .modal-sheet')) return;
   e.preventDefault();
 }, { passive: false });
+
+// ==================== CRM ====================
+let crmData = [];
+let crmFiltroCorrente = 'all';
+let crmPazienteCorrente = null;
+
+async function loadCRM() {
+  const listEl = document.getElementById('crmList');
+  listEl.innerHTML = '<div class="text-gray" style="padding:20px 0; text-align:center;">Caricamento...</div>';
+  try {
+    const res = await fetch(`${WORKER_URL}/api/crm/followup`);
+    if (!res.ok) throw new Error(await res.text());
+    const data = await res.json();
+    crmData = data.pazienti || [];
+    renderCRM();
+  } catch(e) {
+    listEl.innerHTML = `<div class="text-gray" style="padding:20px 0; text-align:center; color:#c62828;">
+      Errore caricamento CRM.<br><small>${e.message}</small><br><br>
+      <button class="btn btn-outline" style="margin-top:8px;" onclick="initDB()">🛠️ Inizializza DB</button>
+    </div>`;
+  }
+}
+
+async function initDB() {
+  try {
+    const res = await fetch(`${WORKER_URL}/api/db/init`, { method: 'POST' });
+    const d = await res.json();
+    if (d.ok) { alert('Database inizializzato! Ora puoi aggiungere pazienti.'); loadCRM(); }
+    else alert('Errore: ' + JSON.stringify(d));
+  } catch(e) { alert('Errore: ' + e.message); }
+}
+
+function crmFiltro(filtro, btn) {
+  crmFiltroCorrente = filtro;
+  document.querySelectorAll('#screen-crm .tag').forEach(b => b.classList.remove('tag-teal'));
+  btn.classList.add('tag-teal');
+  renderCRM();
+}
+
+function renderCRM() {
+  const listEl = document.getElementById('crmList');
+  let filtered = crmData;
+  if (crmFiltroCorrente !== 'all') {
+    if (crmFiltroCorrente === 'operazione_pianificata') {
+      filtered = crmData.filter(p => p.operazione_pianificata);
+    } else if (crmFiltroCorrente === 'preventivo_inviato') {
+      filtered = crmData.filter(p => p.preventivo_inviato && p.stato !== 'operazione_pianificata');
+    } else {
+      filtered = crmData.filter(p => p.stato === crmFiltroCorrente);
+    }
+  }
+
+  if (!filtered.length) {
+    listEl.innerHTML = '<div class="text-gray" style="padding:32px 0; text-align:center;">Nessun paziente in questa categoria 🎉</div>';
+    return;
+  }
+
+  const statoIcon = {
+    da_richiamare: '📞', in_attesa: '⏳', preventivo_inviato: '📧',
+    operazione_pianificata: '🗓️', completato: '✅'
+  };
+  const prioritaColor = { alta: '#c62828', normale: '#333', bassa: '#aaa' };
+
+  listEl.innerHTML = filtered.map(p => {
+    const icon = statoIcon[p.stato] || '👤';
+    const scadenza = p.data_prossimo_followup
+      ? (() => {
+          const diff = Math.round((new Date(p.data_prossimo_followup) - new Date()) / 86400000);
+          if (diff < 0) return `<span style="color:#c62828; font-size:11px;">⚠️ Scaduto ${Math.abs(diff)}gg fa</span>`;
+          if (diff === 0) return `<span style="color:#F57F17; font-size:11px;">📅 Oggi</span>`;
+          return `<span style="color:#555; font-size:11px;">📅 tra ${diff}gg</span>`;
+        })()
+      : '';
+    const colPriorita = prioritaColor[p.priorita] || '#333';
+    return `
+      <div class="patient-list-item" onclick="openCRM(${p.id})" style="align-items:flex-start; padding:14px 0; cursor:pointer;">
+        <div class="patient-list-avatar" style="background:var(--teal-pale); color:var(--teal-dark); font-size:20px; width:42px; height:42px; flex-shrink:0;">
+          ${icon}
+        </div>
+        <div style="flex:1; min-width:0;">
+          <div style="font-weight:600; font-size:15px; color:${colPriorita};">${p.nome} ${p.cognome}</div>
+          <div style="font-size:12px; color:var(--gray); margin-top:2px;">
+            ${p.n_visite || 0} visite · ultima: ${p.ultima_visita ? p.ultima_visita.slice(0,10) : '—'}
+          </div>
+          ${p.note_crm ? `<div style="font-size:12px; color:#555; margin-top:4px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:220px;">${p.note_crm}</div>` : ''}
+          ${scadenza ? `<div style="margin-top:4px;">${scadenza}</div>` : ''}
+        </div>
+        <div style="flex-shrink:0; display:flex; flex-direction:column; align-items:flex-end; gap:6px;">
+          ${p.telefono ? `<a href="https://wa.me/${(p.telefono||'').replace(/\s+/g,'').replace(/^\+/,'')}" target="_blank" onclick="event.stopPropagation()"
+              style="display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:50%;background:#25D366;text-decoration:none;">
+              <img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" style="width:18px;height:18px;"></a>` : ''}
+          ${p.importo_preventivo ? `<span style="font-size:11px;font-weight:600;color:var(--teal-dark);">€${p.importo_preventivo}</span>` : ''}
+        </div>
+      </div>`;
+  }).join('<hr style="border:none; border-top:1px solid #f0f0f0; margin:0;">');
+
+  // Aggiungi pulsante nuovo paziente in fondo
+  listEl.innerHTML += `
+    <div style="padding:20px 0; text-align:center;">
+      <button class="btn btn-outline" onclick="nuovoPazienteCRM()">➕ Aggiungi Paziente</button>
+    </div>`;
+}
+
+function openCRM(pazienteId) {
+  const p = crmData.find(x => x.id === pazienteId);
+  if (!p) return;
+  crmPazienteCorrente = p;
+
+  document.getElementById('crmModalTitle').textContent = `${p.nome} ${p.cognome}`;
+  const phoneClean = (p.telefono||'').replace(/\s+/g,'').replace(/^\+/,'');
+  document.getElementById('crmPhone').innerHTML = p.telefono
+    ? `<a href="https://wa.me/${phoneClean}" target="_blank" style="color:var(--teal-dark);text-decoration:none;">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" style="width:16px;height:16px;vertical-align:middle;margin-right:4px;">${p.telefono}
+       </a>`
+    : '—';
+  document.getElementById('crmStato').value = p.stato || 'da_richiamare';
+  document.getElementById('crmPriorita').value = p.priorita || 'normale';
+  document.getElementById('crmUltimoContatto').value = p.data_ultimo_contatto || '';
+  document.getElementById('crmProssimoFollowup').value = p.data_prossimo_followup || '';
+  document.getElementById('crmImportoPreventivo').value = p.importo_preventivo || '';
+  document.getElementById('crmNote').value = p.note_crm || '';
+
+  document.getElementById('modalCRM').classList.add('open');
+}
+
+async function salvaCRM() {
+  if (!crmPazienteCorrente) return;
+  const payload = {
+    stato: document.getElementById('crmStato').value,
+    priorita: document.getElementById('crmPriorita').value,
+    data_ultimo_contatto: document.getElementById('crmUltimoContatto').value || null,
+    data_prossimo_followup: document.getElementById('crmProssimoFollowup').value || null,
+    note_crm: document.getElementById('crmNote').value,
+    preventivo_inviato: ['preventivo_inviato','operazione_pianificata','completato'].includes(document.getElementById('crmStato').value),
+    importo_preventivo: parseFloat(document.getElementById('crmImportoPreventivo').value) || null,
+    operazione_pianificata: document.getElementById('crmStato').value === 'operazione_pianificata',
+  };
+  try {
+    const res = await fetch(`${WORKER_URL}/api/pazienti/${crmPazienteCorrente.id}/crm`, {
+      method: 'PUT', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    if (!res.ok) throw new Error(await res.text());
+    document.getElementById('modalCRM').classList.remove('open');
+    await loadCRM();
+  } catch(e) { alert('Errore salvataggio: ' + e.message); }
+}
+
+function chiamaPazienteCRM() {
+  if (crmPazienteCorrente?.telefono) window.open(`tel:${crmPazienteCorrente.telefono}`);
+}
+function whatsappPazienteCRM() {
+  if (!crmPazienteCorrente?.telefono) return;
+  const ph = crmPazienteCorrente.telefono.replace(/\s+/g,'').replace(/^\+/,'');
+  const msg = encodeURIComponent(`Buongiorno ${crmPazienteCorrente.nome}! La contatto da UnghiaIncarnitaStop riguardo al suo trattamento. `);
+  window.open(`https://wa.me/${ph}?text=${msg}`);
+}
+function apriSchedaCompletaCRM() {
+  document.getElementById('modalCRM').classList.remove('open');
+  // Apri come se fosse paziente dall'agenda
+  if (crmPazienteCorrente) {
+    openPatient(String(crmPazienteCorrente.id));
+  }
+}
+
+async function nuovoPazienteCRM() {
+  const nome = prompt('Nome:');
+  if (!nome) return;
+  const cognome = prompt('Cognome:');
+  if (!cognome) return;
+  const telefono = prompt('Telefono (con prefisso +39):');
+  try {
+    const res = await fetch(`${WORKER_URL}/api/pazienti`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ nome, cognome, telefono: telefono||null }),
+    });
+    const d = await res.json();
+    if (d.ok) { await loadCRM(); }
+    else alert('Errore: ' + JSON.stringify(d));
+  } catch(e) { alert('Errore: ' + e.message); }
+}
+
+// Carica CRM quando si apre il tab
+const _origSwitchScreen = switchScreen;
+switchScreen = function(name, tabEl) {
+  _origSwitchScreen(name, tabEl);
+  if (name === 'crm' && !crmData.length) loadCRM();
+};
 
 console.log('🦴 Gestionale UnghiaIncarnitaStop v1.0 — Ready');
 </script>
