@@ -1,0 +1,2887 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#006D6D">
+<title>Gestionale — UnghiaIncarnitaStop</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=Playfair+Display:wght@600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --teal: #006D6D;
+  --teal-dark: #004F4F;
+  --teal-light: #009999;
+  --teal-pale: #E8F5F5;
+  --teal-mid: #7DCFCF;
+  --black: #0A0A0A;
+  --white: #FAFAF8;
+  --cream: #F5F0E8;
+  --gray: #5A5A5A;
+  --gray-light: #E4E4E0;
+  --amber: #FBBC04;
+  --red: #E53935;
+  --green: #2E7D32;
+  --green-light: #E8F5E9;
+  --red-light: #FFEBEE;
+  --orange: #F57C00;
+  --orange-light: #FFF3E0;
+
+  --radius: 16px;
+  --radius-sm: 10px;
+  --shadow: 0 2px 16px rgba(0,109,109,0.10);
+  --shadow-lg: 0 8px 32px rgba(0,109,109,0.18);
+
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 20px);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+html, body {
+  height: 100%;
+  font-family: 'DM Sans', sans-serif;
+  background: #f0f4f4;
+  color: var(--black);
+  overflow: hidden;
+}
+
+/* ==================== APP SHELL ==================== */
+#app {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  height: -webkit-fill-available;
+  max-width: 430px;
+  margin: 0 auto;
+  background: var(--white);
+  position: relative;
+  overflow: hidden;
+}
+
+/* ==================== HEADER ==================== */
+.app-header {
+  background: var(--teal-dark);
+  color: white;
+  padding: calc(var(--safe-top) + 14px) 20px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+  position: relative;
+  z-index: 10;
+}
+.header-logo {
+  height: 32px;
+  object-fit: contain;
+}
+.header-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 17px;
+  color: white;
+  flex: 1;
+  text-align: center;
+}
+.header-action {
+  width: 36px; height: 36px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.15);
+  border: none;
+  color: white;
+  font-size: 18px;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+}
+
+/* ==================== NAV TABS ==================== */
+.nav-tabs {
+  display: flex;
+  background: var(--teal-dark);
+  border-top: 1px solid rgba(255,255,255,0.1);
+  flex-shrink: 0;
+}
+.nav-tab {
+  flex: 1;
+  padding: 10px 4px 12px;
+  border: none;
+  background: transparent;
+  color: rgba(255,255,255,0.55);
+  font-size: 10px;
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 500;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  cursor: pointer;
+  transition: color 0.2s;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+}
+.nav-tab .tab-icon { font-size: 20px; }
+.nav-tab.active { color: white; }
+.nav-tab.active .tab-icon { transform: scale(1.08); }
+
+/* ==================== SCREEN ==================== */
+.screen {
+  display: none;
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: calc(var(--safe-bottom) + 16px);
+}
+.screen.active { display: block; }
+
+/* ==================== AGENDA ==================== */
+.agenda-date-bar {
+  background: var(--teal-pale);
+  padding: 12px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--gray-light);
+}
+.agenda-date-label {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--teal-dark);
+}
+.agenda-date-sub {
+  font-size: 12px;
+  color: var(--gray);
+  margin-top: 1px;
+}
+.refresh-btn {
+  background: var(--teal);
+  color: white;
+  border: none;
+  border-radius: 20px;
+  padding: 7px 14px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex; align-items: center; gap: 5px;
+}
+
+.agenda-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  padding: 14px 16px;
+}
+.stat-card {
+  background: white;
+  border-radius: var(--radius-sm);
+  padding: 12px;
+  text-align: center;
+  box-shadow: var(--shadow);
+}
+.stat-num {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--teal);
+  line-height: 1;
+}
+.stat-lbl {
+  font-size: 10px;
+  color: var(--gray);
+  margin-top: 3px;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.appointments-list {
+  padding: 0 16px;
+}
+.section-title {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--gray);
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  padding: 12px 4px 8px;
+}
+
+.appt-card {
+  background: white;
+  border-radius: var(--radius);
+  padding: 14px 16px;
+  margin-bottom: 10px;
+  box-shadow: var(--shadow);
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  cursor: pointer;
+  transition: transform 0.15s, box-shadow 0.15s;
+  border-left: 4px solid var(--teal-mid);
+  position: relative;
+  overflow: hidden;
+}
+.appt-card:active { transform: scale(0.985); }
+.appt-card.type-op { border-left-color: var(--orange); }
+.appt-card.type-followup { border-left-color: var(--amber); }
+.appt-card.type-done { border-left-color: var(--green); opacity: 0.65; }
+
+.appt-time {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--teal-dark);
+  min-width: 44px;
+}
+.appt-info { flex: 1; min-width: 0; }
+.appt-name {
+  font-size: 16px;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.appt-type {
+  font-size: 12px;
+  color: var(--gray);
+  margin-top: 2px;
+}
+.appt-badge {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 20px;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  flex-shrink: 0;
+}
+.badge-visita { background: var(--teal-pale); color: var(--teal-dark); }
+.badge-op { background: var(--orange-light); color: var(--orange); }
+.badge-followup { background: #FFF8E1; color: #F9A825; }
+.badge-done { background: var(--green-light); color: var(--green); }
+
+.appt-chevron {
+  color: var(--gray-light);
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 50px 30px;
+  color: var(--gray);
+}
+.empty-state .empty-icon { font-size: 48px; margin-bottom: 12px; }
+.empty-state p { font-size: 14px; line-height: 1.5; }
+
+/* ==================== PATIENT CARD ==================== */
+.screen-slide {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: var(--white);
+  transform: translateX(100%);
+  transition: transform 0.3s cubic-bezier(0.4,0,0.2,1);
+  z-index: 100;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.screen-slide.open { transform: translateX(0); }
+
+.slide-header {
+  background: var(--teal-dark);
+  color: white;
+  padding: calc(var(--safe-top) + 14px) 20px 14px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  position: sticky; top: 0; z-index: 10;
+}
+.back-btn {
+  background: rgba(255,255,255,0.15);
+  border: none;
+  color: white;
+  width: 36px; height: 36px;
+  border-radius: 50%;
+  font-size: 18px;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.slide-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 18px;
+  flex: 1;
+}
+.slide-subtitle {
+  font-size: 12px;
+  color: rgba(255,255,255,0.75);
+  margin-top: 1px;
+}
+
+.patient-hero {
+  background: linear-gradient(135deg, var(--teal) 0%, var(--teal-dark) 100%);
+  padding: 20px;
+  color: white;
+}
+.patient-avatar {
+  width: 60px; height: 60px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.2);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 24px;
+  font-weight: 700;
+  margin-bottom: 12px;
+  border: 2px solid rgba(255,255,255,0.3);
+}
+.patient-name-hero {
+  font-size: 22px;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+.patient-meta {
+  font-size: 13px;
+  color: rgba(255,255,255,0.8);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.patient-meta span { display: flex; align-items: center; gap: 4px; }
+
+.patient-tags {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+  flex-wrap: wrap;
+}
+.ptag {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 20px;
+  background: rgba(255,255,255,0.18);
+  color: white;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.card-section {
+  margin: 12px 16px;
+  background: white;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+.card-section-title {
+  padding: 14px 16px 10px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: var(--gray);
+  border-bottom: 1px solid var(--gray-light);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.card-row {
+  padding: 12px 16px;
+  border-bottom: 1px solid #f5f5f5;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+.card-row:last-child { border-bottom: none; }
+.card-row-label {
+  font-size: 12px;
+  color: var(--gray);
+  min-width: 100px;
+  padding-top: 2px;
+  flex-shrink: 0;
+}
+.card-row-value {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--black);
+  flex: 1;
+}
+
+/* Photo grid */
+.photo-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2px;
+  padding: 2px;
+}
+.photo-thumb {
+  aspect-ratio: 1;
+  background: var(--teal-pale);
+  overflow: hidden;
+  position: relative;
+  cursor: pointer;
+}
+.photo-thumb img { width: 100%; height: 100%; object-fit: cover; }
+.photo-thumb .photo-date {
+  position: absolute;
+  bottom: 4px; left: 4px;
+  font-size: 9px;
+  font-weight: 600;
+  background: rgba(0,0,0,0.55);
+  color: white;
+  padding: 2px 5px;
+  border-radius: 4px;
+}
+.photo-add {
+  aspect-ratio: 1;
+  background: var(--teal-pale);
+  border: 2px dashed var(--teal-mid);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  gap: 4px;
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--teal);
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+.photo-add .photo-add-icon { font-size: 24px; }
+
+/* Clinical timeline */
+.timeline-item {
+  padding: 12px 16px;
+  border-bottom: 1px solid #f5f5f5;
+  position: relative;
+  padding-left: 44px;
+}
+.timeline-item:last-child { border-bottom: none; }
+.timeline-dot {
+  position: absolute;
+  left: 16px; top: 16px;
+  width: 12px; height: 12px;
+  border-radius: 50%;
+  background: var(--teal-mid);
+}
+.timeline-item.op .timeline-dot { background: var(--orange); }
+.timeline-item.followup .timeline-dot { background: var(--amber); }
+.timeline-date {
+  font-size: 11px;
+  color: var(--gray);
+  margin-bottom: 3px;
+}
+.timeline-text {
+  font-size: 13px;
+  line-height: 1.4;
+  color: var(--black);
+}
+
+/* Action buttons */
+.action-bar {
+  padding: 14px 16px;
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.btn {
+  flex: 1;
+  min-width: 120px;
+  padding: 14px 16px;
+  border-radius: var(--radius-sm);
+  border: none;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: transform 0.15s, opacity 0.15s;
+}
+.btn:active { transform: scale(0.96); }
+.btn-primary { background: var(--teal); color: white; }
+.btn-danger { background: var(--red); color: white; }
+.btn-orange { background: var(--orange); color: white; }
+.btn-outline {
+  background: transparent;
+  color: var(--teal);
+  border: 2px solid var(--teal);
+}
+.btn-sm { padding: 9px 14px; font-size: 13px; flex: none; min-width: auto; }
+.btn-full { width: 100%; flex: none; }
+
+/* ==================== PREVENTIVO ==================== */
+.preventivo-form {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.form-group { display: flex; flex-direction: column; gap: 6px; }
+.form-label {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--gray);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.form-select, .form-input, .form-textarea {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 15px;
+  padding: 13px 14px;
+  border: 2px solid var(--gray-light);
+  border-radius: var(--radius-sm);
+  background: white;
+  color: var(--black);
+  appearance: none;
+  -webkit-appearance: none;
+  outline: none;
+  transition: border-color 0.2s;
+  width: 100%;
+}
+.form-select:focus, .form-input:focus, .form-textarea:focus {
+  border-color: var(--teal);
+}
+.form-textarea { resize: none; min-height: 100px; }
+
+.price-display {
+  background: var(--teal-pale);
+  border-radius: var(--radius);
+  padding: 20px;
+  text-align: center;
+}
+.price-label {
+  font-size: 12px;
+  color: var(--gray);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 6px;
+}
+.price-amount {
+  font-size: 40px;
+  font-weight: 700;
+  color: var(--teal-dark);
+  line-height: 1;
+}
+.price-sub {
+  font-size: 13px;
+  color: var(--gray);
+  margin-top: 6px;
+}
+
+.price-breakdown {
+  background: white;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--gray-light);
+  overflow: hidden;
+  margin-top: 10px;
+}
+.price-line {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px 14px;
+  border-bottom: 1px solid #f5f5f5;
+  font-size: 13px;
+}
+.price-line:last-child { border-bottom: none; }
+.price-line.total {
+  font-weight: 700;
+  font-size: 15px;
+  background: var(--teal-pale);
+}
+.price-line .striked {
+  text-decoration: line-through;
+  color: var(--gray);
+  font-size: 12px;
+}
+
+.discount-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 4px;
+}
+.discount-input {
+  width: 80px;
+  padding: 10px 12px;
+  font-size: 15px;
+  font-weight: 700;
+  text-align: center;
+  border: 2px solid var(--gray-light);
+  border-radius: var(--radius-sm);
+  font-family: 'DM Sans', sans-serif;
+  outline: none;
+}
+.discount-input:focus { border-color: var(--teal); }
+.discount-label { font-size: 13px; color: var(--gray); flex: 1; }
+
+/* Preview email */
+.email-preview {
+  background: #f9f9f7;
+  border: 1px solid var(--gray-light);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  margin-top: 14px;
+}
+.email-header-bar {
+  background: var(--gray-light);
+  padding: 10px 14px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--gray);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.email-body { padding: 14px; font-size: 13px; line-height: 1.6; color: var(--black); }
+.email-body strong { color: var(--teal-dark); }
+
+/* ==================== ADMIN / DASHBOARD ==================== */
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  padding: 16px;
+}
+.kpi-card {
+  background: white;
+  border-radius: var(--radius);
+  padding: 16px;
+  box-shadow: var(--shadow);
+}
+.kpi-icon { font-size: 24px; margin-bottom: 8px; }
+.kpi-num {
+  font-size: 26px;
+  font-weight: 700;
+  color: var(--teal-dark);
+  line-height: 1;
+}
+.kpi-lbl {
+  font-size: 11px;
+  color: var(--gray);
+  margin-top: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+.kpi-trend {
+  font-size: 11px;
+  font-weight: 600;
+  margin-top: 6px;
+}
+.trend-up { color: var(--green); }
+.trend-down { color: var(--red); }
+
+.chart-card {
+  background: white;
+  border-radius: var(--radius);
+  padding: 16px;
+  box-shadow: var(--shadow);
+  margin: 0 16px 12px;
+}
+.chart-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--gray);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 14px;
+}
+
+.mini-bar-chart {
+  display: flex;
+  align-items: flex-end;
+  gap: 6px;
+  height: 60px;
+}
+.mini-bar {
+  flex: 1;
+  background: var(--teal-pale);
+  border-radius: 4px 4px 0 0;
+  position: relative;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.mini-bar:hover { background: var(--teal-mid); }
+.mini-bar.active { background: var(--teal); }
+.mini-bar-lbl {
+  display: flex;
+  gap: 6px;
+  margin-top: 6px;
+}
+.mini-bar-lbl span {
+  flex: 1;
+  text-align: center;
+  font-size: 10px;
+  color: var(--gray);
+}
+
+.alert-list {
+  padding: 0 16px 12px;
+}
+.alert-item {
+  background: white;
+  border-radius: var(--radius-sm);
+  padding: 12px 14px;
+  margin-bottom: 8px;
+  box-shadow: var(--shadow);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+}
+.alert-icon {
+  width: 36px; height: 36px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px;
+  flex-shrink: 0;
+}
+.alert-icon.warn { background: var(--orange-light); }
+.alert-icon.danger { background: var(--red-light); }
+.alert-icon.info { background: var(--teal-pale); }
+.alert-text { flex: 1; font-size: 13px; line-height: 1.4; }
+.alert-text strong { font-weight: 600; }
+
+/* ==================== PAZIENTI LIST ==================== */
+.search-bar {
+  padding: 12px 16px;
+  position: sticky;
+  top: 0;
+  background: var(--white);
+  z-index: 5;
+  border-bottom: 1px solid var(--gray-light);
+}
+.search-input {
+  width: 100%;
+  padding: 12px 44px 12px 44px;
+  border: 2px solid var(--gray-light);
+  border-radius: 24px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 15px;
+  background: white;
+  outline: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 24 24' fill='none' stroke='%235A5A5A' stroke-width='2'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cpath d='m21 21-4.35-4.35'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: 14px center;
+}
+.search-input:focus { border-color: var(--teal); }
+
+.patient-list-item {
+  padding: 14px 20px;
+  border-bottom: 1px solid #f3f3f3;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.patient-list-item:active { background: var(--teal-pale); }
+.patient-list-avatar {
+  width: 44px; height: 44px;
+  border-radius: 50%;
+  background: var(--teal-pale);
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 700;
+  font-size: 16px;
+  color: var(--teal-dark);
+  flex-shrink: 0;
+}
+.patient-list-info { flex: 1; min-width: 0; }
+.patient-list-name {
+  font-weight: 600;
+  font-size: 15px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.patient-list-meta { font-size: 12px; color: var(--gray); margin-top: 2px; }
+.patient-list-badge { flex-shrink: 0; }
+
+/* ==================== VOICE NOTE ==================== */
+.voice-btn {
+  width: 64px; height: 64px;
+  border-radius: 50%;
+  background: var(--red);
+  border: none;
+  color: white;
+  font-size: 26px;
+  cursor: pointer;
+  box-shadow: 0 4px 20px rgba(229,57,53,0.35);
+  display: flex; align-items: center; justify-content: center;
+  transition: transform 0.2s;
+  position: relative;
+}
+.voice-btn.recording {
+  animation: pulse-red 1s infinite;
+}
+@keyframes pulse-red {
+  0%, 100% { box-shadow: 0 4px 20px rgba(229,57,53,0.35); }
+  50% { box-shadow: 0 4px 30px rgba(229,57,53,0.7), 0 0 0 8px rgba(229,57,53,0.15); }
+}
+.voice-container {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 16px;
+  background: var(--cream);
+  border-radius: var(--radius-sm);
+}
+.voice-text {
+  flex: 1;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--black);
+  min-height: 44px;
+}
+.voice-status {
+  font-size: 11px;
+  color: var(--gray);
+  margin-top: 4px;
+}
+
+/* ==================== MODAL ==================== */
+.modal-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  z-index: 200;
+  align-items: flex-end;
+  backdrop-filter: blur(2px);
+}
+.modal-overlay.open { display: flex; }
+.modal-sheet {
+  background: white;
+  border-radius: 24px 24px 0 0;
+  padding: 0 0 calc(var(--safe-bottom) + 24px);
+  width: 100%;
+  max-width: 430px;
+  margin: 0 auto;
+  animation: slide-up 0.3s cubic-bezier(0.4,0,0.2,1);
+}
+@keyframes slide-up {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+.modal-handle {
+  width: 40px; height: 4px;
+  background: var(--gray-light);
+  border-radius: 2px;
+  margin: 14px auto 20px;
+}
+.modal-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 20px;
+  text-align: center;
+  margin-bottom: 6px;
+  padding: 0 24px;
+}
+.modal-sub {
+  font-size: 13px;
+  color: var(--gray);
+  text-align: center;
+  margin-bottom: 24px;
+  padding: 0 24px;
+  line-height: 1.5;
+}
+.modal-body { padding: 0 20px; }
+.modal-footer {
+  padding: 16px 20px 0;
+  display: flex;
+  gap: 10px;
+}
+
+/* Decision buttons */
+.decision-btn {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px;
+  border-radius: var(--radius-sm);
+  border: 2px solid transparent;
+  background: white;
+  cursor: pointer;
+  transition: all 0.2s;
+  width: 100%;
+  margin-bottom: 10px;
+  text-align: left;
+}
+.decision-btn:active { transform: scale(0.98); }
+.decision-btn.green { border-color: var(--green); }
+.decision-btn.green:hover { background: var(--green-light); }
+.decision-btn.orange { border-color: var(--orange); }
+.decision-btn.orange:hover { background: var(--orange-light); }
+.decision-icon {
+  width: 48px; height: 48px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 22px;
+  flex-shrink: 0;
+}
+.decision-btn.green .decision-icon { background: var(--green-light); }
+.decision-btn.orange .decision-icon { background: var(--orange-light); }
+.decision-label { font-weight: 700; font-size: 15px; }
+.decision-desc { font-size: 12px; color: var(--gray); margin-top: 2px; }
+
+/* Toast */
+.toast {
+  position: fixed;
+  bottom: calc(var(--safe-bottom) + 20px);
+  left: 50%; transform: translateX(-50%);
+  background: var(--black);
+  color: white;
+  padding: 12px 20px;
+  border-radius: 24px;
+  font-size: 14px;
+  font-weight: 500;
+  z-index: 500;
+  display: none;
+  white-space: nowrap;
+  box-shadow: var(--shadow-lg);
+  animation: toast-in 0.25s ease;
+}
+@keyframes toast-in {
+  from { opacity: 0; transform: translateX(-50%) translateY(10px); }
+  to { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+
+/* Loading spinner */
+.spinner {
+  width: 20px; height: 20px;
+  border: 2px solid rgba(255,255,255,0.3);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  display: inline-block;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ==================== UTILITY ==================== */
+.mt-8 { margin-top: 8px; }
+.mt-16 { margin-top: 16px; }
+.text-center { text-align: center; }
+.text-gray { color: var(--gray); font-size: 13px; }
+.divider { height: 8px; background: #f3f3f3; }
+.tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 4px 9px;
+  border-radius: 20px;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+.tag-teal { background: var(--teal-pale); color: var(--teal-dark); }
+.tag-orange { background: var(--orange-light); color: var(--orange); }
+.tag-green { background: var(--green-light); color: var(--green); }
+</style>
+</head>
+<body>
+
+<!-- ========== LOGIN SCREEN ========== -->
+<div id="loginScreen" style="
+  position:fixed;inset:0;z-index:9999;
+  background:var(--teal);
+  display:flex;align-items:center;justify-content:center;
+  flex-direction:column;gap:0;
+">
+  <div style="text-align:center;padding:0 32px;width:100%;max-width:360px;">
+    <div style="font-size:48px;margin-bottom:12px;">🦶</div>
+    <div style="font-family:'Playfair Display',serif;color:white;font-size:22px;font-weight:600;margin-bottom:4px;">Gestionale</div>
+    <div style="color:rgba(255,255,255,0.7);font-size:13px;margin-bottom:32px;">UnghiaIncarnitaStop</div>
+    <input id="loginPassword" type="password" placeholder="Password"
+      style="
+        width:100%;box-sizing:border-box;
+        padding:14px 16px;border-radius:12px;border:none;
+        font-size:16px;font-family:'DM Sans',sans-serif;
+        background:rgba(255,255,255,0.15);color:white;
+        outline:none;margin-bottom:12px;
+        -webkit-text-fill-color:white;
+      "
+      placeholder="Password"
+      onkeydown="if(event.key==='Enter')checkLogin()"
+    >
+    <div id="loginError" style="color:#FFB3B3;font-size:13px;min-height:20px;margin-bottom:8px;"></div>
+    <button onclick="checkLogin()" style="
+      width:100%;padding:14px;border-radius:12px;border:none;
+      background:white;color:var(--teal);font-weight:700;font-size:15px;
+      font-family:'DM Sans',sans-serif;cursor:pointer;
+    ">Entra →</button>
+  </div>
+</div>
+
+<div id="app">
+
+  <!-- HEADER -->
+  <header class="app-header">
+    <div style="width:36px"></div>
+    <span class="header-title" id="headerTitle">Agenda</span>
+    <button class="header-action" id="headerBtn" onclick="openAdminModal()">⚙️</button>
+  </header>
+
+  <!-- NAV -->
+  <nav class="nav-tabs">
+    <button class="nav-tab active" data-screen="agenda" onclick="switchScreen('agenda',this)">
+      <span class="tab-icon">📅</span>Agenda
+    </button>
+    <button class="nav-tab" data-screen="pazienti" onclick="switchScreen('pazienti',this)">
+      <span class="tab-icon">👥</span>Pazienti
+    </button>
+    <button class="nav-tab" data-screen="preventivo" onclick="switchScreen('preventivo',this)">
+      <span class="tab-icon">💶</span>Preventivo
+    </button>
+    <button class="nav-tab" data-screen="documenti" onclick="switchScreen('documenti',this)">
+      <span class="tab-icon">📄</span>Documenti
+    </button>
+    <button class="nav-tab" data-screen="admin" onclick="switchScreen('admin',this)">
+      <span class="tab-icon">📊</span>Admin
+    </button>
+  </nav>
+
+  <!-- ========== SCREEN: AGENDA ========== -->
+  <section id="screen-agenda" class="screen active">
+    <div class="agenda-date-bar">
+      <div>
+        <div class="agenda-date-label" id="agendaDateLabel">Oggi</div>
+        <div class="agenda-date-sub" id="agendaDateSub">Carico agenda...</div>
+      </div>
+      <button class="refresh-btn" onclick="loadAgenda()">↻ Aggiorna</button>
+    </div>
+
+    <div class="agenda-stats">
+      <div class="stat-card">
+        <div class="stat-num" id="statTot">—</div>
+        <div class="stat-lbl">Visite</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num" id="statOp">—</div>
+        <div class="stat-lbl">Operazioni</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num" id="statInc">—</div>
+        <div class="stat-lbl">Incasso est.</div>
+      </div>
+    </div>
+
+    <div class="appointments-list" id="appointmentsList">
+      <div class="section-title">Appuntamenti di oggi</div>
+      <div class="empty-state">
+        <div class="empty-icon">🔄</div>
+        <p>Caricamento appuntamenti<br>da Calendly...</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== SCREEN: PAZIENTI ========== -->
+  <section id="screen-pazienti" class="screen">
+    <div class="search-bar">
+      <input type="search" class="search-input" placeholder="Cerca paziente..." id="patientsSearch"
+             oninput="filterPatients(this.value)">
+    </div>
+    <div id="patientsList"></div>
+  </section>
+
+  <!-- ========== SCREEN: PREVENTIVO ========== -->
+  <section id="screen-preventivo" class="screen">
+    <div style="padding: 14px 16px 0;">
+      <div style="font-family:'Playfair Display',serif; font-size:20px; color:var(--teal-dark); margin-bottom:4px;">
+        Genera Preventivo
+      </div>
+      <div class="text-gray">Configura il trattamento e invia via email</div>
+    </div>
+
+    <div class="preventivo-form">
+      <div class="form-group">
+        <label class="form-label">Paziente</label>
+        <input class="form-input" id="prevPaziente" placeholder="Nome Cognome" oninput="updatePreventivo()">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Email Paziente</label>
+        <input class="form-input" type="email" id="prevEmail" placeholder="paziente@email.com">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Tipo Intervento</label>
+        <select class="form-select" id="prevTipo" onchange="updatePreventivo()">
+          <option value="">-- Seleziona --</option>
+          <option value="mono">Fenolizzazione Monolaterale</option>
+          <option value="bi">Fenolizzazione Bilaterale</option>
+          <option value="2dita_mono">2 Dita — Monolaterale</option>
+          <option value="2dita_bi">2 Dita — Bilaterale</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Dito/i Interessati</label>
+        <input class="form-input" id="prevDito" placeholder="es. Alluce dx, Alluce sx" oninput="updatePreventivo()">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Visita già pagata (€)</label>
+        <input class="form-input" type="number" id="prevVisitaPagata" placeholder="es. 80 · lascia 0 se non ha ancora pagato" min="0" oninput="updatePreventivo()">
+        <div style="font-size:11px;color:var(--gray);margin-top:4px;">💡 Se ha già pagato la prima visita, inserisci l'importo — verrà detratto dal preventivo se prenota entro 30 giorni</div>
+      </div>
+
+      <!-- PRICE DISPLAY -->
+      <div class="price-display" id="priceDisplay" style="display:none;">
+        <div class="price-label">Totale Preventivo</div>
+        <div class="price-amount" id="priceAmount">€0</div>
+        <div class="price-sub" id="priceSub"></div>
+        <div class="price-breakdown" id="priceBreakdown"></div>
+      </div>
+
+      <!-- SCONTO MANUALE -->
+      <div class="form-group" id="scontoManuale" style="display:none;">
+        <label class="form-label">Prezzo Finale (modifica se necessario)</label>
+        <div class="discount-row">
+          <input type="number" class="discount-input" id="prevPrezzoFinale" placeholder="0" onchange="updateFinalPrice()">
+          <span class="discount-label">€ — puoi modificare il totale direttamente</span>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Note Aggiuntive (opzionale)</label>
+        <textarea class="form-textarea" id="prevNote" placeholder="Aggiunta nel corpo dell'email..." rows="3"></textarea>
+      </div>
+
+      <!-- EMAIL PREVIEW -->
+      <div id="emailPreviewContainer" style="display:none;">
+        <div class="form-label" style="padding:0 0 8px;">Anteprima Email</div>
+        <div class="email-preview">
+          <div class="email-header-bar">
+            <span>📧 Email al paziente</span>
+            <span id="prevSubject" style="font-size:10px; text-transform:none; letter-spacing:0; font-weight:400; color:var(--teal-dark)">—</span>
+          </div>
+          <div class="email-body" id="emailBody"></div>
+        </div>
+      </div>
+
+      <button class="btn btn-primary btn-full" onclick="sendPreventivo()" id="sendPrevBtn" disabled>
+        <span>📧 Invia Preventivo per Email</span>
+      </button>
+      <button class="btn btn-outline btn-full mt-8" onclick="copyPreventivo()">
+        📋 Copia testo preventivo
+      </button>
+    </div>
+  </section>
+
+  <!-- ========== SCREEN: DOCUMENTI ========== -->
+  <section id="screen-documenti" class="screen">
+    <div style="padding:14px 16px 0;">
+      <div style="font-family:'Playfair Display',serif; font-size:20px; color:var(--teal-dark); margin-bottom:4px;">
+        Documenti
+      </div>
+      <div class="text-gray">Genera documenti stampabili per il paziente</div>
+    </div>
+
+    <!-- ATTESTATO DI PRESENZA -->
+    <div class="preventivo-form" style="padding-top:8px;">
+      <div style="background:var(--teal-pale); border-radius:12px; padding:14px 16px; margin-bottom:16px;">
+        <div style="font-weight:600; font-size:15px; color:var(--teal-dark); margin-bottom:2px;">📋 Attestato di Presenza</div>
+        <div style="font-size:12px; color:var(--gray);">Prova della visita podologica — per usi consentiti dalla legge</div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Paziente (Nome e Cognome)</label>
+        <input class="form-input" id="apPaziente" placeholder="es. Maria Rossi">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Data della visita</label>
+        <input class="form-input" type="date" id="apDataVisita">
+      </div>
+      <div style="display:flex; gap:12px; margin-bottom:16px;">
+        <div class="form-group" style="flex:1;margin-bottom:0;">
+          <label class="form-label">Ora inizio</label>
+          <input class="form-input" type="time" id="apOraInizio">
+        </div>
+        <div class="form-group" style="flex:1;margin-bottom:0;">
+          <label class="form-label">Ora fine</label>
+          <input class="form-input" type="time" id="apOraFine">
+        </div>
+      </div>
+      <button class="btn btn-primary btn-full" onclick="generaAttPresenza()">
+        🖨️ Genera e Stampa Attestato di Presenza
+      </button>
+    </div>
+
+    <div style="height:1px; background:var(--gray-light); margin:8px 16px 20px;"></div>
+
+    <!-- ATTESTATO ESENZIONE SPORT -->
+    <div class="preventivo-form" style="padding-top:8px;">
+      <div style="background:#FFF3E0; border-radius:12px; padding:14px 16px; margin-bottom:16px;">
+        <div style="font-weight:600; font-size:15px; color:#E65100; margin-bottom:2px;">🏃 Esenzione Sport Scolastica</div>
+        <div style="font-size:12px; color:var(--gray);">Esenzione 15 giorni dopo trattamento onicocriptosi</div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Paziente (Nome e Cognome)</label>
+        <input class="form-input" id="asPaziente" placeholder="es. Luca Bianchi">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Alluce trattato</label>
+        <div style="display:flex; gap:10px; margin-top:4px;">
+          <label style="flex:1;display:flex;align-items:center;gap:8px;cursor:pointer;background:var(--gray-light);border-radius:10px;padding:10px 12px;">
+            <input type="radio" name="asLato" value="destro" id="asDestro" style="width:18px;height:18px;cursor:pointer;accent-color:var(--teal);">
+            <span style="font-size:14px;">Destro</span>
+          </label>
+          <label style="flex:1;display:flex;align-items:center;gap:8px;cursor:pointer;background:var(--gray-light);border-radius:10px;padding:10px 12px;">
+            <input type="radio" name="asLato" value="sinistro" id="asSinistro" style="width:18px;height:18px;cursor:pointer;accent-color:var(--teal);">
+            <span style="font-size:14px;">Sinistro</span>
+          </label>
+          <label style="flex:1;display:flex;align-items:center;gap:8px;cursor:pointer;background:var(--gray-light);border-radius:10px;padding:10px 12px;">
+            <input type="radio" name="asLato" value="bilateralmente" id="asBilat" style="width:18px;height:18px;cursor:pointer;accent-color:var(--teal);">
+            <span style="font-size:14px;">Bilat.</span>
+          </label>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Data inizio esenzione</label>
+        <input class="form-input" type="date" id="asDataInizio">
+      </div>
+      <button class="btn btn-primary btn-full" onclick="generaAttSport()">
+        🖨️ Genera e Stampa Esenzione Sport
+      </button>
+    </div>
+
+    <div style="height:1px; background:var(--gray-light); margin:8px 16px 20px;"></div>
+
+    <!-- GIUSTIFICA ASSICURAZIONE -->
+    <div class="preventivo-form" style="padding-top:8px;">
+      <div style="background:#E8F5E9; border-radius:12px; padding:14px 16px; margin-bottom:16px;">
+        <div style="font-weight:600; font-size:15px; color:var(--green); margin-bottom:2px;">📝 Giustifica Assicurazione</div>
+        <div style="font-size:12px; color:var(--gray);">Lettera di attestazione per rimborso assicurativo</div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Paziente</label>
+        <input class="form-input" id="gjPaziente" placeholder="Nome Cognome">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Trattamento eseguito</label>
+        <input class="form-input" id="gjTrattamento" placeholder="es. Fenolizzazione monolaterale alluce dx">
+      </div>
+      <button class="btn btn-outline btn-full" onclick="generaGiustifica()">
+        🖨️ Genera Giustifica Assicurazione
+      </button>
+    </div>
+
+    <div style="height:1px; background:var(--gray-light); margin:8px 16px 20px;"></div>
+
+    <!-- RELAZIONE CLINICA -->
+    <div class="preventivo-form" style="padding-top:8px; padding-bottom:32px;">
+      <div style="background:#F3E5F5; border-radius:12px; padding:14px 16px; margin-bottom:16px;">
+        <div style="font-weight:600; font-size:15px; color:#6A1B9A; margin-bottom:2px;">📋 Relazione Clinica Assicurativa</div>
+        <div style="font-size:12px; color:var(--gray);">Relazione completa con diagnosi e procedura — per compagnia assicurativa</div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Paziente (Nome e Cognome)</label>
+        <input class="form-input" id="rcPaziente" placeholder="es. Mario Rossi">
+      </div>
+      <div style="display:flex; gap:12px; margin-bottom:16px;">
+        <div class="form-group" style="flex:1;margin-bottom:0;">
+          <label class="form-label">Data di nascita</label>
+          <input class="form-input" type="date" id="rcDataNascita">
+        </div>
+        <div class="form-group" style="flex:1;margin-bottom:0;">
+          <label class="form-label">Data trattamento</label>
+          <input class="form-input" type="date" id="rcDataIntervento">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Codice fiscale (opzionale)</label>
+        <input class="form-input" id="rcCF" placeholder="RSSMRA80A01L219K" style="text-transform:uppercase;">
+      </div>
+
+      <!-- ALLUCE INTERESSATO -->
+      <div class="form-group">
+        <label class="form-label">Alluce interessato (diagnosi)</label>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          <label style="display:flex;align-items:center;gap:6px;cursor:pointer;background:var(--gray-light);border-radius:8px;padding:8px 12px;font-size:13px;">
+            <input type="checkbox" id="rcAlluceDestro" style="width:16px;height:16px;cursor:pointer;accent-color:var(--teal);">
+            Destro
+          </label>
+          <label style="display:flex;align-items:center;gap:6px;cursor:pointer;background:var(--gray-light);border-radius:8px;padding:8px 12px;font-size:13px;">
+            <input type="checkbox" id="rcAlluceSinistro" style="width:16px;height:16px;cursor:pointer;accent-color:var(--teal);">
+            Sinistro
+          </label>
+          <label style="display:flex;align-items:center;gap:6px;cursor:pointer;background:var(--gray-light);border-radius:8px;padding:8px 12px;font-size:13px;">
+            <input type="checkbox" id="rcAlluceBilat" style="width:16px;height:16px;cursor:pointer;accent-color:var(--teal);">
+            Bilateralmente
+          </label>
+        </div>
+      </div>
+
+      <!-- MARGINE INTERESSATO -->
+      <div class="form-group">
+        <label class="form-label">Margine interessato (diagnosi)</label>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          <label style="display:flex;align-items:center;gap:6px;cursor:pointer;background:var(--gray-light);border-radius:8px;padding:8px 12px;font-size:13px;">
+            <input type="checkbox" id="rcMargMediale" style="width:16px;height:16px;cursor:pointer;accent-color:var(--teal);">
+            Mediale
+          </label>
+          <label style="display:flex;align-items:center;gap:6px;cursor:pointer;background:var(--gray-light);border-radius:8px;padding:8px 12px;font-size:13px;">
+            <input type="checkbox" id="rcMargLaterale" style="width:16px;height:16px;cursor:pointer;accent-color:var(--teal);">
+            Laterale
+          </label>
+          <label style="display:flex;align-items:center;gap:6px;cursor:pointer;background:var(--gray-light);border-radius:8px;padding:8px 12px;font-size:13px;">
+            <input type="checkbox" id="rcMargEntrambi" style="width:16px;height:16px;cursor:pointer;accent-color:var(--teal);">
+            Entrambi
+          </label>
+        </div>
+      </div>
+
+      <!-- QUADRO CLINICO -->
+      <div class="form-group">
+        <label class="form-label">Quadro clinico riscontrato</label>
+        <textarea class="form-textarea" id="rcQuadroClinico"
+          placeholder="es. dolore, tumefazione, granuloma periunguele, suppurazione..." rows="3"></textarea>
+        <div style="font-size:11px;color:var(--gray);margin-top:4px;">Descrizione libera del quadro — va nel corpo della relazione</div>
+      </div>
+
+      <!-- SEDE TRATTATA -->
+      <div class="form-group">
+        <label class="form-label">Sede trattata (procedura)</label>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          <label style="display:flex;align-items:center;gap:6px;cursor:pointer;background:var(--teal-pale);border-radius:8px;padding:8px 12px;font-size:13px;">
+            <input type="checkbox" id="rcSedeDestro" style="width:16px;height:16px;cursor:pointer;accent-color:var(--teal);">
+            Alluce destro
+          </label>
+          <label style="display:flex;align-items:center;gap:6px;cursor:pointer;background:var(--teal-pale);border-radius:8px;padding:8px 12px;font-size:13px;">
+            <input type="checkbox" id="rcSedeSinistro" style="width:16px;height:16px;cursor:pointer;accent-color:var(--teal);">
+            Alluce sinistro
+          </label>
+          <label style="display:flex;align-items:center;gap:6px;cursor:pointer;background:var(--teal-pale);border-radius:8px;padding:8px 12px;font-size:13px;">
+            <input type="checkbox" id="rcSedeEntrambi" style="width:16px;height:16px;cursor:pointer;accent-color:var(--teal);">
+            Entrambi
+          </label>
+        </div>
+      </div>
+
+      <!-- MARGINE TRATTATO -->
+      <div class="form-group">
+        <label class="form-label">Margine trattato (procedura)</label>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          <label style="display:flex;align-items:center;gap:6px;cursor:pointer;background:var(--teal-pale);border-radius:8px;padding:8px 12px;font-size:13px;">
+            <input type="checkbox" id="rcMTrattMediale" style="width:16px;height:16px;cursor:pointer;accent-color:var(--teal);">
+            Mediale
+          </label>
+          <label style="display:flex;align-items:center;gap:6px;cursor:pointer;background:var(--teal-pale);border-radius:8px;padding:8px 12px;font-size:13px;">
+            <input type="checkbox" id="rcMTrattLaterale" style="width:16px;height:16px;cursor:pointer;accent-color:var(--teal);">
+            Laterale
+          </label>
+          <label style="display:flex;align-items:center;gap:6px;cursor:pointer;background:var(--teal-pale);border-radius:8px;padding:8px 12px;font-size:13px;">
+            <input type="checkbox" id="rcMTrattEntrambi" style="width:16px;height:16px;cursor:pointer;accent-color:var(--teal);">
+            Med. e laterale
+          </label>
+        </div>
+      </div>
+
+      <button class="btn btn-primary btn-full" onclick="generaRelazione()" style="background:linear-gradient(135deg,#6A1B9A,#4A148C);">
+        🖨️ Genera Relazione Clinica
+      </button>
+    </div>
+  </section>
+
+  <!-- ========== SCREEN: ADMIN ========== -->
+  <section id="screen-admin" class="screen">
+    <div style="padding:14px 16px 0;">
+      <div style="font-family:'Playfair Display',serif; font-size:20px; color:var(--teal-dark); margin-bottom:2px;">
+        Dashboard
+      </div>
+      <div class="text-gray" id="adminPeriodo">Ottobre 2026</div>
+    </div>
+
+    <div class="dashboard-grid">
+      <div class="kpi-card">
+        <div class="kpi-icon">💶</div>
+        <div class="kpi-num" id="kpiRicavi">€0</div>
+        <div class="kpi-lbl">Ricavi mese</div>
+        <div class="kpi-trend trend-up" id="kpiRicaviTrend">—</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-icon">🦴</div>
+        <div class="kpi-num" id="kpiOp">0</div>
+        <div class="kpi-lbl">Operazioni</div>
+        <div class="kpi-trend" id="kpiOpTrend">—</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-icon">👁️</div>
+        <div class="kpi-num" id="kpiVisite">0</div>
+        <div class="kpi-lbl">Visite tot.</div>
+        <div class="kpi-trend" id="kpiVisiteTrend">—</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-icon">💊</div>
+        <div class="kpi-num" id="kpiTxRate">—%</div>
+        <div class="kpi-lbl">Tx conversione op.</div>
+        <div class="kpi-trend trend-up" id="kpiTxTrend">—</div>
+      </div>
+    </div>
+
+    <div class="chart-card">
+      <div class="chart-title">Ricavi — Ultimi 7 Giorni</div>
+      <div class="mini-bar-chart" id="barChart"></div>
+      <div class="mini-bar-lbl" id="barLabels"></div>
+    </div>
+
+    <div class="section-title" style="padding:12px 16px 8px;">⚠️ Alert & Follow-up</div>
+    <div class="alert-list" id="alertList"></div>
+
+    <div style="margin: 0 16px 12px;">
+      <button class="btn btn-outline btn-full" onclick="exportData()">
+        📤 Esporta dati mese (Google Sheets)
+      </button>
+    </div>
+  </section>
+
+  <!-- ========== SLIDE: SCHEDA PAZIENTE ========== -->
+  <div class="screen-slide" id="slidePatient">
+    <div class="slide-header">
+      <button class="back-btn" onclick="closeSlide('slidePatient')">←</button>
+      <div>
+        <div class="slide-title" id="slidePatientTitle">Scheda Paziente</div>
+        <div class="slide-subtitle" id="slidePatientSub">Visita di oggi</div>
+      </div>
+      <button class="header-action" onclick="openPatientActions()">⋯</button>
+    </div>
+
+    <div class="patient-hero">
+      <div class="patient-avatar" id="patientAvatar">FG</div>
+      <div class="patient-name-hero" id="patientName">Nome Cognome</div>
+      <div class="patient-meta" id="patientMeta"></div>
+      <div class="patient-tags" id="patientTags"></div>
+    </div>
+
+    <!-- AZIONE RAPIDA -->
+    <div class="action-bar" id="quickActionBar">
+      <button class="btn btn-primary" onclick="openDecisionModal()">
+        📷 Foto + Decisione
+      </button>
+      <button class="btn btn-outline btn-sm" onclick="openVoiceNote()">
+        🎙️ Nota
+      </button>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- INFO PAZIENTE -->
+    <div class="card-section">
+      <div class="card-section-title">
+        Dati Anagrafici
+        <button class="btn btn-sm btn-outline" style="padding:5px 10px; font-size:11px;" onclick="editPatientInfo()">Modifica</button>
+      </div>
+      <div class="card-row">
+        <div class="card-row-label">📧 Email</div>
+        <div class="card-row-value" id="patientEmail">—</div>
+      </div>
+      <div class="card-row">
+        <div class="card-row-label">📞 Telefono</div>
+        <div class="card-row-value" id="patientPhone">—</div>
+      </div>
+      <div class="card-row">
+        <div class="card-row-label">📅 Prima visita</div>
+        <div class="card-row-value" id="patientFirstVisit">—</div>
+      </div>
+      <div class="card-row">
+        <div class="card-row-label">🩺 Diagnosi</div>
+        <div class="card-row-value" id="patientDiagnosi">—</div>
+      </div>
+    </div>
+
+    <!-- NOTE PAZIENTE (da Calendly) -->
+    <div class="card-section" id="noteSection" style="display:none;">
+      <div class="card-section-title">📝 Note del paziente</div>
+      <div id="patientNote" style="background:var(--orange-light);border-left:3px solid var(--orange);border-radius:0 10px 10px 0;padding:12px 14px;font-size:13px;line-height:1.6;color:var(--black);">—</div>
+    </div>
+
+    <!-- FOTO -->
+    <div class="card-section">
+      <div class="card-section-title">
+        Foto Cliniche
+        <span class="tag tag-teal" id="photoCount">0 foto</span>
+      </div>
+      <div class="photo-grid" id="photoGrid">
+        <div class="photo-add" onclick="takePhoto()">
+          <span class="photo-add-icon">📷</span>
+          <span>Scatta</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- TIMELINE CLINICA -->
+    <div class="card-section">
+      <div class="card-section-title">Storico Clinico</div>
+      <div id="clinicalTimeline">
+        <div class="timeline-item">
+          <div class="timeline-dot"></div>
+          <div class="timeline-date">Nessuna visita registrata</div>
+          <div class="timeline-text text-gray">Le visite appariranno qui dopo la prima registrazione</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- DOCUMENTI RAPIDI -->
+    <div class="card-section">
+      <div class="card-section-title">📄 Documenti Rapidi</div>
+      <div style="padding:0 16px 12px;" id="documentiRapidiContainer">
+        <div class="text-gray" style="padding:8px 0;">Apri la scheda paziente per generare documenti precompilati</div>
+      </div>
+    </div>
+
+    <!-- NOTE VOCALI -->
+    <div class="card-section">
+      <div class="card-section-title">Note Cliniche</div>
+      <div id="notesContainer" style="padding:12px 16px;">
+        <div class="voice-container">
+          <button class="voice-btn" id="voiceBtn" onclick="toggleVoiceRecording()">🎙️</button>
+          <div>
+            <div class="voice-text" id="voiceText">Premi per dettare la nota clinica...</div>
+            <div class="voice-status" id="voiceStatus">Tocca il microfono per iniziare</div>
+          </div>
+        </div>
+        <div id="savedNotes" style="margin-top:10px;"></div>
+      </div>
+    </div>
+
+    <div style="padding-bottom: calc(var(--safe-bottom) + 30px);"></div>
+  </div>
+
+  <!-- ========== SLIDE: PREVENTIVO DA PAZIENTE ========== -->
+  <div class="screen-slide" id="slidePreventivo">
+    <div class="slide-header">
+      <button class="back-btn" onclick="closeSlide('slidePreventivo')">←</button>
+      <div>
+        <div class="slide-title">Invia Preventivo</div>
+        <div class="slide-subtitle" id="slidePrevSub">Genera e invia via email</div>
+      </div>
+    </div>
+    <div id="slidePrevContent" style="padding-bottom: calc(var(--safe-bottom) + 30px);"></div>
+  </div>
+
+</div><!-- /app -->
+
+<!-- ========== MODAL: DECISIONE CLINICA ========== -->
+<div class="modal-overlay" id="modalDecisione">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Decisione Clinica</div>
+    <div class="modal-sub" id="decisionPatName">Seleziona il percorso per questo paziente</div>
+    <div class="modal-body">
+      <button class="decision-btn green" onclick="decideTreatment('conservative')">
+        <div class="decision-icon">✅</div>
+        <div>
+          <div class="decision-label">Trattamento Conservativo</div>
+          <div class="decision-desc">Trattamento in studio → chiudi a €100</div>
+        </div>
+      </button>
+      <button class="decision-btn orange" onclick="decideTreatment('operation')">
+        <div class="decision-icon">🔬</div>
+        <div>
+          <div class="decision-label">Fenolizzazione</div>
+          <div class="decision-desc">Invia preventivo → prenota operazione</div>
+        </div>
+      </button>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline btn-full" onclick="closeModal('modalDecisione')">Annulla</button>
+    </div>
+  </div>
+</div>
+
+<!-- ========== MODAL: CHIUDI VISITA CONSERVATIVA ========== -->
+<div class="modal-overlay" id="modalChiudiVisita">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Chiudi Visita</div>
+    <div class="modal-sub" id="chiudiVisitaSub">Trattamento completato · inserisci importo</div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="form-label" style="font-size:13px;">Importo da fatturare (€)</label>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <span style="font-size:28px;font-weight:700;color:var(--teal-dark);">€</span>
+          <input type="number" id="importoVisita" value="100" min="0" step="10"
+            style="font-size:28px;font-weight:700;color:var(--teal-dark);border:none;border-bottom:2px solid var(--teal);background:transparent;width:100%;outline:none;padding:4px 0;">
+        </div>
+        <div style="font-size:11px;color:var(--gray);margin-top:6px;">💡 Modifica liberamente — va su FattureInCloud</div>
+      </div>
+      <div class="form-group" style="margin-top:8px;">
+        <label class="form-label">Note trattamento (opzionale)</label>
+        <textarea class="form-textarea" id="noteTrattamento" placeholder="Descrizione trattamento eseguito..." rows="2"></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('modalChiudiVisita')" style="flex:1">Annulla</button>
+      <button class="btn btn-primary" onclick="closeVisitConservative()" style="flex:2">
+        ✅ Chiudi e Genera Ricevuta
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ========== MODAL: DOC RAPIDO ========== -->
+<div class="modal-overlay" id="modalDocRapido">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-title" id="modalDocRapidoTitle">Genera Documento</div>
+    <div class="modal-sub">
+      Paziente: <strong id="modalDocRapidoNome">—</strong>
+    </div>
+    <div class="modal-body" id="modalDocRapidoExtra">
+      <!-- extra field injected by JS -->
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('modalDocRapido')" style="flex:1">Annulla</button>
+      <button class="btn btn-primary" onclick="inviaDocRapido()" style="flex:2">
+        🖨️ Genera e Stampa
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ========== MODAL FATTURA ========== -->
+<div class="modal-overlay" id="modalFattura">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-title">🧾 Crea Fattura</div>
+    <div class="modal-sub">Paziente: <strong id="fattNome">—</strong></div>
+    <div class="modal-body" style="padding-bottom:8px;">
+      <div style="display:flex;flex-direction:column;gap:14px;padding-top:4px;">
+        <div>
+          <label class="form-label" style="font-size:12px;font-weight:600;color:var(--gray);text-transform:uppercase;letter-spacing:.5px;">Email</label>
+          <input type="email" id="fattEmail" class="form-input" placeholder="email@esempio.it" style="background:#f5f5f5;">
+        </div>
+        <div>
+          <label class="form-label" style="font-size:12px;font-weight:600;color:var(--gray);text-transform:uppercase;letter-spacing:.5px;">Telefono</label>
+          <input type="tel" id="fattTelefono" class="form-input" placeholder="es. 333 1234567">
+        </div>
+        <div>
+          <label class="form-label" style="font-size:12px;font-weight:600;color:var(--gray);text-transform:uppercase;letter-spacing:.5px;">Codice Fiscale *</label>
+          <input type="text" id="fattCF" class="form-input" placeholder="es. RSSMRA80A01H501U" maxlength="16" style="text-transform:uppercase;" oninput="this.value=this.value.toUpperCase()">
+        </div>
+        <div>
+          <label class="form-label" style="font-size:12px;font-weight:600;color:var(--gray);text-transform:uppercase;letter-spacing:.5px;">Città di Residenza *</label>
+          <input type="text" id="fattCitta" class="form-input" placeholder="es. Torino">
+        </div>
+        <div>
+          <label class="form-label" style="font-size:12px;font-weight:600;color:var(--gray);text-transform:uppercase;letter-spacing:.5px;">Importo (€) *</label>
+          <input type="number" id="fattImporto" class="form-input" placeholder="es. 80" min="1" step="1">
+        </div>
+        <div>
+          <label class="form-label" style="font-size:12px;font-weight:600;color:var(--gray);text-transform:uppercase;letter-spacing:.5px;">Descrizione</label>
+          <input type="text" id="fattDescrizione" class="form-input" placeholder="Visita podologica" value="Visita podologica">
+        </div>
+        <div id="fattEsitoBox" style="display:none;border-radius:10px;padding:12px 14px;font-size:13px;"></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('modalFattura')" style="flex:1">Annulla</button>
+      <button class="btn btn-primary" id="fattSubmitBtn" onclick="inviaFattura()" style="flex:2">
+        🧾 Crea Bozza FIC
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ========== TOAST ========== -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ==================== CONFIG ====================
+const WORKER_URL = 'https://gestionale-worker.eracle-soldati.workers.dev';
+const CALENDLY_TOKEN = 'CALENDLY_TOKEN_PLACEHOLDER'; // verrà dal Worker
+
+// ==================== LOGIN ====================
+(function() {
+  if (sessionStorage.getItem('gAuth') === '1') {
+    document.getElementById('loginScreen').style.display = 'none';
+  }
+})();
+
+function checkLogin() {
+  const val = document.getElementById('loginPassword').value;
+  if (val === 'Edwing82!') {
+    sessionStorage.setItem('gAuth', '1');
+    document.getElementById('loginScreen').style.display = 'none';
+  } else {
+    document.getElementById('loginError').textContent = 'Password errata. Riprova.';
+    document.getElementById('loginPassword').value = '';
+    document.getElementById('loginPassword').focus();
+  }
+}
+
+const PREZZI = {
+  visita: 100,
+  mono: 850,
+  bi: 950,
+  '2dita_mono': 1200,
+  '2dita_bi': 1400
+};
+
+const DESCRIZIONI_TIPO = {
+  mono: 'Fenolizzazione Monolaterale',
+  bi: 'Fenolizzazione Bilaterale',
+  '2dita_mono': '2 Dita — Monolaterale',
+  '2dita_bi': '2 Dita — Bilaterale'
+};
+
+// ==================== STATE ====================
+let currentPatient = null;
+let appointments = [];
+let patients = [];
+let isRecording = false;
+let recognition = null;
+
+// ==================== INIT ====================
+document.addEventListener('DOMContentLoaded', () => {
+  initDate();
+  loadAgenda();
+  loadPatients();
+  initDashboard();
+  initVoiceRecognition();
+  updatePreventivo();
+});
+
+function initDate() {
+  const now = new Date();
+  const opts = { weekday: 'long', day: 'numeric', month: 'long' };
+  const dateStr = now.toLocaleDateString('it-IT', opts);
+  document.getElementById('agendaDateLabel').textContent = 'Oggi — ' +
+    dateStr.charAt(0).toUpperCase() + dateStr.slice(1);
+
+  const months = ['Gennaio','Febbraio','Marzo','Aprile','Maggio','Giugno',
+                  'Luglio','Agosto','Settembre','Ottobre','Novembre','Dicembre'];
+  document.getElementById('adminPeriodo').textContent =
+    months[now.getMonth()] + ' ' + now.getFullYear();
+}
+
+// ==================== NAVIGATION ====================
+function switchScreen(name, tabEl) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('screen-' + name).classList.add('active');
+  tabEl.classList.add('active');
+
+  const titles = { agenda: 'Agenda', pazienti: 'Pazienti', preventivo: 'Preventivo', documenti: 'Documenti', admin: 'Dashboard' };
+  document.getElementById('headerTitle').textContent = titles[name] || name;
+}
+
+function openSlide(id) {
+  document.getElementById(id).classList.add('open');
+}
+function closeSlide(id) {
+  document.getElementById(id).classList.remove('open');
+}
+function openModal(id) {
+  document.getElementById(id).classList.add('open');
+}
+function closeModal(id) {
+  document.getElementById(id).classList.remove('open');
+}
+
+// ==================== AGENDA / CALENDLY ====================
+async function loadAgenda() {
+  const listEl = document.getElementById('appointmentsList');
+  listEl.innerHTML = '<div class="section-title">Appuntamenti di oggi</div>' +
+    '<div class="empty-state"><div class="empty-icon">🔄</div><p>Caricamento da Calendly...</p></div>';
+
+  try {
+    const res = await fetch(`${WORKER_URL}/api/agenda/today`);
+    const data = await res.json();
+
+    if (data.events && data.events.length > 0) {
+      appointments = data.events;
+      renderAppointments(data.events);
+      updateAgendaStats(data.events);
+    } else {
+      // DEMO DATA quando Worker non ancora attivo
+      loadDemoAgenda();
+    }
+  } catch(e) {
+    // DEMO DATA in offline/dev
+    loadDemoAgenda();
+  }
+}
+
+function loadDemoAgenda() {
+  const demoEvents = [
+    { id: '1', time: '09:00', name: 'Marco Rossi', type: 'visita', status: 'upcoming', email: 'marco.rossi@gmail.com', phone: '+39 333 1234567' },
+    { id: '2', time: '10:00', name: 'Giulia Ferrari', type: 'fenolizzazione', status: 'upcoming', email: 'giulia.f@gmail.com', phone: '+39 347 9876543' },
+    { id: '3', time: '11:00', name: 'Andrea Bianchi', type: 'followup_1', status: 'upcoming', email: 'a.bianchi@libero.it', phone: '+39 320 5551234' },
+    { id: '4', time: '12:00', name: 'Pausa pranzo', type: 'break', status: 'break' },
+    { id: '5', time: '15:00', name: 'Sofia Conti', type: 'followup_2', status: 'upcoming', email: 'sofia.conti@gmail.com', phone: '+39 338 7654321' },
+    { id: '6', time: '16:00', name: 'Luca Marino', type: 'visita', status: 'upcoming', email: 'l.marino@gmail.com', phone: '+39 339 1112223' },
+  ];
+  appointments = demoEvents;
+
+  // Add to patients
+  patients = demoEvents.filter(e => e.type !== 'break').map(e => ({
+    id: e.id,
+    name: e.name,
+    email: e.email,
+    phone: e.phone,
+    status: e.type,
+    lastVisit: new Date().toLocaleDateString('it-IT')
+  }));
+
+  renderAppointments(demoEvents);
+  updateAgendaStats(demoEvents);
+  renderPatientsList(patients);
+  document.getElementById('agendaDateSub').textContent = '6 appuntamenti · Demo Mode';
+}
+
+function renderAppointments(events) {
+  const listEl = document.getElementById('appointmentsList');
+
+  const now = new Date();
+  const currentHour = now.getHours() + now.getMinutes()/60;
+
+  let html = '<div class="section-title">Appuntamenti di oggi</div>';
+
+  events.forEach(ev => {
+    if (ev.type === 'break') {
+      html += `<div style="padding:8px 16px;"><div style="text-align:center;padding:8px;background:#f5f5f5;border-radius:8px;font-size:12px;color:var(--gray);">🍝 ${ev.time} — Pausa Pranzo</div></div>`;
+      return;
+    }
+
+    const evHour = parseInt(ev.time.split(':')[0]) + parseInt(ev.time.split(':')[1])/60;
+    const isDone = evHour < currentHour - 0.5;
+
+    const typeLabels = {
+      visita: { label: 'Prima Visita', badge: 'badge-visita', cardClass: '' },
+      fenolizzazione: { label: 'Fenolizzazione', badge: 'badge-op', cardClass: 'type-op' },
+      followup_1: { label: 'Follow-up 1', badge: 'badge-followup', cardClass: 'type-followup' },
+      followup_2: { label: 'Follow-up 2', badge: 'badge-followup', cardClass: 'type-followup' },
+      followup_3: { label: 'Follow-up 3 / Dimissione', badge: 'badge-done', cardClass: 'type-done' },
+    };
+
+    const t = typeLabels[ev.type] || { label: ev.type, badge: 'badge-visita', cardClass: '' };
+    const doneClass = isDone ? 'type-done' : t.cardClass;
+    const doneBadge = isDone ? 'badge-done' : t.badge;
+    const doneLabel = isDone ? '✓ Completato' : t.label;
+
+    html += `
+      <div class="appt-card ${doneClass}" onclick="openPatient('${ev.id}')">
+        <div class="appt-time">${ev.time}</div>
+        <div class="appt-info">
+          <div class="appt-name">${ev.name}</div>
+          <div class="appt-type">${t.label}</div>
+        </div>
+        <span class="appt-badge ${doneBadge}">${isDone ? '✓' : doneLabel}</span>
+        <span class="appt-chevron">›</span>
+      </div>`;
+  });
+
+  listEl.innerHTML = html;
+}
+
+function updateAgendaStats(events) {
+  const actual = events.filter(e => e.type !== 'break');
+  const ops = events.filter(e => e.type === 'fenolizzazione').length;
+
+  const now = new Date();
+  const currentHour = now.getHours() + now.getMinutes()/60;
+  const done = events.filter(e => {
+    if (e.type === 'break') return false;
+    const h = parseInt(e.time.split(':')[0]) + parseInt(e.time.split(':')[1])/60;
+    return h < currentHour - 0.5;
+  }).length;
+
+  const estInc = (actual.length - ops) * PREZZI.visita + ops * PREZZI.mono;
+
+  document.getElementById('statTot').textContent = actual.length;
+  document.getElementById('statOp').textContent = ops;
+  document.getElementById('statInc').textContent = '€' + (estInc/1000).toFixed(1) + 'k';
+  document.getElementById('agendaDateSub').textContent = `${actual.length} appuntamenti · ${done} completati`;
+}
+
+// ==================== PAZIENTI ====================
+function loadPatients() {
+  // Will be populated from loadDemoAgenda or real API
+  setTimeout(() => {
+    if (patients.length > 0) renderPatientsList(patients);
+  }, 800);
+}
+
+function renderPatientsList(pts) {
+  const container = document.getElementById('patientsList');
+  if (!pts || pts.length === 0) {
+    container.innerHTML = '<div class="empty-state"><div class="empty-icon">👥</div><p>Nessun paziente trovato</p></div>';
+    return;
+  }
+
+  const statusLabels = {
+    visita: { label: 'Prima Visita', cls: 'tag-teal' },
+    fenolizzazione: { label: 'Operazione', cls: 'tag-orange' },
+    followup_1: { label: 'Follow-up 1', cls: 'tag-orange' },
+    followup_2: { label: 'Follow-up 2', cls: 'tag-orange' },
+    followup_3: { label: 'Dimissione', cls: 'tag-green' },
+  };
+
+  container.innerHTML = pts.map(p => {
+    const initials = p.name.split(' ').map(n => n[0]).join('').substring(0,2).toUpperCase();
+    const st = statusLabels[p.status] || { label: p.status, cls: 'tag-teal' };
+    const phoneClean = (p.phone || '').replace(/\s+/g, '').replace(/^\+/, '');
+    const waBtn = p.phone
+      ? `<a href="https://wa.me/${phoneClean}" target="_blank" onclick="event.stopPropagation()"
+            style="display:inline-flex;align-items:center;justify-content:center;
+                   width:34px;height:34px;border-radius:50%;background:#25D366;
+                   text-decoration:none;flex-shrink:0;">
+           <img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg"
+                style="width:18px;height:18px;">
+         </a>`
+      : '';
+    return `
+      <div class="patient-list-item" onclick="openPatient('${p.id}')" style="align-items:center;">
+        <div class="patient-list-avatar">${initials}</div>
+        <div class="patient-list-info">
+          <div class="patient-list-name">${p.name}</div>
+          <div class="patient-list-meta">${p.email || '—'} · Ultima: ${p.lastVisit}</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;">
+          ${waBtn}
+          <span class="tag ${st.cls}">${st.label}</span>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+function filterPatients(query) {
+  const filtered = patients.filter(p =>
+    p.name.toLowerCase().includes(query.toLowerCase()) ||
+    (p.email || '').toLowerCase().includes(query.toLowerCase())
+  );
+  renderPatientsList(filtered);
+}
+
+// ==================== SCHEDA PAZIENTE ====================
+function openPatient(id) {
+  const p = patients.find(pt => pt.id === id) ||
+            appointments.find(a => a.id === id);
+  if (!p) return;
+
+  currentPatient = p;
+
+  // Fill slide
+  const initials = p.name.split(' ').map(n => n[0]).join('').substring(0,2).toUpperCase();
+  document.getElementById('patientAvatar').textContent = initials;
+  document.getElementById('patientName').textContent = p.name;
+  document.getElementById('slidePatientTitle').textContent = p.name;
+
+  const typeMap = {
+    visita: 'Prima Visita',
+    fenolizzazione: 'Fenolizzazione',
+    followup_1: 'Follow-up 1',
+    followup_2: 'Follow-up 2',
+    followup_3: 'Dimissione / Follow-up 3',
+  };
+  document.getElementById('slidePatientSub').textContent = typeMap[p.type || p.status] || 'Visita';
+
+  // Meta — telefono → WhatsApp, email → mailto
+  const apptTime = p.time ? `🕐 ${p.time}` : '';
+  const phoneClean = (p.phone || '').replace(/\s+/g, '').replace(/^\+/, '');
+  const waLink = phoneClean
+    ? `<a href="https://wa.me/${phoneClean}" target="_blank"
+          style="color:white;text-decoration:none;display:inline-flex;align-items:center;gap:4px;">
+         <img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg"
+              style="width:14px;height:14px;vertical-align:middle;"> ${p.phone}
+       </a>`
+    : '';
+  const mailLink = p.email
+    ? `<a href="mailto:${p.email}"
+          style="color:white;text-decoration:none;display:inline-flex;align-items:center;gap:4px;">
+         📧 ${p.email}
+       </a>`
+    : '';
+  document.getElementById('patientMeta').innerHTML = `
+    ${apptTime ? `<span>${apptTime}</span>` : ''}
+    ${waLink   ? `<span>${waLink}</span>`   : ''}
+    ${mailLink ? `<span>${mailLink}</span>` : ''}
+  `;
+
+  // Tags
+  const typeLabels = {
+    visita: ['🟢 Prima visita'],
+    fenolizzazione: ['🔬 Operazione', '🗓️ Pre-op'],
+    followup_1: ['📌 Follow-up 1/3'],
+    followup_2: ['📌 Follow-up 2/3'],
+    followup_3: ['✅ Dimissione'],
+  };
+  const tags = (typeLabels[p.type || p.status] || []).map(t =>
+    `<span class="ptag">${t}</span>`).join('');
+  document.getElementById('patientTags').innerHTML = tags;
+
+  // Info
+  // Email e Telefono cliccabili nella sezione dati anagrafici
+  const phoneClean2 = (p.phone || '').replace(/\s+/g, '').replace(/^\+/, '');
+  document.getElementById('patientPhone').innerHTML = p.phone
+    ? `<a href="https://wa.me/${phoneClean2}" target="_blank"
+          style="color:var(--teal-dark);font-weight:600;text-decoration:none;
+                 display:inline-flex;align-items:center;gap:5px;">
+         <img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg"
+              style="width:16px;height:16px;"> ${p.phone}
+       </a>`
+    : '—';
+  document.getElementById('patientEmail').innerHTML = p.email
+    ? `<a href="mailto:${p.email}"
+          style="color:var(--teal-dark);font-weight:500;text-decoration:none;">
+         📧 ${p.email}
+       </a>`
+    : '—';
+  document.getElementById('patientFirstVisit').textContent = p.lastVisit || 'Oggi';
+  document.getElementById('patientDiagnosi').textContent =
+    p.diagnosi || 'Unghia incarnita — da valutare in visita';
+
+  // Note del paziente (da Calendly)
+  const noteSection = document.getElementById('noteSection');
+  const noteEl = document.getElementById('patientNote');
+  const notaTesto = p.note || p.notes || '';
+  if (notaTesto) {
+    noteEl.textContent = notaTesto;
+    noteSection.style.display = '';
+  } else {
+    noteSection.style.display = 'none';
+  }
+
+  // Aggiorna sezione Documenti Rapidi
+  renderDocumentiRapidi(p);
+
+  openSlide('slidePatient');
+}
+
+function renderDocumentiRapidi(p) {
+  const container = document.getElementById('documentiRapidiContainer');
+  if (!container) return;
+
+  const nome = p.name || '';
+  const ora = p.time || '';
+  const dataOggi = new Date().toISOString().split('T')[0];
+
+  container.innerHTML = `
+    <div style="display:flex;flex-direction:column;gap:10px;">
+      <button class="btn btn-outline btn-full" style="justify-content:flex-start;gap:10px;padding:12px 14px;"
+        onclick="generaDocRapido('presenza', '${nome}', '${ora}', '${dataOggi}')">
+        <span style="font-size:20px;">📋</span>
+        <div style="text-align:left;">
+          <div style="font-weight:600;font-size:13px;">Attestato di Presenza</div>
+          <div style="font-size:11px;color:var(--gray);">${nome} · Oggi ${ora ? '· ore ' + ora : ''}</div>
+        </div>
+      </button>
+      <button class="btn btn-outline btn-full" style="justify-content:flex-start;gap:10px;padding:12px 14px;"
+        onclick="generaDocRapido('giustifica', '${nome}', '${ora}', '${dataOggi}')">
+        <span style="font-size:20px;">📝</span>
+        <div style="text-align:left;">
+          <div style="font-weight:600;font-size:13px;">Giustifica Lavoro / Assicurazione</div>
+          <div style="font-size:11px;color:var(--gray);">${nome} · Inserisci solo l'ora di fine</div>
+        </div>
+      </button>
+      <button class="btn btn-outline btn-full" style="justify-content:flex-start;gap:10px;padding:12px 14px;"
+        onclick="generaDocRapido('sport', '${nome}', '${ora}', '${dataOggi}')">
+        <span style="font-size:20px;">🏃</span>
+        <div style="text-align:left;">
+          <div style="font-weight:600;font-size:13px;">Esenzione Sport Scolastica</div>
+          <div style="font-size:11px;color:var(--gray);">${nome} · 15 giorni post-intervento</div>
+        </div>
+      </button>
+      <button class="btn btn-primary btn-full" style="justify-content:flex-start;gap:10px;padding:12px 14px;margin-top:4px;"
+        onclick="openModalFattura()">
+        <span style="font-size:20px;">🧾</span>
+        <div style="text-align:left;">
+          <div style="font-weight:700;font-size:13px;">Fai Fattura</div>
+          <div style="font-size:11px;opacity:0.85;">${nome} · Crea bozza su FattureInCloud</div>
+        </div>
+      </button>
+    </div>`;
+}
+
+function generaDocRapido(tipo, nome, oraInizio, dataOggi) {
+  if (tipo === 'presenza') {
+    openModalDocRapido({
+      tipo: 'presenza',
+      nome, oraInizio, data: dataOggi,
+      title: 'Attestato di Presenza',
+      icon: '📋',
+      extraLabel: 'Ora di fine',
+      extraId: 'docRapidoOraFine',
+      extraType: 'time',
+    });
+  } else if (tipo === 'giustifica') {
+    openModalDocRapido({
+      tipo: 'giustifica',
+      nome, oraInizio, data: dataOggi,
+      title: 'Giustifica Assicurazione',
+      icon: '📝',
+      extraLabel: 'Trattamento eseguito',
+      extraId: 'docRapidoTrattamento',
+      extraType: 'text',
+      extraPlaceholder: 'es. Fenolizzazione monolaterale alluce dx',
+    });
+  } else if (tipo === 'sport') {
+    openModalDocRapido({
+      tipo: 'sport',
+      nome, oraInizio, data: dataOggi,
+      title: 'Esenzione Sport',
+      icon: '🏃',
+      extraLabel: 'Alluce trattato',
+      extraId: 'docRapidoLato',
+      extraType: 'select',
+      extraOptions: ['destro', 'sinistro', 'bilateralmente'],
+    });
+  }
+}
+
+// ==================== MODAL DOC RAPIDO ====================
+let _docRapidoConfig = null;
+
+function openModalDocRapido(cfg) {
+  _docRapidoConfig = cfg;
+  const m = document.getElementById('modalDocRapido');
+  document.getElementById('modalDocRapidoTitle').textContent = cfg.icon + ' ' + cfg.title;
+  document.getElementById('modalDocRapidoNome').textContent = cfg.nome;
+
+  // Ora fine / extra field
+  const extraContainer = document.getElementById('modalDocRapidoExtra');
+  let extraHtml = `<div class="form-group">
+    <label class="form-label">${cfg.extraLabel}</label>`;
+
+  if (cfg.extraType === 'time') {
+    const [hh, mm] = (cfg.oraInizio || '').split(':');
+    const oraFineDefault = hh ? `${String(parseInt(hh) + 1).padStart(2,'0')}:${mm || '00'}` : '';
+    extraHtml += `<input class="form-input" type="time" id="${cfg.extraId}" value="${oraFineDefault}">`;
+  } else if (cfg.extraType === 'select') {
+    extraHtml += `<select class="form-select" id="${cfg.extraId}">
+      ${(cfg.extraOptions||[]).map(o => `<option value="${o}">${o.charAt(0).toUpperCase() + o.slice(1)}</option>`).join('')}
+    </select>`;
+  } else {
+    extraHtml += `<input class="form-input" type="text" id="${cfg.extraId}" placeholder="${cfg.extraPlaceholder || ''}">`;
+  }
+
+  extraHtml += `</div>`;
+  extraContainer.innerHTML = extraHtml;
+
+  openModal('modalDocRapido');
+}
+
+async function inviaDocRapido() {
+  const cfg = _docRapidoConfig;
+  if (!cfg) return;
+
+  const extraEl = document.getElementById(cfg.extraId);
+  const extraVal = extraEl ? extraEl.value : '';
+
+  showToast('⏳ Generazione documento...');
+  closeModal('modalDocRapido');
+
+  try {
+    let endpoint, body;
+
+    if (cfg.tipo === 'presenza') {
+      endpoint = '/api/attestato-presenza/genera';
+      body = {
+        paziente: cfg.nome,
+        dataVisita: cfg.data,
+        oraInizio: cfg.oraInizio,
+        oraFine: extraVal,
+        dataDocumento: cfg.data,
+      };
+    } else if (cfg.tipo === 'giustifica') {
+      endpoint = '/api/giustifica/genera';
+      body = { paziente: cfg.nome, trattamento: extraVal };
+    } else if (cfg.tipo === 'sport') {
+      endpoint = '/api/attestato-sport/genera';
+      body = { paziente: cfg.nome, lato: extraVal, dataInizio: cfg.data, dataDocumento: cfg.data };
+    }
+
+    const res = await fetch(`${WORKER_URL}${endpoint}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+    const data = await res.json();
+    if (data.success) {
+      openDocPrint(data.html);
+      showToast('✅ Documento aperto — pronto per la stampa');
+    } else {
+      showToast('❌ ' + (data.error || 'Errore'));
+    }
+  } catch(e) {
+    showToast('❌ Errore connessione Worker');
+  }
+}
+
+function openDecisionModal() {
+  if (!currentPatient) return;
+  document.getElementById('decisionPatName').textContent =
+    `Paziente: ${currentPatient.name}`;
+  // Pre-imposta importo visita nel modal chiudi visita
+  document.getElementById('importoVisita').value = 100;
+  document.getElementById('chiudiVisitaSub').textContent =
+    `${currentPatient.name} · inserisci importo visita`;
+  openModal('modalDecisione');
+}
+
+function decideTreatment(type) {
+  closeModal('modalDecisione');
+
+  if (type === 'conservative') {
+    openModal('modalChiudiVisita');
+  } else {
+    // Apri preventivo per questo paziente
+    closeSlide('slidePatient');
+    // Pre-fill preventivo
+    document.getElementById('prevPaziente').value = currentPatient.name;
+    document.getElementById('prevEmail').value = currentPatient.email || '';
+    // Se ha già pagato la visita, precompila il campo
+    if (currentPatient.visitaPagata) {
+      document.getElementById('prevVisitaPagata').value = currentPatient.visitaPagata;
+    }
+    switchScreen('preventivo', document.querySelector('[data-screen="preventivo"]'));
+    updatePreventivo();
+    showToast('Genera il preventivo per ' + currentPatient.name);
+  }
+}
+
+async function closeVisitConservative() {
+  const importo = parseInt(document.getElementById('importoVisita').value) || 100;
+  const note = document.getElementById('noteTrattamento').value;
+  closeModal('modalChiudiVisita');
+
+  showToast('⏳ Generazione ricevuta...');
+
+  try {
+    const res = await fetch(`${WORKER_URL}/api/ricevuta/genera`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        paziente: currentPatient.name,
+        importo,
+        note: note || 'Prima visita podologica — trattamento conservativo',
+        data: new Date().toISOString().split('T')[0],
+      }),
+    });
+    const data = await res.json();
+    if (data.success) {
+      openDocPrint(data.html);
+      showToast(`✅ Ricevuta €${importo} generata`);
+    } else {
+      showToast(`✅ [DEMO] Visita chiusa · €${importo} · Worker non ancora attivo`);
+    }
+  } catch(e) {
+    showToast(`✅ [DEMO] Visita chiusa · €${importo}`);
+  }
+
+  closeSlide('slidePatient');
+
+  // Salva importo visita sul paziente (per eventuale sconto preventivo)
+  if (currentPatient) {
+    currentPatient.visitaPagata = importo;
+  }
+
+  // Aggiorna card in agenda
+  const appt = appointments.find(a => a.id === currentPatient.id);
+  if (appt) {
+    appt.status = 'done';
+    renderAppointments(appointments);
+  }
+}
+
+// ==================== VOICE NOTE ====================
+function initVoiceRecognition() {
+  if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    recognition = new SpeechRecognition();
+    recognition.lang = 'it-IT';
+    recognition.continuous = false;
+    recognition.interimResults = true;
+
+    recognition.onresult = (e) => {
+      let transcript = '';
+      for (let i = e.resultIndex; i < e.results.length; i++) {
+        transcript += e.results[i][0].transcript;
+      }
+      document.getElementById('voiceText').textContent = transcript;
+    };
+
+    recognition.onend = () => {
+      isRecording = false;
+      const btn = document.getElementById('voiceBtn');
+      btn.classList.remove('recording');
+      btn.textContent = '🎙️';
+      document.getElementById('voiceStatus').textContent = 'Tocca per dettare';
+
+      // Salva nota
+      const text = document.getElementById('voiceText').textContent;
+      if (text && text !== 'Premi per dettare la nota clinica...') {
+        saveVoiceNote(text);
+      }
+    };
+
+    recognition.onerror = (e) => {
+      showToast('Microfono non disponibile');
+      isRecording = false;
+    };
+  }
+}
+
+function toggleVoiceRecording() {
+  if (!recognition) {
+    showToast('Speech recognition non disponibile su questo browser');
+    return;
+  }
+
+  const btn = document.getElementById('voiceBtn');
+  if (!isRecording) {
+    recognition.start();
+    isRecording = true;
+    btn.classList.add('recording');
+    btn.textContent = '⏹️';
+    document.getElementById('voiceStatus').textContent = '🔴 Registrazione in corso...';
+    document.getElementById('voiceText').textContent = '';
+  } else {
+    recognition.stop();
+  }
+}
+
+function saveVoiceNote(text) {
+  const now = new Date();
+  const timeStr = now.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' });
+  const container = document.getElementById('savedNotes');
+  const noteEl = document.createElement('div');
+  noteEl.style.cssText = 'background:white;border-radius:8px;padding:10px 12px;margin-top:8px;font-size:13px;border-left:3px solid var(--teal);';
+  noteEl.innerHTML = `<div style="font-size:10px;color:var(--gray);margin-bottom:4px;">🎙️ ${timeStr} — Nota vocale</div><div>${text}</div>`;
+  container.appendChild(noteEl);
+  document.getElementById('voiceText').textContent = 'Premi per dettare la prossima nota...';
+  showToast('✅ Nota salvata');
+}
+
+function openVoiceNote() {
+  // Scroll to voice section
+  const slide = document.getElementById('slidePatient');
+  const voiceContainer = document.getElementById('notesContainer');
+  voiceContainer.scrollIntoView({ behavior: 'smooth' });
+}
+
+// ==================== FOTO ====================
+function takePhoto() {
+  // Trigger file input (camera on mobile)
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = 'image/*';
+  input.capture = 'environment'; // usa fotocamera posteriore
+  input.onchange = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      addPhotoToGrid(ev.target.result);
+    };
+    reader.readAsDataURL(file);
+  };
+  input.click();
+}
+
+function addPhotoToGrid(dataUrl) {
+  const grid = document.getElementById('photoGrid');
+  const today = new Date().toLocaleDateString('it-IT', { day:'2-digit', month:'2-digit' });
+
+  const thumb = document.createElement('div');
+  thumb.className = 'photo-thumb';
+  thumb.innerHTML = `<img src="${dataUrl}" alt="Foto clinica"><div class="photo-date">${today}</div>`;
+
+  grid.insertBefore(thumb, grid.firstChild);
+
+  // Aggiorna count
+  const count = grid.querySelectorAll('.photo-thumb').length;
+  document.getElementById('photoCount').textContent = count + ' foto';
+
+  showToast('📸 Foto salvata');
+
+  // TODO: upload al Worker → Google Drive
+}
+
+// ==================== PREVENTIVO ====================
+function updatePreventivo() {
+  const tipo = document.getElementById('prevTipo').value;
+  const paziente = document.getElementById('prevPaziente').value;
+  const dito = document.getElementById('prevDito').value;
+  const visitaPagata = parseInt(document.getElementById('prevVisitaPagata').value) || 0;
+
+  const priceDisplay = document.getElementById('priceDisplay');
+  const scontoManuale = document.getElementById('scontoManuale');
+  const emailContainer = document.getElementById('emailPreviewContainer');
+  const sendBtn = document.getElementById('sendPrevBtn');
+
+  if (!tipo) {
+    priceDisplay.style.display = 'none';
+    scontoManuale.style.display = 'none';
+    emailContainer.style.display = 'none';
+    sendBtn.disabled = true;
+    return;
+  }
+
+  const prezzoBase = PREZZI[tipo];
+  const haSconto = visitaPagata > 0;
+  // Il preventivo mostra il prezzo PIENO — la deduzione avviene solo in fattura se prenota entro 30gg
+  const totale = prezzoBase;
+
+  // Price display
+  priceDisplay.style.display = 'block';
+  document.getElementById('priceAmount').textContent = '€' + totale.toLocaleString('it-IT');
+  document.getElementById('priceSub').textContent = DESCRIZIONI_TIPO[tipo];
+
+  let breakdownHtml = `
+    <div class="price-line">
+      <span>${DESCRIZIONI_TIPO[tipo]}</span>
+      <span>€${prezzoBase.toLocaleString('it-IT')}</span>
+    </div>`;
+
+  if (haSconto) {
+    breakdownHtml += `
+      <div class="price-line" style="color:var(--orange); font-size:12px; border-top:1px dashed var(--gray-light); margin-top:8px; padding-top:8px;">
+        <span>⏰ Se prenoti entro 30 giorni, deduciamo la visita già pagata (−€${visitaPagata})</span>
+        <span>→ €${(prezzoBase - visitaPagata).toLocaleString('it-IT')}</span>
+      </div>`;
+  }
+
+  breakdownHtml += `
+    <div class="price-line total">
+      <span>TOTALE PREVENTIVO</span>
+      <span>€${totale.toLocaleString('it-IT')}</span>
+    </div>`;
+
+  document.getElementById('priceBreakdown').innerHTML = breakdownHtml;
+  document.getElementById('prevPrezzoFinale').value = totale;
+
+  scontoManuale.style.display = 'block';
+
+  // Email preview
+  if (paziente) {
+    emailContainer.style.display = 'block';
+    generateEmailPreview(paziente, tipo, dito, totale, visitaPagata);
+    sendBtn.disabled = false;
+  }
+}
+
+function updateFinalPrice() {
+  const val = document.getElementById('prevPrezzoFinale').value;
+  if (val) {
+    document.getElementById('priceAmount').textContent = '€' + parseInt(val).toLocaleString('it-IT');
+  }
+}
+
+function generateEmailPreview(paziente, tipo, dito, totale, visitaPagata) {
+  const nome = paziente.split(' ')[0];
+  const ditoStr = dito || 'dito interessato';
+  const haSconto = visitaPagata > 0;
+  const scontoNote = haSconto
+    ? `<br><br><strong style="color:#E65100;">💡 Offerta riservata a Lei:</strong> se prenota il trattamento entro 30 giorni da oggi, le verrà detratto l'importo già pagato per la prima visita (€${visitaPagata}). Il totale da corrispondere sarà quindi <strong>€${(totale - visitaPagata).toLocaleString('it-IT')}</strong>.`
+    : '';
+  const note = document.getElementById('prevNote').value;
+  const noteHtml = note ? `<br><br>${note}` : '';
+
+  const subject = `Preventivo Trattamento Unghia Incarnita — ${paziente}`;
+  document.getElementById('prevSubject').textContent = subject;
+
+  document.getElementById('emailBody').innerHTML = `
+    <strong>Gentile ${nome},</strong><br><br>
+    In seguito alla valutazione effettuata presso il nostro studio,
+    sono lieto di presentarle il seguente preventivo per il trattamento
+    della patologia riscontrata al ${ditoStr}.<br><br>
+
+    <strong>Trattamento:</strong> ${DESCRIZIONI_TIPO[tipo]}<br>
+    <strong>Importo:</strong> €${totale.toLocaleString('it-IT')}${scontoNote}<br><br>
+
+    Il trattamento di fenolizzazione è una procedura ambulatoriale minimamente invasiva,
+    con tempi di recupero ridotti e alta efficacia. Include la seduta operatoria e
+    i controlli post-operatori.<br><br>
+
+    Per procedere, può prenotare direttamente il suo appuntamento:<br>
+    👉 <strong>https://calendly.com/federico-grassi-unghiaincarnitastop/trattamento-per-unghia-incarnita-aurea</strong><br><br>
+
+    Per qualsiasi domanda sono a sua disposizione.${noteHtml}<br><br>
+
+    Cordiali saluti,<br>
+    <strong>Dott. Federico Grassi</strong><br>
+    Studio Podologico UnghiaIncarnitaStop<br>
+    Via Filadelfia 200, Torino 10137<br>
+    Tel: +39 333 421 7550<br>
+    P.IVA 10150590015
+  `;
+}
+
+async function sendPreventivo() {
+  const paziente = document.getElementById('prevPaziente').value;
+  const email = document.getElementById('prevEmail').value;
+  const tipo = document.getElementById('prevTipo').value;
+  const dito = document.getElementById('prevDito').value;
+  const prezzoFinale = parseInt(document.getElementById('prevPrezzoFinale').value);
+  const visitaPagata = parseInt(document.getElementById('prevVisitaPagata').value) || 0;
+  const note = document.getElementById('prevNote').value;
+
+  if (!paziente || !email || !tipo) {
+    showToast('⚠️ Compila tutti i campi obbligatori');
+    return;
+  }
+
+  const btn = document.getElementById('sendPrevBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> Invio in corso...';
+
+  try {
+    const res = await fetch(`${WORKER_URL}/api/preventivo/genera`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        paziente, email, tipo, dito,
+        prezzoBase: PREZZI[tipo],
+        visitaPagata,
+        scontoVisita: visitaPagata > 0,
+        prezzoFinale,
+        note,
+        descrizioneTipo: DESCRIZIONI_TIPO[tipo]
+      })
+    });
+
+    const result = await res.json();
+    if (result.success) {
+      showToast('✅ Preventivo inviato a ' + email);
+      // Reset form
+      document.getElementById('prevTipo').value = '';
+      document.getElementById('prevDito').value = '';
+      document.getElementById('prevNote').value = '';
+      document.getElementById('prevVisitaPagata').value = '';
+      document.getElementById('priceDisplay').style.display = 'none';
+      document.getElementById('emailPreviewContainer').style.display = 'none';
+    } else {
+      throw new Error(result.error || 'Errore invio');
+    }
+  } catch(e) {
+    // DEMO: simula successo se Worker non ancora attivo
+    showToast('✅ [DEMO] Preventivo generato · Worker non ancora attivo');
+  }
+
+  btn.disabled = false;
+  btn.innerHTML = '📧 Invia Preventivo per Email';
+}
+
+function copyPreventivo() {
+  const body = document.getElementById('emailBody').innerText;
+  if (!body) { showToast('Genera prima il preventivo'); return; }
+  navigator.clipboard.writeText(body).then(() => {
+    showToast('📋 Copiato negli appunti');
+  });
+}
+
+// ==================== DASHBOARD ====================
+function initDashboard() {
+  // Demo data
+  document.getElementById('kpiRicavi').textContent = '€3.850';
+  document.getElementById('kpiOp').textContent = '4';
+  document.getElementById('kpiVisite').textContent = '18';
+  document.getElementById('kpiTxRate').textContent = '22%';
+  document.getElementById('kpiRicaviTrend').textContent = '+12% vs mese scorso';
+  document.getElementById('kpiOpTrend').textContent = '4 op. questo mese';
+  document.getElementById('kpiVisiteTrend').textContent = '18 totali';
+  document.getElementById('kpiTxTrend').textContent = '4/18 operative';
+
+  // Bar chart
+  const days = ['L','M','M','G','V','S','D'];
+  const vals = [850, 100, 1200, 200, 950, 100, 450];
+  const maxVal = Math.max(...vals);
+
+  const barChart = document.getElementById('barChart');
+  const barLabels = document.getElementById('barLabels');
+
+  barChart.innerHTML = vals.map((v, i) => {
+    const h = Math.round((v / maxVal) * 56);
+    const isToday = i === new Date().getDay() - 1;
+    return `<div class="mini-bar ${isToday?'active':''}" style="height:${h}px;" title="€${v}"></div>`;
+  }).join('');
+
+  barLabels.innerHTML = days.map((d, i) => {
+    const isToday = i === new Date().getDay() - 1;
+    return `<span style="${isToday?'font-weight:700;color:var(--teal)':''}}">${d}</span>`;
+  }).join('');
+
+  // Alerts
+  const alerts = [
+    { type: 'danger', icon: '⚠️', text: '<strong>Giulia Ferrari</strong> — Follow-up 2 in scadenza · non ha ancora prenotato il controllo post-op' },
+    { type: 'warn', icon: '⏰', text: '<strong>Marco Bianchi</strong> — Nessuna visita da 45 giorni · possibile follow-up perso' },
+    { type: 'info', icon: '⭐', text: '<strong>3 pazienti</strong> hanno completato il percorso — invia richiesta recensione Google' },
+  ];
+
+  document.getElementById('alertList').innerHTML = alerts.map(a => `
+    <div class="alert-item">
+      <div class="alert-icon ${a.type}">${a.icon}</div>
+      <div class="alert-text">${a.text}</div>
+      <span style="color:var(--gray-light);font-size:14px;">›</span>
+    </div>`).join('');
+}
+
+function exportData() {
+  showToast('📤 Export in sviluppo · Prossima versione');
+}
+
+// ─── DOCUMENTI ────────────────────────────────────────────────────────────────
+
+function openDocPrint(html) {
+  const win = window.open('', '_blank');
+  if (!win) { showToast('⚠️ Abilita i popup per stampare'); return; }
+  win.document.write(html);
+  win.document.close();
+  win.onload = () => win.print();
+}
+
+async function generaAttPresenza() {
+  const paziente = document.getElementById('apPaziente').value.trim();
+  const dataVisita = document.getElementById('apDataVisita').value;
+  const oraInizio = document.getElementById('apOraInizio').value;
+  const oraFine = document.getElementById('apOraFine').value;
+  if (!paziente) { showToast('⚠️ Inserisci il nome del paziente'); return; }
+  if (!dataVisita) { showToast('⚠️ Inserisci la data della visita'); return; }
+  showToast('⏳ Generazione in corso...');
+  try {
+    const res = await fetch(`${WORKER_URL}/api/attestato-presenza/genera`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        paziente,
+        dataVisita,
+        oraInizio: oraInizio ? oraInizio.replace(':', ':') : '',
+        oraFine: oraFine ? oraFine.replace(':', ':') : '',
+        dataDocumento: new Date().toISOString().split('T')[0],
+      }),
+    });
+    const data = await res.json();
+    if (data.success) {
+      openDocPrint(data.html);
+      showToast('✅ Attestato aperto — pronto per la stampa');
+    } else {
+      showToast('❌ ' + (data.error || 'Errore generazione'));
+    }
+  } catch (e) {
+    showToast('❌ Errore connessione Worker');
+  }
+}
+
+async function generaAttSport() {
+  const paziente = document.getElementById('asPaziente').value.trim();
+  const dataInizio = document.getElementById('asDataInizio').value;
+  const latoEl = document.querySelector('input[name="asLato"]:checked');
+  const lato = latoEl ? latoEl.value : '';
+  if (!paziente) { showToast('⚠️ Inserisci il nome del paziente'); return; }
+  if (!lato) { showToast('⚠️ Seleziona: destro, sinistro o bilateralmente'); return; }
+  if (!dataInizio) { showToast('⚠️ Inserisci la data di inizio esenzione'); return; }
+  showToast('⏳ Generazione in corso...');
+  try {
+    const res = await fetch(`${WORKER_URL}/api/attestato-sport/genera`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        paziente,
+        lato,
+        dataInizio,
+        dataDocumento: new Date().toISOString().split('T')[0],
+      }),
+    });
+    const data = await res.json();
+    if (data.success) {
+      openDocPrint(data.html);
+      showToast('✅ Attestato sport aperto — pronto per la stampa');
+    } else {
+      showToast('❌ ' + (data.error || 'Errore generazione'));
+    }
+  } catch (e) {
+    showToast('❌ Errore connessione Worker');
+  }
+}
+
+async function generaGiustifica() {
+  const paziente = document.getElementById('gjPaziente').value.trim();
+  const trattamento = document.getElementById('gjTrattamento').value.trim();
+  if (!paziente) { showToast('⚠️ Inserisci il nome del paziente'); return; }
+  showToast('⏳ Generazione in corso...');
+  try {
+    const res = await fetch(`${WORKER_URL}/api/giustifica/genera`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ paziente, trattamento }),
+    });
+    const data = await res.json();
+    if (data.success) {
+      openDocPrint(data.html);
+      showToast('✅ Giustifica aperta — pronta per la stampa');
+    } else {
+      showToast('❌ ' + (data.error || 'Errore generazione'));
+    }
+  } catch (e) {
+    showToast('❌ Errore connessione Worker');
+  }
+}
+
+async function generaRelazione() {
+  const paziente = document.getElementById('rcPaziente').value.trim();
+  if (!paziente) { showToast('⚠️ Inserisci il nome del paziente'); return; }
+
+  const payload = {
+    paziente,
+    dataNascita:    document.getElementById('rcDataNascita').value || '',
+    codiceFiscale:  document.getElementById('rcCF').value.trim().toUpperCase() || '',
+    dataIntervento: document.getElementById('rcDataIntervento').value || '',
+    dataDocumento:  new Date().toISOString().split('T')[0],
+    // Alluce diagnosi
+    alluceDestro:   document.getElementById('rcAlluceDestro').checked,
+    alluceSinistro: document.getElementById('rcAlluceSinistro').checked,
+    alluceBilat:    document.getElementById('rcAlluceBilat').checked,
+    // Margine diagnosi
+    margineMediale:  document.getElementById('rcMargMediale').checked,
+    margineLaterale: document.getElementById('rcMargLaterale').checked,
+    margineEntrambi: document.getElementById('rcMargEntrambi').checked,
+    // Quadro clinico
+    quadroClinico: document.getElementById('rcQuadroClinico').value.trim(),
+    // Sede procedura
+    sedeDestro:   document.getElementById('rcSedeDestro').checked,
+    sedeSinistro: document.getElementById('rcSedeSinistro').checked,
+    sedeEntrambi: document.getElementById('rcSedeEntrambi').checked,
+    // Margine procedura
+    margineTrattMediale:  document.getElementById('rcMTrattMediale').checked,
+    margineTrattLaterale: document.getElementById('rcMTrattLaterale').checked,
+    margineTrattEntrambi: document.getElementById('rcMTrattEntrambi').checked,
+  };
+
+  showToast('⏳ Generazione in corso...');
+  try {
+    const res = await fetch(`${WORKER_URL}/api/relazione/genera`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    const data = await res.json();
+    if (data.success) {
+      openDocPrint(data.html);
+      showToast('✅ Relazione aperta — pronta per la stampa');
+    } else {
+      showToast('❌ ' + (data.error || 'Errore generazione'));
+    }
+  } catch (e) {
+    showToast('❌ Errore connessione Worker');
+  }
+}
+
+// ==================== FATTURA ====================
+function openModalFattura() {
+  if (!currentPatient) return;
+  const p = currentPatient;
+
+  // Precompila con i dati che abbiamo
+  document.getElementById('fattNome').textContent = p.name || p.nome || '—';
+  document.getElementById('fattEmail').value    = p.email || '';
+  document.getElementById('fattTelefono').value = p.phone || p.telefono || '';
+  document.getElementById('fattCF').value       = '';
+  document.getElementById('fattCitta').value    = '';
+  document.getElementById('fattImporto').value  = '';
+  document.getElementById('fattDescrizione').value = 'Visita podologica';
+  document.getElementById('fattEsitoBox').style.display = 'none';
+  document.getElementById('fattSubmitBtn').disabled = false;
+  document.getElementById('fattSubmitBtn').textContent = '🧾 Crea Bozza FIC';
+
+  openModal('modalFattura');
+}
+
+async function inviaFattura() {
+  const cf     = document.getElementById('fattCF').value.trim();
+  const citta  = document.getElementById('fattCitta').value.trim();
+  const importo = parseFloat(document.getElementById('fattImporto').value);
+
+  if (!cf)           { showToast('⚠️ Inserisci il codice fiscale'); return; }
+  if (!citta)        { showToast('⚠️ Inserisci la città di residenza'); return; }
+  if (!importo || importo <= 0) { showToast('⚠️ Inserisci un importo valido'); return; }
+
+  const btn = document.getElementById('fattSubmitBtn');
+  btn.disabled = true;
+  btn.textContent = '⏳ Creazione in corso...';
+
+  const payload = {
+    paziente: {
+      nome:     document.getElementById('fattNome').textContent,
+      email:    document.getElementById('fattEmail').value.trim(),
+      telefono: document.getElementById('fattTelefono').value.trim(),
+      cf,
+      citta,
+    },
+    descrizione: document.getElementById('fattDescrizione').value.trim() || 'Visita podologica',
+    importo,
+    data: new Date().toISOString().split('T')[0],
+    bozza: true,
+  };
+
+  try {
+    const res  = await fetch(`${WORKER_URL}/api/fattura/crea`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    const data = await res.json();
+
+    const esitoBox = document.getElementById('fattEsitoBox');
+    if (data.success) {
+      esitoBox.style.cssText = 'display:block;background:#E8F5E9;border-left:3px solid #2E7D32;border-radius:0 10px 10px 0;padding:12px 14px;font-size:13px;';
+      const ficUrl = data.fattura?.data?.attributes?.id
+        ? `https://secure.fattureincloud.it/c/${data.fattura.data.attributes.company_id || ''}/issued-documents/${data.fattura.data.id || ''}/edit`
+        : 'https://secure.fattureincloud.it';
+      esitoBox.innerHTML = `✅ <strong>Bozza creata su FattureInCloud!</strong><br>
+        Apri FIC per controllare e inviare la fattura al paziente.<br>
+        <a href="https://secure.fattureincloud.it" target="_blank"
+           style="color:var(--teal-dark);font-weight:600;">Vai a FattureInCloud →</a>`;
+      btn.textContent = '✅ Creata!';
+      showToast('✅ Bozza fattura creata su FattureInCloud');
+    } else {
+      esitoBox.style.cssText = 'display:block;background:var(--red-light);border-left:3px solid var(--red);border-radius:0 10px 10px 0;padding:12px 14px;font-size:13px;';
+      esitoBox.textContent = '❌ ' + (data.error || 'Errore creazione fattura');
+      btn.disabled = false;
+      btn.textContent = '🧾 Riprova';
+    }
+  } catch (e) {
+    showToast('❌ Errore connessione Worker');
+    btn.disabled = false;
+    btn.textContent = '🧾 Crea Bozza FIC';
+  }
+}
+
+function openAdminModal() {
+  showToast('⚙️ Impostazioni — Coming soon');
+}
+
+function openPatientActions() {
+  showToast('Azioni paziente — Coming soon');
+}
+
+function editPatientInfo() {
+  showToast('Modifica dati — Coming soon');
+}
+
+// ==================== TOAST ====================
+let toastTimer;
+function showToast(msg, duration = 2800) {
+  const t = document.getElementById('toast');
+  clearTimeout(toastTimer);
+  t.textContent = msg;
+  t.style.display = 'block';
+  toastTimer = setTimeout(() => { t.style.display = 'none'; }, duration);
+}
+
+// ==================== MISC ====================
+// Close modals on overlay click
+document.querySelectorAll('.modal-overlay').forEach(overlay => {
+  overlay.addEventListener('click', (e) => {
+    if (e.target === overlay) overlay.classList.remove('open');
+  });
+});
+
+// Prevent bounce scroll on iOS
+document.addEventListener('touchmove', (e) => {
+  if (e.target.closest('.screen, .screen-slide, .modal-sheet')) return;
+  e.preventDefault();
+}, { passive: false });
+
+console.log('🦴 Gestionale UnghiaIncarnitaStop v1.0 — Ready');
+</script>
+</body>
+</html>
