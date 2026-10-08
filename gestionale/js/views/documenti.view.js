@@ -884,6 +884,7 @@ iframe{display:block;width:100%;height:calc(100% - 48px);border:0}</style></head
     btnEmetti.disabled = true;
     btnEmetti.textContent = 'Emissione in corso...';
 
+    let successEmissione = false;
     try {
       showToast('Emissione fattura ufficiale in corso su Fatture in Cloud...');
 
@@ -946,11 +947,20 @@ iframe{display:block;width:100%;height:calc(100% - 48px);border:0}</style></head
       const btnEmail = document.getElementById('fic-btn-email');
       const btnWa = document.getElementById('fic-btn-whatsapp');
 
-      if (resCard) resCard.style.display = 'block';
+      if (resCard) {
+        resCard.style.display = 'block';
+        resCard.style.border = '2px solid #86efac';
+        resCard.style.background = '#f0fdf4';
+        resCard.style.padding = '14px';
+        resCard.style.marginTop = '14px';
+        setTimeout(() => {
+          resCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }, 120);
+      }
 
       const numDoc = res.fattura?.number ? `nr. ${res.fattura.number}${res.fattura.numeration || ''}` : '';
-      if (resTitle) resTitle.textContent = `Fattura ${numDoc} emessa con successo!`;
-      if (resDesc) resDesc.textContent = 'Fattura registrata e SALDATA sul registro ufficiale FIC e archiviata nella cartella clinica.';
+      if (resTitle) resTitle.textContent = `✓ Fattura ${numDoc} emessa con successo!`;
+      if (resDesc) resDesc.textContent = 'Fattura registrata e SALDATA su Fatture in Cloud. Scegli come inviarla al paziente o apri il PDF:';
       showToast(`Fattura ${numDoc} emessa con successo!`);
 
       if (btnDelDraft) btnDelDraft.style.display = 'none';
@@ -958,28 +968,47 @@ iframe{display:block;width:100%;height:calc(100% - 48px);border:0}</style></head
       if (this.currentFicResult.pdf_url && btnPdf) {
         btnPdf.onclick = null;
         btnPdf.href = this.currentFicResult.pdf_url;
-        btnPdf.textContent = 'Visualizza PDF Ufficiale FIC';
-        btnPdf.style.display = 'inline-block';
-        window.open(this.currentFicResult.pdf_url, '_blank');
+        btnPdf.textContent = '📄 Apri PDF Fattura';
+        btnPdf.style.display = 'inline-flex';
+        btnPdf.style.alignItems = 'center';
       } else if (btnPdf) {
         btnPdf.style.display = 'none';
       }
 
       if (btnEmail) {
-        btnEmail.style.display = 'inline-block';
-        btnEmail.textContent = 'Invia via Email (Fatture in Cloud)';
+        btnEmail.style.display = 'inline-flex';
+        btnEmail.style.alignItems = 'center';
+        btnEmail.style.background = '#0f766e';
+        btnEmail.style.color = '#ffffff';
+        btnEmail.style.fontWeight = '600';
+        btnEmail.style.border = 'none';
+        btnEmail.textContent = '✉️ Invia via Email (Fatture in Cloud)';
       }
       if (btnWa) {
-        btnWa.style.display = 'inline-block';
+        btnWa.style.display = 'inline-flex';
+        btnWa.style.alignItems = 'center';
+        btnWa.textContent = '💬 Invia su WhatsApp';
       }
+
+      if (btnEmetti) {
+        btnEmetti.disabled = true;
+        btnEmetti.textContent = 'Fattura già emessa ✓';
+      }
+      if (btnBozza) {
+        btnBozza.style.display = 'none';
+      }
+
+      successEmissione = true;
 
     } catch (e) {
       showToast('Errore Fatture in Cloud: ' + e.message, 'error');
     } finally {
-      btnBozza.disabled = false;
-      btnEmetti.disabled = false;
-      btnBozza.textContent = 'Anteprima Bozza (Controllo)';
-      btnEmetti.textContent = 'Emetti Fattura Ufficiale';
+      if (!successEmissione) {
+        btnBozza.disabled = false;
+        btnEmetti.disabled = false;
+        btnBozza.textContent = 'Anteprima Bozza (Controllo)';
+        btnEmetti.textContent = 'Emetti Fattura Ufficiale';
+      }
     }
   },
 
