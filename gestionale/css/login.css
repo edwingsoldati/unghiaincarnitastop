@@ -1,0 +1,101 @@
+/* ─── Schermata di accesso & finestra Account — UnghiaIncarnitaStop ─── */
+
+/* Prima del login non si vede nulla del gestionale */
+body.auth-aperto #app-shell,
+body.auth-aperto #m-tabbar { visibility: hidden; }
+
+#auth-screen {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: max(20px, env(safe-area-inset-top)) 16px max(20px, env(safe-area-inset-bottom));
+  background: linear-gradient(160deg, #E6F4F1 0%, #F8FAFC 55%, #EEF2F7 100%);
+  overflow-y: auto;
+  font-family: var(--font-sans);
+}
+#auth-screen.open { display: flex; }
+
+.auth-card {
+  width: 100%;
+  max-width: 380px;
+  background: #fff;
+  border: 1px solid var(--border-subtle);
+  border-radius: 18px;
+  box-shadow: 0 20px 45px -15px rgba(0, 77, 64, 0.25);
+  padding: 30px 26px 24px;
+  margin: auto;
+}
+.auth-logo { display: block; height: 34px; width: auto; margin: 0 auto 6px; object-fit: contain; }
+.auth-sotto { text-align: center; font-size: 12px; color: var(--text-muted); margin-bottom: 22px; }
+.auth-titolo { font-size: 17px; font-weight: 700; color: var(--text-primary); text-align: center; margin-bottom: 8px; }
+.auth-testo { font-size: 13px; line-height: 1.55; color: var(--text-secondary); text-align: center; margin-bottom: 18px; }
+.auth-avviso {
+  font-size: 12.5px; line-height: 1.45; color: var(--status-warning-text);
+  background: var(--status-warning-bg); border: 1px solid var(--status-warning-border);
+  border-radius: 10px; padding: 9px 12px; margin-bottom: 16px; text-align: center;
+}
+.auth-label { display: block; font-size: 12px; font-weight: 600; color: var(--text-secondary); margin: 12px 0 5px; }
+.auth-input {
+  width: 100%; box-sizing: border-box;
+  height: 48px; padding: 0 14px;
+  font-size: 16px; /* niente zoom automatico su iPhone */
+  border: 1px solid var(--border-strong); border-radius: 12px;
+  background: #fff; color: var(--text-primary); outline: none;
+  transition: border-color .15s, box-shadow .15s;
+}
+.auth-input:focus { border-color: var(--teal-primary); box-shadow: 0 0 0 3px rgba(0, 77, 64, 0.15); }
+.auth-errore { min-height: 18px; font-size: 12.5px; color: var(--status-danger-text); margin: 10px 0 4px; text-align: center; }
+
+.auth-btn {
+  width: 100%; min-height: 52px; margin-top: 8px;
+  display: flex; align-items: center; justify-content: center; gap: 10px;
+  font-size: 15px; font-weight: 600; font-family: inherit;
+  border-radius: 12px; border: 1px solid transparent; cursor: pointer;
+  transition: background .15s, transform .05s;
+  -webkit-tap-highlight-color: transparent;
+}
+.auth-btn svg { width: 22px; height: 22px; flex-shrink: 0; }
+.auth-btn:active { transform: scale(0.99); }
+.auth-btn:disabled { opacity: .65; cursor: default; }
+.auth-btn-primario { background: var(--teal-primary); color: #fff; }
+.auth-btn-primario:hover:not(:disabled) { background: var(--teal-hover); }
+.auth-btn-secondario { background: #fff; color: var(--teal-primary); border-color: var(--teal-border); }
+.auth-btn-secondario:hover:not(:disabled) { background: var(--teal-subtle); }
+.auth-btn-link { background: none; color: var(--text-muted); min-height: 44px; font-weight: 500; font-size: 14px; }
+
+.auth-oppure { display: flex; align-items: center; gap: 10px; margin: 18px 0 2px; color: var(--text-muted); font-size: 12px; }
+.auth-oppure::before, .auth-oppure::after { content: ''; flex: 1; height: 1px; background: var(--border-subtle); }
+.auth-nota { margin-top: 16px; font-size: 11.5px; color: var(--text-muted); text-align: center; line-height: 1.45; }
+.auth-icona-grande { width: 64px; height: 64px; margin: 4px auto 14px; border-radius: 50%; background: var(--teal-subtle); color: var(--teal-primary); display: flex; align-items: center; justify-content: center; }
+.auth-icona-grande svg { width: 34px; height: 34px; }
+
+/* Segreteria: Statistiche e guadagni nascosti */
+body.ruolo-segreteria #nav-admin,
+body.ruolo-segreteria #view-admin,
+body.ruolo-segreteria [data-go="admin"] { display: none !important; }
+
+/* ── Finestra Account e sicurezza ── */
+#modal-account { z-index: 9000; }
+.acc { display: flex; flex-direction: column; gap: 8px; }
+.acc-io { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 12px; background: var(--bg-subtle); border-radius: var(--radius-md); }
+.acc-io strong, .acc-riga strong { font-size: 13px; color: var(--text-primary); }
+.acc-io small, .acc-riga small { display: block; font-size: 11px; color: var(--text-muted); margin-top: 2px; line-height: 1.4; }
+.acc-sez { font-size: 10.5px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: var(--teal-primary); margin: 14px 0 2px; }
+.acc-riga { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--border-subtle); }
+.acc-riga > div:first-child { min-width: 0; }
+.acc-disattivo { opacity: .6; }
+.acc-azioni { display: flex; flex-wrap: wrap; gap: 6px; justify-content: flex-end; }
+.acc-tu { font-size: 11px; color: var(--text-muted); }
+.acc-vuoto { font-size: 12px; color: var(--text-muted); padding: 6px 0; }
+.acc-form { display: flex; flex-direction: column; gap: 8px; }
+.acc-form-griglia { margin-top: 10px; }
+.acc-nota { font-size: 11px; color: var(--text-muted); line-height: 1.45; }
+
+@media (max-width: 820px) {
+  .acc-riga { flex-direction: column; align-items: stretch; }
+  .acc-azioni { justify-content: flex-start; }
+  .acc-azioni .btn, .acc-form .btn, .acc-io .btn { min-height: 40px; }
+}

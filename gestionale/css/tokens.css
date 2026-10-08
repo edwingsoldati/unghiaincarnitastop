@@ -1,0 +1,61 @@
+/**
+ * Design Tokens — Clinical Minimal System
+ * Studio Podologico Dott. Federico Grassi — UnghiaIncarnitaStop
+ */
+
+:root {
+  /* Tipografia */
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: 'JetBrains Mono', 'SF Mono', Menlo, Monaco, Consolas, monospace;
+
+  /* Colori Superfici & Sfondo */
+  --bg-app: #F8FAFC;
+  --bg-surface: #FFFFFF;
+  --bg-subtle: #F1F5F9;
+  --bg-muted: #E2E8F0;
+
+  /* Linee & Bordi Clinici */
+  --border-subtle: #E2E8F0;
+  --border-strong: #CBD5E1;
+
+  /* Testo & Contrasto */
+  --text-primary: #0F172A;
+  --text-secondary: #475569;
+  --text-muted: #64748B;
+  --text-inverse: #FFFFFF;
+
+  /* Accento Clinico Istituzionale */
+  --teal-primary: #004D40;
+  --teal-hover: #00362C;
+  --teal-subtle: #E6F4F1;
+  --teal-border: #99D1C7;
+  --teal-text: #004D40;
+
+  /* Stati & Badge Desaturati (Zero Fluo) */
+  --status-success-bg: #ECFDF5;
+  --status-success-text: #065F46;
+  --status-success-border: #A7F3D0;
+
+  --status-warning-bg: #FFFBEB;
+  --status-warning-text: #92400E;
+  --status-warning-border: #FDE68A;
+
+  --status-danger-bg: #FEF2F2;
+  --status-danger-text: #991B1B;
+  --status-danger-border: #FECACA;
+
+  --status-neutral-bg: #F1F5F9;
+  --status-neutral-text: #334155;
+  --status-neutral-border: #CBD5E1;
+
+  /* Raggi di Curvatura & Spaziature */
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+  --radius-xl: 12px;
+
+  /* Ombre Ultra-Sottili (No rumore) */
+  --shadow-sm: 0 1px 2px 0 rgba(15, 23, 42, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(15, 23, 42, 0.07), 0 2px 4px -2px rgba(15, 23, 42, 0.05);
+  --shadow-lg: 0 10px 15px -3px rgba(15, 23, 42, 0.08), 0 4px 6px -4px rgba(15, 23, 42, 0.04);
+}
