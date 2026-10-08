@@ -333,27 +333,24 @@ export const AgendaView = {
       // ── CASO A: FASCIA ORARIA ATTUALE (PAZIENTE ATTUALE) ───────────────────
       if (status === 'corrente') {
         return `
-          <tr class="agenda-row-corrente" style="background:#0f172a; color:#f8fafc; border-left:5px solid #14b8a6; box-shadow:0 4px 14px rgba(15,23,42,0.18);">
-            <td style="font-weight:700; font-size:14px; color:#ffffff; vertical-align:middle;" class="font-mono-code">
-              <div style="display:flex; align-items:center; gap:6px;">
-                <span style="color:#14b8a6; font-size:12px;">▶</span>
-                <span>${a.ora || '—'}</span>
-              </div>
-              <span class="badge" style="background:#14b8a6; color:#042f2e; font-weight:800; font-size:10px; margin-top:4px; display:inline-block; padding:2px 7px; letter-spacing:0.5px;">ORA</span>
+          <tr class="agenda-row-corrente" style="background:#f0fdfa; border:2px solid #0f766e; border-left:6px solid #0f766e; box-shadow:0 4px 14px rgba(15,118,110,0.14);">
+            <td style="vertical-align:top;" class="font-mono-code">
+              <div style="font-weight:800; font-size:16px; color:#0f766e; line-height:1.2;">${a.ora || '—'}</div>
+              <span class="badge" style="background:#0f766e; color:#ffffff; font-weight:700; font-size:10px; margin-top:4px; display:inline-block; padding:2px 6px; border-radius:4px; letter-spacing:0.3px;">ORA</span>
             </td>
-            <td style="vertical-align:middle;">
-              <div style="font-weight:700; font-size:14px; color:#ffffff;">${a.nome || 'Paziente'}</div>
-              <div style="font-size:11px; color:#94a3b8; margin-top:2px;">
+            <td style="vertical-align:top;">
+              <div style="font-weight:700; font-size:16px; color:#0f172a;">${a.nome || 'Paziente'}</div>
+              <div style="font-size:12px; color:#475569; margin-top:2px;">
                 ${a.email ? `<span>${a.email}</span> · ` : ''}
-                <span class="font-mono-code" style="color:#cbd5e1;">${a.telefono || 'Tel non specificato'}</span>
+                <span class="font-mono-code" style="color:#0f766e; font-weight:600;">${a.telefono || 'Tel non specificato'}</span>
               </div>
             </td>
-            <td style="vertical-align:middle;">
-              <span class="badge" style="background:#1e293b; color:#5eead4; border:1px solid #334155;">${badgeLabel}</span>
+            <td style="vertical-align:top;">
+              <span class="badge ${badgeClass}">${badgeLabel}</span>
             </td>
-            <td style="vertical-align:middle;">
-              <div style="font-size:11px; color:#cbd5e1; max-width:320px; line-height:1.4;">
-                ${a.note ? a.note : '<span style="color:#64748b;">Nessuna nota aggiuntiva</span>'}
+            <td style="vertical-align:top;">
+              <div style="font-size:12px; color:#1e293b; background:#ffffff; border:1px solid #ccfbf1; border-radius:8px; padding:6px 10px; max-width:320px; line-height:1.4;">
+                ${a.note ? a.note : '<span style="color:#94a3b8;">Nessuna nota aggiuntiva</span>'}
               </div>
             </td>
             <td style="text-align:right; vertical-align:middle;">
@@ -363,7 +360,7 @@ export const AgendaView = {
                     WhatsApp
                   </button>
                 ` : ''}
-                <button onclick="window.AgendaView.apriPazienteDaAgenda('${encodeURIComponent(JSON.stringify(a)).replace(/'/g, '%27')}')" class="btn btn-sm" style="background:#14b8a6; color:#042f2e; font-weight:700; border:none;">
+                <button onclick="window.AgendaView.apriPazienteDaAgenda('${encodeURIComponent(JSON.stringify(a)).replace(/'/g, '%27')}')" class="btn btn-primary btn-sm">
                   Cartella Clinica
                 </button>
               </div>
@@ -375,22 +372,22 @@ export const AgendaView = {
       // ── CASO B: PROSSIMO APPUNTAMENTO IN ARRIVO ─────────────────────────────
       if (status === 'prossimo') {
         return `
-          <tr class="agenda-row-prossimo" style="background:rgba(15,118,110,0.04); border-left:4px solid #0f766e;">
-            <td style="font-weight:600; font-size:13px; vertical-align:middle;" class="font-mono-code">
-              <div>${a.ora || '—'}</div>
+          <tr class="agenda-row-prossimo" style="background:#ffffff; border:1.5px solid #0f766e; border-left:5px solid #0f766e;">
+            <td style="vertical-align:top;" class="font-mono-code">
+              <div style="font-weight:700; font-size:15px; color:#0f766e;">${a.ora || '—'}</div>
               <span class="badge" style="background:#ccfbf1; color:#0f766e; font-weight:700; font-size:10px; margin-top:3px; display:inline-block; padding:2px 6px;">PROSSIMO</span>
             </td>
-            <td style="vertical-align:middle;">
-              <div style="font-weight:600; font-size:13px; color:var(--text-primary);">${a.nome || 'Paziente'}</div>
+            <td style="vertical-align:top;">
+              <div style="font-weight:600; font-size:15px; color:var(--text-primary);">${a.nome || 'Paziente'}</div>
               <div style="font-size:11px; color:var(--text-muted); margin-top:2px;">
                 ${a.email ? `<span>${a.email}</span> · ` : ''}
                 <span class="font-mono-code">${a.telefono || 'Tel non specificato'}</span>
               </div>
             </td>
-            <td style="vertical-align:middle;">
+            <td style="vertical-align:top;">
               <span class="badge ${badgeClass}">${badgeLabel}</span>
             </td>
-            <td style="vertical-align:middle;">
+            <td style="vertical-align:top;">
               <div style="font-size:11px; color:var(--text-secondary); max-width:320px; line-height:1.4;">
                 ${a.note ? a.note : '<span style="color:var(--border-strong);">Nessuna nota aggiuntiva</span>'}
               </div>
@@ -414,22 +411,22 @@ export const AgendaView = {
       // ── CASO C: APPUNTAMENTO PRECEDENTE IMMEDIATO (MENO EVIDENTE) ──────────
       if (status === 'precedente') {
         return `
-          <tr class="agenda-row-precedente" style="opacity:0.68; background:var(--bg-main);">
-            <td style="font-weight:500; font-size:13px; color:var(--text-muted); vertical-align:middle;" class="font-mono-code">
-              <div>${a.ora || '—'}</div>
-              <span style="font-size:10px; color:var(--text-muted); display:block; margin-top:2px;">precedente</span>
+          <tr class="agenda-row-precedente" style="opacity:0.62; background:var(--bg-main);">
+            <td style="vertical-align:top;" class="font-mono-code">
+              <div style="font-weight:600; font-size:14px; color:var(--text-muted);">${a.ora || '—'}</div>
+              <span style="font-size:10px; color:var(--text-muted); display:block; margin-top:2px;">(precedente)</span>
             </td>
-            <td style="vertical-align:middle;">
-              <div style="font-weight:600; font-size:13px; color:var(--text-secondary);">${a.nome || 'Paziente'}</div>
+            <td style="vertical-align:top;">
+              <div style="font-weight:600; font-size:14px; color:var(--text-secondary);">${a.nome || 'Paziente'}</div>
               <div style="font-size:11px; color:var(--text-muted); margin-top:2px;">
                 ${a.email ? `<span>${a.email}</span> · ` : ''}
                 <span class="font-mono-code">${a.telefono || 'Tel non specificato'}</span>
               </div>
             </td>
-            <td style="vertical-align:middle;">
+            <td style="vertical-align:top;">
               <span class="badge ${badgeClass}" style="opacity:0.8;">${badgeLabel}</span>
             </td>
-            <td style="vertical-align:middle;">
+            <td style="vertical-align:top;">
               <div style="font-size:11px; color:var(--text-muted); max-width:320px; line-height:1.4;">
                 ${a.note ? a.note : '<span style="color:var(--border-strong);">Nessuna nota aggiuntiva</span>'}
               </div>
@@ -458,21 +455,21 @@ export const AgendaView = {
 
         return `
           <tr class="agenda-row-passato" style="${rowStyle}">
-            <td style="font-weight:500; font-size:13px; color:var(--text-muted); vertical-align:middle;" class="font-mono-code">
+            <td style="font-weight:500; font-size:13px; color:var(--text-muted); vertical-align:top;" class="font-mono-code">
               <div>${a.ora || '—'}</div>
-              <span style="font-size:10px; color:var(--text-muted); display:block; margin-top:2px;">passato</span>
+              <span style="font-size:10px; color:var(--text-muted); display:block; margin-top:2px;">(passato)</span>
             </td>
-            <td style="vertical-align:middle;">
+            <td style="vertical-align:top;">
               <div style="font-weight:600; font-size:13px; color:var(--text-secondary);">${a.nome || 'Paziente'}</div>
               <div style="font-size:11px; color:var(--text-muted); margin-top:2px;">
                 ${a.email ? `<span>${a.email}</span> · ` : ''}
                 <span class="font-mono-code">${a.telefono || 'Tel non specificato'}</span>
               </div>
             </td>
-            <td style="vertical-align:middle;">
+            <td style="vertical-align:top;">
               <span class="badge ${badgeClass}" style="opacity:0.7;">${badgeLabel}</span>
             </td>
-            <td style="vertical-align:middle;">
+            <td style="vertical-align:top;">
               <div style="font-size:11px; color:var(--text-muted); max-width:320px; line-height:1.4;">
                 ${a.note ? a.note : '<span style="color:var(--border-strong);">Nessuna nota aggiuntiva</span>'}
               </div>
@@ -496,18 +493,18 @@ export const AgendaView = {
       // ── CASO E: STANDARD (FUTURO O GIORNATA DIVERSA DA OGGI) ────────────────
       return `
         <tr>
-          <td style="font-weight:600; font-size:13px; vertical-align:middle;" class="font-mono-code">${a.ora || '—'}</td>
-          <td style="vertical-align:middle;">
-            <div style="font-weight:600; font-size:13px; color:var(--text-primary);">${a.nome || 'Paziente'}</div>
+          <td style="font-weight:600; font-size:14px; vertical-align:top;" class="font-mono-code">${a.ora || '—'}</td>
+          <td style="vertical-align:top;">
+            <div style="font-weight:600; font-size:14px; color:var(--text-primary);">${a.nome || 'Paziente'}</div>
             <div style="font-size:11px; color:var(--text-muted); margin-top:2px;">
               ${a.email ? `<span>${a.email}</span> · ` : ''}
               <span class="font-mono-code">${a.telefono || 'Tel non specificato'}</span>
             </div>
           </td>
-          <td style="vertical-align:middle;">
+          <td style="vertical-align:top;">
             <span class="badge ${badgeClass}">${badgeLabel}</span>
           </td>
-          <td style="vertical-align:middle;">
+          <td style="vertical-align:top;">
             <div style="font-size:11px; color:var(--text-secondary); max-width:320px; line-height:1.4;">
               ${a.note ? a.note : '<span style="color:var(--border-strong);">Nessuna nota aggiuntiva</span>'}
             </div>

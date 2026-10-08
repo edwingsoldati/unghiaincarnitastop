@@ -173,15 +173,16 @@
   #view-agenda .clinical-table thead { display: none; }
   #view-agenda .clinical-table, #view-agenda .clinical-table tbody { display: block; width: 100%; }
   #view-agenda .clinical-table tr {
-    display: grid; grid-template-columns: 62px 1fr; gap: 6px 12px;
+    display: grid; grid-template-columns: 76px 1fr; gap: 6px 12px;
     background: var(--bg-surface); border: 1px solid var(--border-subtle); border-radius: 14px;
     padding: 14px; margin-bottom: 10px; box-shadow: var(--shadow-sm);
   }
   #view-agenda .clinical-table td { display: block; padding: 0; border: none !important; text-align: left !important; background: none !important; }
   #view-agenda .clinical-table td[colspan] { grid-column: 1 / -1; padding: 24px 8px; text-align: center !important; }
   #view-agenda .clinical-table td:nth-child(1):not([colspan]) {
-    grid-row: span 2; font-size: 17px !important; color: var(--teal-primary);
-    border-right: 2px solid var(--teal-border) !important; padding-right: 8px;
+    grid-row: span 2; font-size: 16px !important; color: var(--teal-primary);
+    border-right: 2px solid var(--teal-border) !important; padding-right: 10px;
+    box-sizing: border-box;
   }
   #view-agenda .clinical-table td:nth-child(2) > div:first-child { font-size: 16px !important; }
   #view-agenda .clinical-table td:nth-child(2) > div:last-child { font-size: 12.5px !important; word-break: break-word; }
@@ -192,6 +193,34 @@
   #view-agenda .clinical-table td:nth-child(5) { grid-column: 1 / -1; margin-top: 6px; }
   #view-agenda .clinical-table td:nth-child(5) > div { display: flex !important; width: 100%; gap: 8px !important; }
   #view-agenda .clinical-table td:nth-child(5) .btn { flex: 1; min-height: 46px; }
+
+  /* Card Paziente in fascia oraria attuale (stile medico in risalto) */
+  #view-agenda .clinical-table tr.agenda-row-corrente {
+    background: #f0fdfa !important;
+    border: 2px solid #0f766e !important;
+    border-left: 6px solid #0f766e !important;
+    box-shadow: 0 4px 16px rgba(15, 118, 110, 0.15) !important;
+  }
+  #view-agenda .clinical-table tr.agenda-row-corrente td:nth-child(1):not([colspan]) {
+    border-right-color: #99f6e4 !important;
+  }
+  #view-agenda .clinical-table tr.agenda-row-corrente td:nth-child(4) > div {
+    background: #ffffff !important;
+    border: 1px solid #ccfbf1 !important;
+    color: #1e293b !important;
+  }
+
+  /* Card Prossimo appuntamento in arrivo */
+  #view-agenda .clinical-table tr.agenda-row-prossimo {
+    background: #ffffff !important;
+    border: 1px solid #0f766e !important;
+    border-left: 5px solid #0f766e !important;
+  }
+
+  /* Card appuntamento precedente */
+  #view-agenda .clinical-table tr.agenda-row-precedente {
+    opacity: 0.62 !important;
+  }
 
   /* ════════ PAZIENTI: lista ↔ scheda (master/detail) ════════ */
   #view-pazienti { height: auto !important; }
