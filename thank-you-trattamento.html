@@ -1,6 +1,29 @@
 <!DOCTYPE html>
 <html lang="it">
 <head>
+<!-- PRIVACY: deve restare PRIMA di GTM.
+     Calendly passa nell'URL nome, email, telefono e risposte del paziente.
+     Qui si conserva solo l'ID prenotazione e si pulisce l'URL prima che GA4 lo legga. -->
+<script>
+(function(){
+  try {
+    var p = new URLSearchParams(window.location.search);
+    window.__uisBooking = {
+      invitee_uuid: p.get('invitee_uuid') || '',
+      utm_content: p.get('utm_content') || ''
+    };
+    if (window.__uisBooking.invitee_uuid) {
+      try { sessionStorage.setItem('uis_last_invitee_tratt', window.__uisBooking.invitee_uuid); } catch (e) {}
+    }
+    if (!p.toString()) return;
+    var keep = ['utm_source','utm_medium','utm_campaign','utm_content','utm_term','gclid'];
+    var clean = new URLSearchParams();
+    keep.forEach(function(k){ if (p.get(k)) clean.set(k, p.get(k)); });
+    var qs = clean.toString();
+    window.history.replaceState(null, '', window.location.pathname + (qs ? '?' + qs : '') + window.location.hash);
+  } catch (e) {}
+})();
+</script>
 <!-- Google Tag Manager -->
 <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
 new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
@@ -228,7 +251,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 window.dataLayer = window.dataLayer || [];
 
 (function() {
-  var params = new URLSearchParams(window.location.search);
+  var booking = window.__uisBooking || { invitee_uuid: '', utm_content: '' };
 
   // ── 1. CONSENSO ──
   // Riprende la scelta fatta nel banner della home (stesso dominio, stesso localStorage)
@@ -244,7 +267,9 @@ window.dataLayer = window.dataLayer || [];
 
   // ── 2. ANTI-DUPLICATO ──
   // Chiave univoca: invitee_uuid di Calendly se presente, altrimenti la sessione.
-  var bookingKey = params.get('invitee_uuid') || params.get('event_type_uuid') || 'session';
+  var lastInvitee = '';
+  try { lastInvitee = sessionStorage.getItem('uis_last_invitee_tratt') || ''; } catch (e) {}
+  var bookingKey = booking.invitee_uuid || lastInvitee || 'session';
   var storageKey = 'uis_ty_trattamento_' + bookingKey;
   var alreadyTracked = false;
   try { alreadyTracked = sessionStorage.getItem(storageKey) === '1'; } catch (e) {}
@@ -252,7 +277,7 @@ window.dataLayer = window.dataLayer || [];
   try { sessionStorage.setItem(storageKey, '1'); } catch (e) {}
 
   // ── 3. GCLID RECOVERY ──
-  var utmContent = params.get('utm_content') || '';
+  var utmContent = booking.utm_content || '';
   var gclid = '';
   if (utmContent.indexOf('gclid_') === 0) {
     gclid = utmContent.replace('gclid_', '');
