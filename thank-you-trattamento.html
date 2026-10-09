@@ -218,29 +218,46 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   </div>
 </footer>
 
-<!-- Google Ads base tag + conversion — Prenotazione a pagamento -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=AW-16756475572"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-  gtag('config', 'AW-16756475572');
-  gtag('event', 'conversion', {'send_to': 'AW-16756475572/C6uBCPnEwegZELSNjrY-'});
-</script>
+<!--
+  NB: rimosso il tag Google Ads diretto di un altro account.
+  La conversione di Federico arriva da GA4 -> Google Ads tramite GTM
+  con l'evento "thank_you_trattamento". Non aggiungere tag Ads diretti qui.
+-->
 
 <script>
 window.dataLayer = window.dataLayer || [];
 
-// ── GCLID RECOVERY ──
 (function() {
   var params = new URLSearchParams(window.location.search);
+
+  // ── 1. CONSENSO ──
+  // Riprende la scelta fatta nel banner della home (stesso dominio, stesso localStorage)
+  var consent = null;
+  try { consent = localStorage.getItem('uis_cookie_consent'); } catch (e) {}
+  if (consent === 'accepted') {
+    window.dataLayer.push({
+      event: 'consent_update',
+      analytics_storage: 'granted',
+      ad_storage: 'denied'
+    });
+  }
+
+  // ── 2. ANTI-DUPLICATO ──
+  // Chiave univoca: invitee_uuid di Calendly se presente, altrimenti la sessione.
+  var bookingKey = params.get('invitee_uuid') || params.get('event_type_uuid') || 'session';
+  var storageKey = 'uis_ty_trattamento_' + bookingKey;
+  var alreadyTracked = false;
+  try { alreadyTracked = sessionStorage.getItem(storageKey) === '1'; } catch (e) {}
+  if (alreadyTracked) return;
+  try { sessionStorage.setItem(storageKey, '1'); } catch (e) {}
+
+  // ── 3. GCLID RECOVERY ──
   var utmContent = params.get('utm_content') || '';
   var gclid = '';
-
-  if (utmContent.startsWith('gclid_')) {
+  if (utmContent.indexOf('gclid_') === 0) {
     gclid = utmContent.replace('gclid_', '');
   } else {
-    gclid = sessionStorage.getItem('gclid') || '';
+    try { gclid = sessionStorage.getItem('gclid') || ''; } catch (e) {}
   }
 
   if (gclid) {
@@ -255,17 +272,17 @@ window.dataLayer = window.dataLayer || [];
         timestamp: new Date().toISOString(),
         page: window.location.href
       })
-    });
-    window.dataLayer.push({ gclid: gclid, conversion_type: 'trattamento_fenolizzazione' });
+    }).catch(function() {});
   }
-})();
 
-// Evento conversione trattamento
-window.dataLayer.push({
-  event: 'thank_you_trattamento',
-  page_type: 'thank_you',
-  conversion_type: 'trattamento_fenolizzazione'
-});
+  // ── 4. CONVERSIONE (letta da GTM -> GA4 -> Google Ads) ──
+  window.dataLayer.push({
+    event: 'thank_you_trattamento',
+    page_type: 'thank_you',
+    conversion_type: 'trattamento_fenolizzazione',
+    gclid: gclid || undefined
+  });
+})();
 
 // Traccia click su consenso informato
 document.getElementById('btn-consenso').addEventListener('click', function() {
