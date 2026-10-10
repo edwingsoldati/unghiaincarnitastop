@@ -957,6 +957,185 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   </div>
 </section>
 
+<!-- ═══════════════════════════════════════════════════════════════
+     TABELLA CONFRONTO — Chirurgia tradizionale vs Fenolizzazione
+     Blocco autonomo: incolla tutto (style + section) dove vuoi la tabella.
+     Usa i colori/font della landing se presenti, altrimenti i valori di riserva.
+     Si adatta allo spazio disponibile: 3 colonne (da 520px) / 2 colonne (360–519px) / schede (sotto 360px, es. GoDaddy mobile).
+     Nessun JavaScript, nessuna libreria esterna.
+═══════════════════════════════════════════════════════════════ -->
+<style>
+/* Il blocco si adatta allo SPAZIO che ha (container query), non allo schermo:
+   funziona uguale sulla landing, dentro GoDaddy o in qualsiasi riquadro. */
+.uis-cmp{
+  --c-teal:var(--teal,#006D6D);
+  --c-teal-dark:var(--teal-dark,#004F4F);
+  --c-teal-pale:var(--teal-pale,#E8F5F5);
+  --c-black:var(--black,#0A0A0A);
+  --c-white:var(--white,#FAFAF8);
+  --c-gray:var(--gray,#5A5A5A);
+  --c-line:var(--gray-light,#E4E4E0);
+  container-type:inline-size;
+  background:var(--c-white);
+  font-family:'DM Sans',system-ui,-apple-system,'Segoe UI',sans-serif;
+  color:var(--c-black);
+  width:100%;
+}
+.uis-cmp *{box-sizing:border-box;margin:0;padding:0}
+.uis-cmp-inner{max-width:900px;margin:0 auto;padding:72px 32px}
+.uis-cmp-head{text-align:center;margin-bottom:36px}
+.uis-cmp-h2{
+  font-family:'Playfair Display',Georgia,serif;
+  font-size:clamp(28px,6.5cqi,46px);font-weight:700;line-height:1.12;
+  letter-spacing:-.5px;color:var(--c-black);margin-bottom:12px;
+}
+.uis-cmp-h2 em{font-style:italic;color:var(--c-teal)}
+.uis-cmp-sub{font-size:16px;color:var(--c-gray);line-height:1.6}
+.uis-cmp-legend{display:none}
+
+/* Tabella — LARGO: 3 colonne (voce | tradizionale | fenolizzazione) */
+.uis-cmp-table{border:1px solid var(--c-line);border-radius:20px;overflow:hidden;background:#fff}
+.uis-cmp-row{display:grid;grid-template-columns:clamp(110px,21cqi,190px) 1fr 1fr;border-top:1px solid var(--c-line)}
+.uis-cmp-row:first-child{border-top:0}
+.uis-cmp-label{
+  padding:18px 20px;font-size:12px;font-weight:600;letter-spacing:.08em;
+  text-transform:uppercase;color:var(--c-gray);display:flex;align-items:center;
+}
+.uis-cmp-cell{padding:18px 20px;font-size:15px;line-height:1.45;display:flex;align-items:flex-start;gap:10px}
+.uis-cmp-cell.is-old{color:var(--c-gray)}
+.uis-cmp-cell.is-new{background:var(--c-teal-pale);color:var(--c-black);font-weight:500}
+.uis-cmp-ico{flex-shrink:0;width:22px;height:22px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;margin-top:-1px}
+.uis-cmp-ico svg{width:12px;height:12px}
+.is-old .uis-cmp-ico,.uis-cmp-legend .is-old .uis-cmp-ico{background:#EFEFEB}
+.is-old .uis-cmp-ico svg{stroke:#9A9A95}
+.is-new .uis-cmp-ico{background:var(--c-teal)}
+.is-new .uis-cmp-ico svg{stroke:#fff}
+
+.uis-cmp-row.is-head .uis-cmp-cell{flex-direction:column;gap:2px;padding-top:22px;padding-bottom:18px}
+.uis-cmp-colname{font-family:'Playfair Display',Georgia,serif;font-size:20px;font-weight:700;line-height:1.2}
+.uis-cmp-colsub{font-size:12px;font-weight:400;color:var(--c-gray)}
+.is-head .is-old .uis-cmp-colname{color:var(--c-gray)}
+.is-head .is-new .uis-cmp-colname{color:var(--c-teal)}
+
+/* CTA */
+.uis-cmp-cta{text-align:center;margin-top:32px}
+.uis-cmp-btn{
+  display:inline-block;background:var(--c-teal);color:var(--c-white);
+  padding:16px 34px;border-radius:100px;text-decoration:none;
+  font-size:16px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;line-height:1.3;
+  box-shadow:0 8px 32px rgba(0,109,109,.22);
+  transition:background .2s,transform .15s;
+}
+.uis-cmp-btn:hover{background:var(--c-teal-dark);transform:translateY(-2px)}
+
+/* LARGO MA COMPATTO (es. blocco HTML su desktop, 520–700px): sempre 3 colonne, più strette */
+@container (max-width: 700px){
+  .uis-cmp-inner{padding:56px 20px}
+  .uis-cmp-label{padding:16px 14px;font-size:11px}
+  .uis-cmp-cell{padding:16px 14px;font-size:14px;gap:8px}
+  .uis-cmp-row.is-head .uis-cmp-cell{padding:18px 14px 14px}
+  .uis-cmp-colname{font-size:17px}
+}
+
+/* MEDIO (telefono a tutta larghezza): voce sopra, due colonne affiancate */
+@container (max-width: 519px){
+  .uis-cmp-inner{padding:52px 16px}
+  .uis-cmp-head{margin-bottom:26px}
+  .uis-cmp-row{grid-template-columns:1fr 1fr}
+  .uis-cmp-label{
+    grid-column:1 / -1;padding:12px 14px 0;font-size:11px;
+    background:linear-gradient(90deg,transparent 50%,var(--c-teal-pale) 50%);
+  }
+  .uis-cmp-row.is-head .uis-cmp-label{display:none}
+  .uis-cmp-cell{padding:8px 12px 14px;font-size:14px;gap:8px}
+  .uis-cmp-row.is-head .uis-cmp-cell{padding:16px 12px 12px}
+  .uis-cmp-colname{font-size:16px}
+  .uis-cmp-ico{width:20px;height:20px}
+  .uis-cmp-ico svg{width:11px;height:11px}
+}
+
+/* STRETTO (es. blocco HTML di GoDaddy): ogni voce diventa una scheda,
+   tradizionale sopra, fenolizzazione evidenziata sotto */
+@container (max-width: 359px){
+  .uis-cmp-inner{padding:40px 0}
+  .uis-cmp-h2{font-size:26px}
+  .uis-cmp-sub{font-size:15px}
+  .uis-cmp-legend{
+    display:flex;flex-wrap:wrap;justify-content:center;gap:6px 14px;
+    font-size:12px;color:var(--c-gray);margin:-10px 0 16px;
+  }
+  .uis-cmp-legend span{display:inline-flex;align-items:center;gap:6px}
+  .uis-cmp-legend .is-new{color:var(--c-teal);font-weight:600}
+  .uis-cmp-table{border-radius:16px}
+  .uis-cmp-row{grid-template-columns:1fr}
+  .uis-cmp-row.is-head{display:none}
+  .uis-cmp-row:nth-child(2){border-top:0}
+  .uis-cmp-label{background:none;padding:14px 14px 4px}
+  .uis-cmp-cell{padding:4px 14px 10px;font-size:14px}
+  .uis-cmp-cell.is-new{margin:0 10px 12px;padding:10px 12px;border-radius:10px}
+  .uis-cmp-btn{display:block;width:100%;padding:15px 16px;font-size:14px;letter-spacing:.04em}
+}
+</style>
+
+<section class="uis-cmp" id="confronto" aria-labelledby="uis-cmp-title">
+  <div class="uis-cmp-inner">
+    <div class="uis-cmp-head">
+      <h2 class="uis-cmp-h2" id="uis-cmp-title">Chirurgia tradizionale<br><em>o fenolizzazione?</em></h2>
+      <p class="uis-cmp-sub">Le differenze concrete, in breve.</p>
+    </div>
+    <p class="uis-cmp-legend" aria-hidden="true"><span class="is-old"><span class="uis-cmp-ico" aria-hidden="true"><svg viewBox="0 0 12 12" fill="none" stroke-width="2" stroke-linecap="round"><path d="M3 3l6 6M9 3l-6 6"/></svg></span>Chirurgia tradizionale</span><span class="is-new"><span class="uis-cmp-ico" aria-hidden="true"><svg viewBox="0 0 12 12" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 6.5l2.3 2.3L9.5 3.8"/></svg></span>Fenolizzazione</span></p>
+
+    <div class="uis-cmp-table" role="table" aria-label="Confronto tra chirurgia tradizionale e fenolizzazione">
+      <div class="uis-cmp-row is-head" role="row">
+        <div class="uis-cmp-label" role="columnheader"><span class="sr-only" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)">Voce</span></div>
+        <div class="uis-cmp-cell is-old" role="columnheader"><span class="uis-cmp-colname">Chirurgia tradizionale</span><span class="uis-cmp-colsub">Asportazione dell'unghia</span></div>
+        <div class="uis-cmp-cell is-new" role="columnheader"><span class="uis-cmp-colname">Fenolizzazione</span><span class="uis-cmp-colsub">con il Dr. Federico Grassi</span></div>
+      </div>
+
+      <div class="uis-cmp-row" role="row">
+        <div class="uis-cmp-label" role="rowheader">Procedura</div>
+        <div class="uis-cmp-cell is-old" role="cell"><span class="uis-cmp-ico" aria-hidden="true"><svg viewBox="0 0 12 12" fill="none" stroke-width="2" stroke-linecap="round"><path d="M3 3l6 6M9 3l-6 6"/></svg></span>Spesso si asporta tutta l'unghia</div>
+        <div class="uis-cmp-cell is-new" role="cell"><span class="uis-cmp-ico" aria-hidden="true"><svg viewBox="0 0 12 12" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 6.5l2.3 2.3L9.5 3.8"/></svg></span>Si tratta solo la parte che causa il problema</div>
+      </div>
+
+      <div class="uis-cmp-row" role="row">
+        <div class="uis-cmp-label" role="rowheader">Punti</div>
+        <div class="uis-cmp-cell is-old" role="cell"><span class="uis-cmp-ico" aria-hidden="true"><svg viewBox="0 0 12 12" fill="none" stroke-width="2" stroke-linecap="round"><path d="M3 3l6 6M9 3l-6 6"/></svg></span>Punti di sutura da rimuovere</div>
+        <div class="uis-cmp-cell is-new" role="cell"><span class="uis-cmp-ico" aria-hidden="true"><svg viewBox="0 0 12 12" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 6.5l2.3 2.3L9.5 3.8"/></svg></span>Nessun punto, solo una medicazione</div>
+      </div>
+
+      <div class="uis-cmp-row" role="row">
+        <div class="uis-cmp-label" role="rowheader">Recupero</div>
+        <div class="uis-cmp-cell is-old" role="cell"><span class="uis-cmp-ico" aria-hidden="true"><svg viewBox="0 0 12 12" fill="none" stroke-width="2" stroke-linecap="round"><path d="M3 3l6 6M9 3l-6 6"/></svg></span>Giorni di convalescenza</div>
+        <div class="uis-cmp-cell is-new" role="cell"><span class="uis-cmp-ico" aria-hidden="true"><svg viewBox="0 0 12 12" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 6.5l2.3 2.3L9.5 3.8"/></svg></span>Cammini subito dopo</div>
+      </div>
+
+      <div class="uis-cmp-row" role="row">
+        <div class="uis-cmp-label" role="rowheader">Recidiva</div>
+        <div class="uis-cmp-cell is-old" role="cell"><span class="uis-cmp-ico" aria-hidden="true"><svg viewBox="0 0 12 12" fill="none" stroke-width="2" stroke-linecap="round"><path d="M3 3l6 6M9 3l-6 6"/></svg></span>L'unghia può tornare a incarnirsi</div>
+        <div class="uis-cmp-cell is-new" role="cell"><span class="uis-cmp-ico" aria-hidden="true"><svg viewBox="0 0 12 12" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 6.5l2.3 2.3L9.5 3.8"/></svg></span>Recidiva solo nel 3% dei casi</div>
+      </div>
+
+      <div class="uis-cmp-row" role="row">
+        <div class="uis-cmp-label" role="rowheader">Medicazioni</div>
+        <div class="uis-cmp-cell is-old" role="cell"><span class="uis-cmp-ico" aria-hidden="true"><svg viewBox="0 0 12 12" fill="none" stroke-width="2" stroke-linecap="round"><path d="M3 3l6 6M9 3l-6 6"/></svg></span>Medicazioni e controlli da organizzare</div>
+        <div class="uis-cmp-cell is-new" role="cell"><span class="uis-cmp-ico" aria-hidden="true"><svg viewBox="0 0 12 12" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 6.5l2.3 2.3L9.5 3.8"/></svg></span>3 medicazioni di controllo incluse</div>
+      </div>
+
+      <div class="uis-cmp-row" role="row">
+        <div class="uis-cmp-label" role="rowheader">Garanzia</div>
+        <div class="uis-cmp-cell is-old" role="cell"><span class="uis-cmp-ico" aria-hidden="true"><svg viewBox="0 0 12 12" fill="none" stroke-width="2" stroke-linecap="round"><path d="M3 3l6 6M9 3l-6 6"/></svg></span>Se torna, si ricomincia</div>
+        <div class="uis-cmp-cell is-new" role="cell"><span class="uis-cmp-ico" aria-hidden="true"><svg viewBox="0 0 12 12" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 6.5l2.3 2.3L9.5 3.8"/></svg></span>Se torna, ti ritrattiamo gratis</div>
+      </div>
+    </div>
+
+    <div class="uis-cmp-cta">
+      <a href="https://calendly.com/federico-grassi-unghiaincarnitastop/30min" class="uis-cmp-btn btn-primary" target="_blank" rel="noopener">PRENOTA LA PRIMA VISITA →</a>
+    </div>
+  </div>
+</section>
+<!-- /TABELLA CONFRONTO -->
+
 <!-- COPERTURA PIEMONTE -->
 <section class="section city-bg" aria-labelledby="city-title">
   <div class="city-inner fade-up">
