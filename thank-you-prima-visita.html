@@ -24,6 +24,34 @@
   } catch (e) {}
 })();
 </script>
+<!-- CONSENT MODE v2 — deve restare PRIMA di Google Tag Manager.
+     Di default tutto negato; si sblocca solo se il visitatore ha accettato dal banner.
+     ad_personalization resta sempre negato: niente pubblicità personalizzata su un sito sanitario. -->
+<script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('consent', 'default', {
+  ad_storage: 'denied',
+  ad_user_data: 'denied',
+  ad_personalization: 'denied',
+  analytics_storage: 'denied',
+  functionality_storage: 'granted',
+  security_storage: 'granted',
+  wait_for_update: 500
+});
+gtag('set', 'ads_data_redaction', true);
+(function(){
+  var c = null;
+  try { c = localStorage.getItem('uis_cookie_consent'); } catch (e) {}
+  if (c === 'accepted') {
+    gtag('consent', 'update', {
+      ad_storage: 'granted',
+      ad_user_data: 'granted',
+      analytics_storage: 'granted'
+    });
+  }
+})();
+</script>
 <!-- Google Tag Manager -->
 <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
 new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
@@ -218,6 +246,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   <div style="margin-top:10px">
     <a href="https://www.iubenda.com/privacy-policy/85990568">Privacy Policy</a>
     <a href="https://www.iubenda.com/privacy-policy/85990568/cookie-policy">Cookie Policy</a>
+    <a href="/#cookie-preferenze">Preferenze cookie</a>
   </div>
 </footer>
 
@@ -234,16 +263,10 @@ window.dataLayer = window.dataLayer || [];
   var booking = window.__uisBooking || { invitee_uuid: '', utm_content: '' };
 
   // ── 1. CONSENSO ──
-  // Riprende la scelta fatta nel banner della home (stesso dominio, stesso localStorage)
+  // Lo stato Consent Mode è già impostato nello script in <head> (scelta fatta nel banner della home).
   var consent = null;
   try { consent = localStorage.getItem('uis_cookie_consent'); } catch (e) {}
-  if (consent === 'accepted') {
-    window.dataLayer.push({
-      event: 'consent_update',
-      analytics_storage: 'granted',
-      ad_storage: 'denied'
-    });
-  }
+  var hasConsent = (consent === 'accepted');
 
   // ── 2. ANTI-DUPLICATO ──
   // Chiave univoca: invitee_uuid di Calendly (letto nello script in <head>),
@@ -263,11 +286,11 @@ window.dataLayer = window.dataLayer || [];
   var gclid = '';
   if (utmContent.indexOf('gclid_') === 0) {
     gclid = utmContent.replace('gclid_', '');
-  } else {
+  } else if (hasConsent) {
     try { gclid = sessionStorage.getItem('gclid') || ''; } catch (e) {}
   }
 
-  if (gclid) {
+  if (gclid && hasConsent) {
     var APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzrQAGyQVNhVCihYxM2HiIG6n8rudrI3OVtYMjjIahqMEti_uILmuLJS4hZD8SZhrTi/exec';
     fetch(APPS_SCRIPT_URL, {
       method: 'POST',
@@ -287,7 +310,7 @@ window.dataLayer = window.dataLayer || [];
     event: 'thank_you_prima_visita',
     page_type: 'thank_you',
     conversion_type: 'prima_visita',
-    gclid: gclid || undefined
+    gclid: hasConsent ? (gclid || undefined) : undefined
   });
 })();
 

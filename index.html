@@ -1,6 +1,34 @@
 <!DOCTYPE html>
 <html lang="it">
 <head>
+<!-- CONSENT MODE v2 — deve restare PRIMA di Google Tag Manager.
+     Di default tutto negato; si sblocca solo se il visitatore ha accettato dal banner.
+     ad_personalization resta sempre negato: niente pubblicità personalizzata su un sito sanitario. -->
+<script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('consent', 'default', {
+  ad_storage: 'denied',
+  ad_user_data: 'denied',
+  ad_personalization: 'denied',
+  analytics_storage: 'denied',
+  functionality_storage: 'granted',
+  security_storage: 'granted',
+  wait_for_update: 500
+});
+gtag('set', 'ads_data_redaction', true);
+(function(){
+  var c = null;
+  try { c = localStorage.getItem('uis_cookie_consent'); } catch (e) {}
+  if (c === 'accepted') {
+    gtag('consent', 'update', {
+      ad_storage: 'granted',
+      ad_user_data: 'granted',
+      analytics_storage: 'granted'
+    });
+  }
+})();
+</script>
 <!-- Google Tag Manager -->
 <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
 new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
@@ -10,10 +38,10 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 <!-- End Google Tag Manager -->
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="description" content="Unghia incarnita a Torino? Il Dr. Federico Grassi la risolve definitivamente con la fenolizzazione. 310 recensioni, 97% di successo, garanzia recidiva. Prenota online.">
+<meta name="description" content="Unghia incarnita a Torino? Il Dr. Federico Grassi la risolve definitivamente con la fenolizzazione. Oltre 330 recensioni verificate, 97% di successo, garanzia recidiva. Prenota online.">
 <meta name="keywords" content="unghia incarnita torino, podologo torino, fenolizzazione torino, podologo unghia incarnita torino, miglior podologo torino">
 <meta property="og:title" content="Unghia Incarnita Torino — Dr. Federico Grassi Podologo">
-<meta property="og:description" content="Fenolizzazione: trattamento definitivo per l'unghia incarnita. 310 recensioni Google, 97% successo, garanzia recidiva. Via Filadelfia 200, Torino.">
+<meta property="og:description" content="Fenolizzazione: trattamento definitivo per l'unghia incarnita. Oltre 330 recensioni verificate su Google, 97% successo, garanzia recidiva. Via Filadelfia 200, Torino.">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://www.unghiaincarnitastop.com">
 <meta property="og:image" content="https://www.unghiaincarnitastop.com/uis_logo_full.webp">
@@ -22,7 +50,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 <meta property="og:locale" content="it_IT">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Unghia Incarnita Torino — Dr. Federico Grassi Podologo">
-<meta name="twitter:description" content="Fenolizzazione: trattamento definitivo per l'unghia incarnita. 310 recensioni Google, 97% successo, garanzia recidiva.">
+<meta name="twitter:description" content="Fenolizzazione: trattamento definitivo per l'unghia incarnita. Oltre 330 recensioni verificate su Google, 97% successo, garanzia recidiva.">
 <meta name="twitter:image" content="https://www.unghiaincarnitastop.com/uis_logo_full.webp">
 <meta name="robots" content="index, follow">
 <meta name="author" content="Dr. Federico Grassi">
@@ -546,6 +574,61 @@ details p{font-size:15px;color:var(--gray);line-height:1.75;margin-top:14px}
   .reviews-track,.badge-dot{animation:none}
 }
 
+/* ── VIDEO TESTIMONIANZE ── */
+.vt-bg{background:var(--white)}
+.vt-head{text-align:center;max-width:760px;margin:0 auto 48px}
+.vt-head .section-h2{margin-bottom:16px}
+.vt-sub{font-size:16px;color:var(--gray);line-height:1.7}
+.vt-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px}
+.vt-card{
+  background:var(--white);
+  border:1px solid var(--gray-light);
+  border-radius:var(--r-lg);
+  overflow:hidden;
+  display:flex;flex-direction:column;
+  transition:border-color .2s,box-shadow .2s;
+}
+.vt-card:hover{border-color:var(--teal);box-shadow:0 12px 36px rgba(0,109,109,.08)}
+.vt-media{position:relative;aspect-ratio:16/9;background:var(--black);overflow:hidden}
+.vt-thumb{
+  position:absolute;inset:0;width:100%;height:100%;
+  border:0;padding:0;margin:0;background:none;
+  cursor:pointer;display:block;
+}
+.vt-thumb img{width:100%;height:100%;object-fit:cover;display:block}
+/* Play in alto a sinistra: unica zona libera delle copertine (non copre le scritte) */
+.vt-play{
+  position:absolute;top:12px;left:12px;
+  width:44px;height:44px;
+  border-radius:50%;background:var(--teal);
+  border:2px solid rgba(255,255,255,.9);
+  box-shadow:0 4px 14px rgba(0,0,0,.30);
+  display:flex;align-items:center;justify-content:center;
+  transition:transform .15s,background .2s;
+}
+.vt-play svg{width:18px;height:18px;margin-left:3px;fill:var(--white)}
+.vt-thumb:hover .vt-play,.vt-thumb:focus-visible .vt-play{transform:scale(1.08);background:var(--teal-dark)}
+.vt-thumb:focus-visible{outline:3px solid var(--teal-light);outline-offset:-3px}
+.vt-media iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+.vt-body{padding:22px 24px 26px}
+.vt-title{font-size:17px;font-weight:500;color:var(--black);line-height:1.35;margin-bottom:8px}
+.vt-desc{font-size:14px;color:var(--gray);line-height:1.6}
+.vt-note{text-align:center;font-size:12px;color:#8A8A85;margin-top:18px}
+.vt-cta{text-align:center;margin-top:56px}
+.vt-cta-h{
+  font-family:'Playfair Display',serif;
+  font-size:clamp(24px,3vw,34px);
+  font-weight:700;line-height:1.15;letter-spacing:-.5px;
+  color:var(--black);margin-bottom:10px;
+}
+.vt-cta-p{font-size:16px;color:var(--gray);margin-bottom:28px}
+.vt-cta .btn-primary{display:inline-block}
+@media(max-width:860px){
+  .vt-grid{grid-template-columns:1fr;gap:20px}
+  .vt-head{margin-bottom:32px}
+  .vt-cta{margin-top:40px}
+}
+
 /* ── COOKIE BANNER ── */
 #cookie-banner{
   position:fixed;bottom:0;left:0;right:0;z-index:9999;
@@ -640,8 +723,8 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 <!-- COOKIE BANNER CUSTOM GDPR -->
 <div id="cookie-banner" role="dialog" aria-live="polite" aria-label="Consenso cookie">
   <p>
-    Utilizziamo cookie tecnici e, con il tuo consenso, cookie analitici (Google Analytics) per migliorare l'esperienza sul sito.
-    Puoi accettare o rifiutare. Leggi la nostra
+    Utilizziamo cookie tecnici e, solo con il tuo consenso, cookie di statistica (Google Analytics) e di misurazione delle conversioni pubblicitarie (Google Ads). Non usiamo cookie per pubblicità personalizzata.
+    Puoi accettare, rifiutare o cambiare idea in qualsiasi momento da "Preferenze cookie" in fondo alla pagina. Leggi la nostra
     <a href="https://www.iubenda.com/privacy-policy/85990568" target="_blank" rel="noopener">Privacy Policy</a> e
     <a href="https://www.iubenda.com/privacy-policy/85990568/cookie-policy" target="_blank" rel="noopener">Cookie Policy</a>.
   </p>
@@ -671,7 +754,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     <div class="proof">
       <div class="proof-row">
         <span class="stars" aria-label="5 stelle su 5">★★★★★</span>
-        <p><strong>310 recensioni</strong> Google</p>
+        <p><strong>Oltre 330 recensioni</strong> verificate su Google</p>
       </div>
       <div class="proof-divider"></div>
       <div class="proof-row">
@@ -731,8 +814,8 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <p class="stat-l">tasso di successo<br>nessuna recidiva</p>
     </div>
     <div class="stat-item fade-up">
-      <p class="stat-n">310</p>
-      <p class="stat-l">recensioni Google<br>a 5 stelle</p>
+      <p class="stat-n">330+</p>
+      <p class="stat-l">recensioni verificate<br>su Google</p>
     </div>
     <div class="stat-item fade-up">
       <p class="stat-n">15'</p>
@@ -740,7 +823,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     </div>
     <div class="stat-item fade-up">
       <p class="stat-n">72h</p>
-      <p class="stat-l">prima visita<br>disponibile</p>
+      <p class="stat-l">prima visita assicurata<br>chiamando o su WhatsApp</p>
     </div>
   </div>
 </div>
@@ -867,7 +950,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         <div class="diff-icon-wrap" aria-hidden="true"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#006D6D" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><polyline points="9 16 11 18 15 14"/></svg></div>
         <div>
           <h3 class="diff-title">Prenota in 2 minuti</h3>
-          <p class="diff-desc">Niente form, niente attese in segreteria. Scegli il tuo slot online e confermi subito. Prima visita disponibile entro 72 ore.</p>
+          <p class="diff-desc">Niente form, niente attese in segreteria. Scegli il tuo slot online e confermi subito. Non trovi disponibilità? Chiamaci o scrivici su WhatsApp: ti assicuriamo la prima visita entro 72 ore.</p>
         </div>
       </div>
     </div>
@@ -906,12 +989,77 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   <div class="section-inner" style="margin-bottom:40px">
     <p class="eyebrow fade-up">Recensioni Google verificate</p>
     <h2 class="section-h2 fade-up" id="reviews-title">
-      310 persone con <strong>unghia incarnita</strong><br><em>che non soffrono più.</em>
+      Oltre 330 persone con <strong>unghia incarnita</strong><br><em>che non soffrono più.</em>
     </h2>
   </div>
   <div class="reviews-overflow" aria-label="Carosello recensioni pazienti">
     <div class="reviews-track" id="reviews-track" role="list">
         </div>
+  </div>
+</section>
+
+<!-- VIDEO TESTIMONIANZE -->
+<section class="section vt-bg" id="video-testimonianze" aria-labelledby="vt-title">
+  <div class="section-inner">
+    <div class="vt-head fade-up">
+      <h2 class="section-h2" id="vt-title">Non fidarti delle nostre parole.<br><em>Ascolta chi c'è già passato.</em></h2>
+      <p class="vt-sub">Tre pazienti, tre storie diverse. Ascolta direttamente dalla loro voce com'è andato il trattamento con Federico Grassi.</p>
+    </div>
+    <div class="vt-grid">
+      <article class="vt-card fade-up">
+        <div class="vt-media">
+          <button type="button" class="vt-thumb" data-yt="MjJjixHBW1o" aria-label="Guarda la video testimonianza di Riccardo">
+            <picture>
+              <source srcset="https://i.ytimg.com/vi_webp/MjJjixHBW1o/maxresdefault.webp" type="image/webp">
+              <img src="https://i.ytimg.com/vi/MjJjixHBW1o/maxresdefault.jpg" alt="Video testimonianza di Riccardo" width="1280" height="720" loading="lazy" decoding="async">
+            </picture>
+            <span class="vt-play" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></span>
+          </button>
+        </div>
+        <div class="vt-body">
+          <h3 class="vt-title">«Non ho sentito nulla.»</h3>
+          <p class="vt-desc">Riccardo racconta il trattamento dell'unghia incarnita all'alluce destro.</p>
+        </div>
+      </article>
+      <article class="vt-card fade-up">
+        <div class="vt-media">
+          <button type="button" class="vt-thumb" data-yt="aIN3yImp5XQ" aria-label="Guarda la video testimonianza di Alessandro">
+            <picture>
+              <source srcset="https://i.ytimg.com/vi_webp/aIN3yImp5XQ/maxresdefault.webp" type="image/webp">
+              <img src="https://i.ytimg.com/vi/aIN3yImp5XQ/maxresdefault.jpg" alt="Video testimonianza di Alessandro" width="1280" height="720" loading="lazy" decoding="async">
+            </picture>
+            <span class="vt-play" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></span>
+          </button>
+        </div>
+        <div class="vt-body">
+          <h3 class="vt-title">«Dopo anni di dolore, finalmente una soluzione.»</h3>
+          <p class="vt-desc">Unghia incarnita da anni, su entrambi gli alluci.</p>
+        </div>
+      </article>
+      <article class="vt-card fade-up">
+        <div class="vt-media">
+          <button type="button" class="vt-thumb" data-yt="mgqSHXomPSc" aria-label="Guarda la video testimonianza di Chiara">
+            <picture>
+              <source srcset="https://i.ytimg.com/vi_webp/mgqSHXomPSc/maxresdefault.webp" type="image/webp">
+              <img src="https://i.ytimg.com/vi/mgqSHXomPSc/maxresdefault.jpg" alt="Video testimonianza di Chiara" width="1280" height="720" loading="lazy" decoding="async">
+            </picture>
+            <span class="vt-play" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></span>
+          </button>
+        </div>
+        <div class="vt-body">
+          <h3 class="vt-title">«L'unghia incarnita era tornata dopo un precedente intervento.»</h3>
+          <p class="vt-desc">Chiara racconta perché ha scelto Federico dopo una precedente esperienza ospedaliera.</p>
+        </div>
+      </article>
+    </div>
+    <p class="vt-note">I video vengono caricati da YouTube solo quando premi Play.</p>
+    <div class="vt-cta fade-up">
+      <h3 class="vt-cta-h">Anche tu convivi con un'unghia incarnita?</h3>
+      <p class="vt-cta-p">Scopri se la fenolizzazione è il trattamento adatto al tuo caso.</p>
+      <a href="https://calendly.com/federico-grassi-unghiaincarnitastop/30min" class="btn-primary" target="_blank" rel="noopener">
+        PRENOTA LA PRIMA VISITA →
+      </a>
+    </div>
   </div>
 </section>
 
@@ -930,7 +1078,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     <a href="https://calendly.com/federico-grassi-unghiaincarnitastop/30min" class="btn-white" target="_blank" rel="noopener">
       PRENOTA LA PRIMA VISITA →
     </a>
-    <p class="garanzia-note">Dr. Federico Grassi — Podologo specializzato nel trattamento dell'unghia incarnita<br>Prima visita disponibile entro 72 ore · Via Filadelfia 200, Torino</p>
+    <p class="garanzia-note">Dr. Federico Grassi — Podologo specializzato nel trattamento dell'unghia incarnita<br>Non trovi posto online? Chiamaci o scrivici su WhatsApp: prima visita entro 72 ore · Via Filadelfia 200, Torino</p>
   </div>
 </section>
 
@@ -988,6 +1136,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     <nav class="footer-links" aria-label="Link footer">
       <a href="https://www.iubenda.com/privacy-policy/85990568" class="iubenda-white iubenda-noiframe iubenda-embed" title="Privacy Policy">Privacy Policy</a>
       <a href="https://www.iubenda.com/privacy-policy/85990568/cookie-policy" class="iubenda-white iubenda-noiframe iubenda-embed" title="Cookie Policy">Cookie Policy</a>
+      <a href="#cookie-preferenze" data-cookie-prefs>Preferenze cookie</a>
       <script type="text/javascript">(function (w,d) {var loader = function () {var s = d.createElement("script"), tag = d.getElementsByTagName("script")[0]; s.src="https://cdn.iubenda.com/iubenda.js"; tag.parentNode.insertBefore(s,tag);}; if(w.addEventListener){w.addEventListener("load", loader, false);}else if(w.attachEvent){w.attachEvent("onload", loader);}else{w.onload = loader;}})(window, document);</script>
     </nav>
   </div>
@@ -1137,7 +1286,7 @@ const sd = {
   "@context":"https://schema.org",
   "@type":"MedicalBusiness",
   "name":"UnghiaincarnitaStop — Dr. Federico Grassi",
-  "description":"Trattamento definitivo per l'unghia incarnita con fenolizzazione. 310 recensioni Google, 97% di successo, garanzia recidiva.",
+  "description":"Trattamento definitivo per l'unghia incarnita con fenolizzazione. Oltre 330 recensioni verificate su Google, 97% di successo, garanzia recidiva.",
   "url":"https://www.unghiaincarnitastop.com",
   "telephone":"+393334217550",
   "address":{
@@ -1151,7 +1300,7 @@ const sd = {
   "aggregateRating":{
     "@type":"AggregateRating",
     "ratingValue":"5",
-    "reviewCount":"310"
+    "reviewCount":"330"
   },
   "openingHoursSpecification":{
     "@type":"OpeningHoursSpecification",
@@ -1165,73 +1314,106 @@ s.type = 'application/ld+json';
 s.textContent = JSON.stringify(sd);
 document.head.appendChild(s);
 
-// ── COOKIE BANNER GDPR ──
+// ── COOKIE BANNER GDPR + CONSENT MODE v2 ──
 (function() {
   const CONSENT_KEY = 'uis_cookie_consent';
   const banner = document.getElementById('cookie-banner');
-  const consent = localStorage.getItem(CONSENT_KEY);
+  let consent = null;
+  try { consent = localStorage.getItem(CONSENT_KEY); } catch (e) {}
 
-  // Mostra banner solo se non ha ancora scelto
-  if (!consent) {
-    setTimeout(() => banner.classList.add('visible'), 600);
-  }
+  function showBanner() { banner.classList.add('visible'); }
 
-  // Se aveva già accettato, carica GTM
-  if (consent === 'accepted') {
-    loadGTM();
-  }
+  // Mostra il banner se non ha ancora scelto, o se arriva da "Preferenze cookie"
+  if (!consent) setTimeout(showBanner, 600);
+  if (location.hash === '#cookie-preferenze') setTimeout(showBanner, 300);
+  window.addEventListener('hashchange', function() {
+    if (location.hash === '#cookie-preferenze') showBanner();
+  });
+  document.querySelectorAll('[data-cookie-prefs]').forEach(function(el) {
+    el.addEventListener('click', function(e) { e.preventDefault(); showBanner(); });
+  });
 
   document.getElementById('cookie-accept').addEventListener('click', function() {
-    localStorage.setItem(CONSENT_KEY, 'accepted');
+    try { localStorage.setItem(CONSENT_KEY, 'accepted'); } catch (e) {}
     banner.classList.remove('visible');
-    loadGTM();
-    // Notifica dataLayer
-    window.dataLayer = window.dataLayer || [];
+    gtag('consent', 'update', {
+      ad_storage: 'granted',
+      ad_user_data: 'granted',
+      analytics_storage: 'granted'
+    });
+    // Ora che c'è il consenso, salva il gclid arrivato con l'annuncio
+    if (window.__uisPendingGclid) {
+      try {
+        sessionStorage.setItem('gclid', window.__uisPendingGclid);
+        sessionStorage.setItem('gclid_ts', Date.now());
+      } catch (e) {}
+    }
     window.dataLayer.push({ event: 'cookie_consent_accepted' });
   });
 
   document.getElementById('cookie-reject').addEventListener('click', function() {
-    localStorage.setItem(CONSENT_KEY, 'rejected');
+    try { localStorage.setItem(CONSENT_KEY, 'rejected'); } catch (e) {}
     banner.classList.remove('visible');
-    window.dataLayer = window.dataLayer || [];
+    gtag('consent', 'update', {
+      ad_storage: 'denied',
+      ad_user_data: 'denied',
+      ad_personalization: 'denied',
+      analytics_storage: 'denied'
+    });
+    try { sessionStorage.removeItem('gclid'); sessionStorage.removeItem('gclid_ts'); } catch (e) {}
     window.dataLayer.push({ event: 'cookie_consent_rejected' });
   });
-
-  function loadGTM() {
-    // GTM già caricato nel head — sblocca solo il consenso
-    window.dataLayer = window.dataLayer || [];
-    window.dataLayer.push({
-      'event': 'consent_update',
-      'analytics_storage': 'granted',
-      'ad_storage': 'denied'
-    });
-  }
 })();
 
 </script>
 
 <script>
-// ── GCLID CAPTURE ──
-// 1. Salva gclid in sessionStorage appena l'utente arriva sul sito
+// ── GCLID CAPTURE (solo con consenso) ──
+function uisHasConsent() {
+  try { return localStorage.getItem('uis_cookie_consent') === 'accepted'; } catch (e) { return false; }
+}
+// 1. Legge il gclid dall'URL; lo salva solo se c'è il consenso (altrimenti al click su "Accetta")
 (function() {
   var params = new URLSearchParams(window.location.search);
   var gclid = params.get('gclid');
-  if (gclid) {
-    sessionStorage.setItem('gclid', gclid);
-    sessionStorage.setItem('gclid_ts', Date.now());
+  if (!gclid) return;
+  window.__uisPendingGclid = gclid;
+  if (uisHasConsent()) {
+    try {
+      sessionStorage.setItem('gclid', gclid);
+      sessionStorage.setItem('gclid_ts', Date.now());
+    } catch (e) {}
   }
 })();
 
-// 2. Su ogni click Calendly: appende gclid come utm_content all'URL
+// 2. Su ogni click Calendly: appende gclid come utm_content all'URL (solo con consenso)
 document.querySelectorAll('a[href*="calendly.com"]').forEach(function(el) {
   el.addEventListener('click', function(e) {
-    var gclid = sessionStorage.getItem('gclid');
+    if (!uisHasConsent()) return;
+    var gclid = null;
+    try { gclid = sessionStorage.getItem('gclid'); } catch (err) {}
     if (!gclid) return;
     var url = new URL(this.href);
     url.searchParams.set('utm_source', 'google');
     url.searchParams.set('utm_medium', 'cpc');
     url.searchParams.set('utm_content', 'gclid_' + gclid);
     this.href = url.toString();
+  });
+});
+</script>
+<script>
+// ── VIDEO TESTIMONIANZE: il player YouTube si carica solo al click su Play ──
+document.querySelectorAll('.vt-thumb').forEach(function(btn) {
+  btn.addEventListener('click', function() {
+    var id = this.getAttribute('data-yt');
+    var media = this.parentNode;
+    var iframe = document.createElement('iframe');
+    iframe.src = 'https://www.youtube-nocookie.com/embed/' + id + '?autoplay=1&rel=0&playsinline=1';
+    iframe.title = this.getAttribute('aria-label');
+    iframe.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture';
+    iframe.allowFullscreen = true;
+    media.innerHTML = '';
+    media.appendChild(iframe);
   });
 });
 </script>
