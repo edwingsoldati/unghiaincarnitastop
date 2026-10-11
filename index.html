@@ -1520,11 +1520,13 @@ document.head.appendChild(s);
       ad_user_data: 'granted',
       analytics_storage: 'granted'
     });
-    // Ora che c'è il consenso, salva il gclid arrivato con l'annuncio
-    if (window.__uisPendingGclid) {
+    // Ora che c'è il consenso, salva i parametri di advertising (gclid, wbraid, gbraid)
+    var pending = window.__uisPendingTracking || (window.__uisPendingGclid ? { gclid: window.__uisPendingGclid } : null);
+    if (pending) {
       try {
-        sessionStorage.setItem('gclid', window.__uisPendingGclid);
-        sessionStorage.setItem('gclid_ts', Date.now());
+        if (pending.gclid) { sessionStorage.setItem('gclid', pending.gclid); sessionStorage.setItem('gclid_ts', Date.now()); }
+        if (pending.wbraid) { sessionStorage.setItem('wbraid', pending.wbraid); sessionStorage.setItem('wbraid_ts', Date.now()); }
+        if (pending.gbraid) { sessionStorage.setItem('gbraid', pending.gbraid); sessionStorage.setItem('gbraid_ts', Date.now()); }
       } catch (e) {}
     }
     window.dataLayer.push({ event: 'cookie_consent_accepted' });
@@ -1539,7 +1541,11 @@ document.head.appendChild(s);
       ad_personalization: 'denied',
       analytics_storage: 'denied'
     });
-    try { sessionStorage.removeItem('gclid'); sessionStorage.removeItem('gclid_ts'); } catch (e) {}
+    try {
+      sessionStorage.removeItem('gclid'); sessionStorage.removeItem('gclid_ts');
+      sessionStorage.removeItem('wbraid'); sessionStorage.removeItem('wbraid_ts');
+      sessionStorage.removeItem('gbraid'); sessionStorage.removeItem('gbraid_ts');
+    } catch (e) {}
     window.dataLayer.push({ event: 'cookie_consent_rejected' });
   });
 })();
@@ -1547,35 +1553,54 @@ document.head.appendChild(s);
 </script>
 
 <script>
-// ── GCLID CAPTURE (solo con consenso) ──
+// ── GOOGLE ADS TRACKING CAPTURE (gclid, wbraid, gbraid — solo con consenso) ──
 function uisHasConsent() {
   try { return localStorage.getItem('uis_cookie_consent') === 'accepted'; } catch (e) { return false; }
 }
-// 1. Legge il gclid dall'URL; lo salva solo se c'è il consenso (altrimenti al click su "Accetta")
+
+// 1. Legge gclid, wbraid e gbraid dall'URL; li salva solo se c'è il consenso (altrimenti al click su "Accetta")
 (function() {
   var params = new URLSearchParams(window.location.search);
   var gclid = params.get('gclid');
-  if (!gclid) return;
-  window.__uisPendingGclid = gclid;
+  var wbraid = params.get('wbraid');
+  var gbraid = params.get('gbraid');
+  if (!gclid && !wbraid && !gbraid) return;
+
+  window.__uisPendingTracking = { gclid: gclid || '', wbraid: wbraid || '', gbraid: gbraid || '' };
+  if (gclid) window.__uisPendingGclid = gclid;
+
   if (uisHasConsent()) {
     try {
-      sessionStorage.setItem('gclid', gclid);
-      sessionStorage.setItem('gclid_ts', Date.now());
+      if (gclid) { sessionStorage.setItem('gclid', gclid); sessionStorage.setItem('gclid_ts', Date.now()); }
+      if (wbraid) { sessionStorage.setItem('wbraid', wbraid); sessionStorage.setItem('wbraid_ts', Date.now()); }
+      if (gbraid) { sessionStorage.setItem('gbraid', gbraid); sessionStorage.setItem('gbraid_ts', Date.now()); }
     } catch (e) {}
   }
 })();
 
-// 2. Su ogni click Calendly: appende gclid come utm_content all'URL (solo con consenso)
+// 2. Su ogni click Calendly: passa parametri Google Ads all'URL (solo con consenso)
 document.querySelectorAll('a[href*="calendly.com"]').forEach(function(el) {
   el.addEventListener('click', function(e) {
     if (!uisHasConsent()) return;
-    var gclid = null;
-    try { gclid = sessionStorage.getItem('gclid'); } catch (err) {}
-    if (!gclid) return;
+    var gclid = null, wbraid = null, gbraid = null;
+    try {
+      gclid = sessionStorage.getItem('gclid');
+      wbraid = sessionStorage.getItem('wbraid');
+      gbraid = sessionStorage.getItem('gbraid');
+    } catch (err) {}
+    if (!gclid && !wbraid && !gbraid) return;
+
     var url = new URL(this.href);
     url.searchParams.set('utm_source', 'google');
     url.searchParams.set('utm_medium', 'cpc');
-    url.searchParams.set('utm_content', 'gclid_' + gclid);
+
+    var utmParts = [];
+    if (gclid) { url.searchParams.set('gclid', gclid); utmParts.push('gclid_' + gclid); }
+    if (wbraid) { url.searchParams.set('wbraid', wbraid); utmParts.push('wbraid_' + wbraid); }
+    if (gbraid) { url.searchParams.set('gbraid', gbraid); utmParts.push('gbraid_' + gbraid); }
+    if (utmParts.length > 0) {
+      url.searchParams.set('utm_content', utmParts.join('__'));
+    }
     this.href = url.toString();
   });
 });

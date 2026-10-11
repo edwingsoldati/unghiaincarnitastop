@@ -8,15 +8,31 @@
 (function(){
   try {
     var p = new URLSearchParams(window.location.search);
+
+    // Cerca il telefono tra i possibili parametri di Calendly
+    var phone = p.get('phone') || p.get('invitee_phone') || p.get('text_reminder_number') || p.get('location') || '';
+    if (!phone) {
+      ['answer_1', 'answer_2', 'answer_3', 'a1', 'a2', 'a3'].some(function(k) {
+        var val = p.get(k) || '';
+        if (val && val.replace(/[^0-9]/g, '').length >= 8) { phone = val; return true; }
+        return false;
+      });
+    }
+
     window.__uisBooking = {
       invitee_uuid: p.get('invitee_uuid') || '',
-      utm_content: p.get('utm_content') || ''
+      utm_content: p.get('utm_content') || '',
+      invitee_email: p.get('invitee_email') || p.get('email') || '',
+      invitee_phone: phone,
+      gclid: p.get('gclid') || '',
+      wbraid: p.get('wbraid') || '',
+      gbraid: p.get('gbraid') || ''
     };
     if (window.__uisBooking.invitee_uuid) {
       try { sessionStorage.setItem('uis_last_invitee_tratt', window.__uisBooking.invitee_uuid); } catch (e) {}
     }
     if (!p.toString()) return;
-    var keep = ['utm_source','utm_medium','utm_campaign','utm_content','utm_term','gclid'];
+    var keep = ['utm_source','utm_medium','utm_campaign','utm_content','utm_term','gclid','wbraid','gbraid'];
     var clean = new URLSearchParams();
     keep.forEach(function(k){ if (p.get(k)) clean.set(k, p.get(k)); });
     var qs = clean.toString();
@@ -279,17 +295,55 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 <script>
 window.dataLayer = window.dataLayer || [];
 
-(function() {
-  var booking = window.__uisBooking || { invitee_uuid: '', utm_content: '' };
+// ── REGOLE NORMALIZZAZIONE ENHANCED CONVERSIONS GOOGLE ADS ──
+function uisNormalizeEmail(email) {
+  if (!email || typeof email !== 'string') return '';
+  var clean = email.trim().toLowerCase();
+  var atIndex = clean.lastIndexOf('@');
+  if (atIndex === -1) return clean;
+  var user = clean.substring(0, atIndex);
+  var domain = clean.substring(atIndex + 1);
+  if (domain === 'gmail.com' || domain === 'googlemail.com') {
+    user = user.split('+')[0];
+    user = user.replace(/\./g, '');
+  }
+  return user + '@' + domain;
+}
 
-  // ── 1. CONSENSO ──
-  // Lo stato Consent Mode è già impostato nello script in <head> (scelta fatta nel banner della home).
+function uisNormalizePhone(phone) {
+  if (!phone || typeof phone !== 'string') return '';
+  var clean = phone.trim().replace(/[^0-9+]/g, '');
+  if (!clean) return '';
+  if (clean.indexOf('+') === 0) return clean;
+  if (clean.indexOf('0039') === 0) return '+' + clean.substring(2);
+  if (clean.indexOf('39') === 0 && clean.length > 10) return '+' + clean;
+  return '+39' + clean;
+}
+
+async function uisSha256(str) {
+  if (!str) return '';
+  try {
+    if (window.crypto && crypto.subtle && window.TextEncoder) {
+      var msgBuffer = new TextEncoder().encode(str);
+      var hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+      var hashArray = Array.from(new Uint8Array(hashBuffer));
+      return hashArray.map(function(b) {
+        return b.toString(16).padStart(2, '0');
+      }).join('');
+    }
+  } catch (e) {}
+  return '';
+}
+
+(async function() {
+  var booking = window.__uisBooking || { invitee_uuid: '', utm_content: '', invitee_email: '', invitee_phone: '', gclid: '', wbraid: '', gbraid: '' };
+
+  // ── 1. CONSENSO (Consent Mode v2) ──
   var consent = null;
   try { consent = localStorage.getItem('uis_cookie_consent'); } catch (e) {}
   var hasConsent = (consent === 'accepted');
 
   // ── 2. ANTI-DUPLICATO ──
-  // Chiave univoca: invitee_uuid di Calendly se presente, altrimenti la sessione.
   var lastInvitee = '';
   try { lastInvitee = sessionStorage.getItem('uis_last_invitee_tratt') || ''; } catch (e) {}
   var bookingKey = booking.invitee_uuid || lastInvitee || 'session';
@@ -299,37 +353,77 @@ window.dataLayer = window.dataLayer || [];
   if (alreadyTracked) return;
   try { sessionStorage.setItem(storageKey, '1'); } catch (e) {}
 
-  // ── 3. GCLID RECOVERY ──
+  // ── 3. RECUPERO PARAMETRI ADS (gclid, wbraid, gbraid) ──
   var utmContent = booking.utm_content || '';
-  var gclid = '';
-  if (utmContent.indexOf('gclid_') === 0) {
-    gclid = utmContent.replace('gclid_', '');
-  } else if (hasConsent) {
-    try { gclid = sessionStorage.getItem('gclid') || ''; } catch (e) {}
+  var gclid = booking.gclid || '';
+  var wbraid = booking.wbraid || '';
+  var gbraid = booking.gbraid || '';
+
+  if (!gclid && utmContent.indexOf('gclid_') !== -1) {
+    var mg = utmContent.match(/gclid_([a-zA-Z0-9_\-]+)/);
+    if (mg) gclid = mg[1];
+  }
+  if (!wbraid && utmContent.indexOf('wbraid_') !== -1) {
+    var mw = utmContent.match(/wbraid_([a-zA-Z0-9_\-]+)/);
+    if (mw) wbraid = mw[1];
+  }
+  if (!gbraid && utmContent.indexOf('gbraid_') !== -1) {
+    var mb = utmContent.match(/gbraid_([a-zA-Z0-9_\-]+)/);
+    if (mb) gbraid = mb[1];
   }
 
-  if (gclid && hasConsent) {
-    var APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzrQAGyQVNhVCihYxM2HiIG6n8rudrI3OVtYMjjIahqMEti_uILmuLJS4hZD8SZhrTi/exec';
-    fetch(APPS_SCRIPT_URL, {
-      method: 'POST',
-      mode: 'no-cors',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        gclid: gclid,
-        conversion_type: 'trattamento_fenolizzazione',
-        timestamp: new Date().toISOString(),
-        page: window.location.href
-      })
-    }).catch(function() {});
+  if (hasConsent) {
+    try {
+      if (!gclid) gclid = sessionStorage.getItem('gclid') || '';
+      if (!wbraid) wbraid = sessionStorage.getItem('wbraid') || '';
+      if (!gbraid) gbraid = sessionStorage.getItem('gbraid') || '';
+    } catch (e) {}
   }
 
-  // ── 4. CONVERSIONE (letta da GTM -> GA4 -> Google Ads) ──
-  window.dataLayer.push({
+  // ── 4. NORMALIZZAZIONE ED HASHING SHA-256 (SOLO CON CONSENSO) ──
+  var userDataObj = {};
+  if (hasConsent) {
+    var rawEmail = booking.invitee_email || '';
+    if (rawEmail) {
+      var normEmail = uisNormalizeEmail(rawEmail);
+      var hashedEmail = await uisSha256(normEmail);
+      if (hashedEmail) {
+        userDataObj.email = hashedEmail;
+        userDataObj.sha256_email_address = hashedEmail;
+      }
+    }
+
+    var rawPhone = booking.invitee_phone || '';
+    if (rawPhone) {
+      var normPhone = uisNormalizePhone(rawPhone);
+      var hashedPhone = await uisSha256(normPhone);
+      if (hashedPhone) {
+        userDataObj.phone_number = hashedPhone;
+        userDataObj.sha256_phone_number = hashedPhone;
+      }
+    }
+  }
+
+  // ── 5. EVENTO DI CONVERSIONE LEAD (Valore reale affidato alla fattura) ──
+  var eventPayload = {
     event: 'thank_you_trattamento',
     page_type: 'thank_you',
-    conversion_type: 'trattamento_fenolizzazione',
-    gclid: hasConsent ? (gclid || undefined) : undefined
-  });
+    conversion_type: 'trattamento_fenolizzazione'
+  };
+
+  if (hasConsent) {
+    if (gclid) eventPayload.gclid = gclid;
+    if (wbraid) eventPayload.wbraid = wbraid;
+    if (gbraid) eventPayload.gbraid = gbraid;
+    if (Object.keys(userDataObj).length > 0) {
+      eventPayload.user_data = userDataObj;
+      if (typeof window.gtag === 'function') {
+        window.gtag('set', 'user_data', userDataObj);
+      }
+    }
+  }
+
+  window.dataLayer.push(eventPayload);
 })();
 
 // Traccia click su consenso informato
