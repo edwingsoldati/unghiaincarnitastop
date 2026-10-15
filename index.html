@@ -709,6 +709,112 @@ a.iubenda-embed .iubenda-cs-preferences-icon{
   border-color:rgba(255,255,255,.6) !important;
   color:rgba(255,255,255,.8) !important;
 }
+
+/* ── BOX FAST-TRACK URGENZE ── */
+.ft-card {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 520px;
+  margin: 18px 0 0 0;
+  background: #FFFFFF;
+  border: 2px solid #006D6D;
+  border-radius: 12px;
+  box-shadow: 0 4px 16px rgba(0, 109, 109, 0.12);
+  text-align: center;
+  overflow: hidden;
+}
+.ft-card .ft-top-bar {
+  background: #DC2626;
+  color: #FFFFFF;
+  padding: 7px 12px;
+  font-size: 11.5px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  line-height: 1.2;
+}
+.ft-card .ft-body {
+  padding: 12px 14px 14px 14px;
+}
+.ft-card .ft-title {
+  font-size: 14px;
+  font-weight: 800;
+  color: #0A0A0A;
+  line-height: 1.3;
+  margin-bottom: 5px;
+}
+.ft-card .ft-desc {
+  font-size: 12px;
+  color: #4A5568;
+  line-height: 1.4;
+  margin-bottom: 11px;
+}
+.ft-card .ft-desc strong {
+  color: #006D6D;
+  font-weight: 700;
+}
+.ft-card .ft-grid-btn {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  width: 100%;
+}
+.ft-card .ft-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 10px 8px;
+  border-radius: 8px;
+  text-decoration: none;
+  font-size: 12.5px;
+  font-weight: 700;
+  min-height: 42px;
+  line-height: 1.15;
+  text-align: center;
+  border: none;
+  color: #FFFFFF !important;
+  transition: transform 0.1s ease, filter 0.15s ease;
+}
+.ft-card .ft-btn:active {
+  transform: scale(0.98);
+}
+.ft-card .ft-btn:hover {
+  filter: brightness(1.06);
+}
+.ft-card .ft-btn-wa {
+  background: #25D366;
+  box-shadow: 0 2px 8px rgba(37, 211, 102, 0.35);
+}
+.ft-card .ft-btn-tel {
+  background: #006D6D;
+  box-shadow: 0 2px 8px rgba(0, 109, 109, 0.35);
+}
+@media(max-width: 480px) {
+  .ft-card {
+    margin: 16px auto 0 auto;
+  }
+  .ft-card .ft-top-bar {
+    font-size: 10.5px;
+    padding: 6px 8px;
+  }
+  .ft-card .ft-title {
+    font-size: 13px;
+  }
+  .ft-card .ft-desc {
+    font-size: 11.5px;
+  }
+  .ft-card .ft-btn {
+    font-size: 11.5px;
+    padding: 9px 4px;
+    min-height: 40px;
+    gap: 5px;
+  }
+}
 </style>
 </head>
 <body>
@@ -779,7 +885,38 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     <div class="cta-group">
       <a href="https://calendly.com/federico-grassi-unghiaincarnitastop/30min" class="btn-primary" target="_blank" rel="noopener">
         PRENOTA LA PRIMA VISITA →
-      </a></div>
+      </a>
+    </div>
+
+    <!-- BOX FAST-TRACK URGENZE -->
+    <div id="ft-urg-box" class="ft-card">
+      <div class="ft-top-bar">
+        <span>⚡ CORSIA URGENZE • PRIMO POSTO LONTANO?</span>
+      </div>
+      <div class="ft-body">
+        <div class="ft-title">
+          Alluce molto gonfio, pulsante o "carne cresciuta"?
+        </div>
+        <div class="ft-desc">
+          Riserviamo <strong>1-2 slot prioritari al giorno</strong> (24/48h). Invia una foto per triage rapido o chiama lo studio.
+        </div>
+        <div class="ft-grid-btn">
+          <a href="https://wa.me/393334217550?text=Salve%20Dott.%20Grassi%2C%20ho%20un%27urgenza%20per%20unghia%20incarnita%20a%20Torino%20(forte%20dolore%2Finfezione)%20e%20vorrei%20sapere%20se%20c%27%C3%A8%20un%20posto%20prioritario." 
+             class="ft-btn ft-btn-wa" target="_blank" rel="noopener">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="#FFFFFF" style="flex-shrink:0;" aria-hidden="true">
+              <path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.287l-.582 2.128 2.182-.573c.978.58 1.911.928 3.145.929 3.178 0 5.767-2.587 5.768-5.766 0-3.18-2.587-5.771-5.764-5.771zm3.392 8.244c-.144.405-.837.774-1.17.824-.312.045-.634.058-1.748-.403-1.428-.593-2.348-2.047-2.42-2.143-.071-.096-.583-.775-.583-1.479 0-.703.37-1.049.501-1.192.132-.143.288-.179.385-.179.096 0 .192.001.276.006.09.004.21.036.311.28.108.261.371.905.405.972.033.067.054.146.012.233-.042.088-.063.143-.126.216-.062.073-.133.163-.19.219-.063.062-.129.13-.056.255.074.126.327.54.702.874.484.431.892.564 1.018.627.126.063.2.054.275-.033.076-.088.324-.378.411-.508.087-.13.173-.109.289-.066.115.044.733.346.859.409.126.063.21.095.241.147.031.053.031.309-.113.714z"/>
+            </svg>
+            <span>WhatsApp (Foto)</span>
+          </a>
+          <a href="tel:+393334217550" class="ft-btn ft-btn-tel">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="#FFFFFF" style="flex-shrink:0;" aria-hidden="true">
+              <path d="M20.01 15.38c-1.23 0-2.42-.2-3.53-.56a.977.977 0 0 0-1.01.24l-1.57 1.97c-2.83-1.44-5.15-3.75-6.59-6.59l1.97-1.57c.28-.28.37-.68.25-1.02A11.36 11.36 0 0 1 8.5 4.31c0-.55-.45-1-1-1H4.13c-.55 0-1 .45-1 1 0 9.39 7.61 17 17 17 .55 0 1-.45 1-1v-3.37c0-.56-.45-1.06-1.12-1.06z"/>
+            </svg>
+            <span>Chiama Studio</span>
+          </a>
+        </div>
+      </div>
+    </div>
   </div>
 
   <div class="hero-right" aria-hidden="true">
