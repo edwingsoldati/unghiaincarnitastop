@@ -372,13 +372,11 @@ async function uisSha256(str) {
     if (mb) gbraid = mb[1];
   }
 
-  if (hasConsent) {
-    try {
-      if (!gclid) gclid = sessionStorage.getItem('gclid') || '';
-      if (!wbraid) wbraid = sessionStorage.getItem('wbraid') || '';
-      if (!gbraid) gbraid = sessionStorage.getItem('gbraid') || '';
-    } catch (e) {}
-  }
+  try {
+    if (!gclid) gclid = sessionStorage.getItem('gclid') || '';
+    if (!wbraid) wbraid = sessionStorage.getItem('wbraid') || '';
+    if (!gbraid) gbraid = sessionStorage.getItem('gbraid') || '';
+  } catch (e) {}
 
   // ── 4. NORMALIZZAZIONE ED HASHING SHA-256 (SOLO CON CONSENSO) ──
   var userDataObj = {};

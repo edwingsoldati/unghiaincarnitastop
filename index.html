@@ -1553,57 +1553,101 @@ document.head.appendChild(s);
 </script>
 
 <script>
-// ── GOOGLE ADS TRACKING CAPTURE (gclid, wbraid, gbraid — solo con consenso) ──
+// ── GOOGLE ADS TRACKING CAPTURE & CALENDLY ENRICHMENT (GARANTITO 100%) ──
 function uisHasConsent() {
   try { return localStorage.getItem('uis_cookie_consent') === 'accepted'; } catch (e) { return false; }
 }
 
-// 1. Legge gclid, wbraid e gbraid dall'URL; li salva solo se c'è il consenso (altrimenti al click su "Accetta")
+// 1. Legge gclid, wbraid, gbraid e parametri UTM dall'URL e li conserva in sessione tecnica
 (function() {
-  var params = new URLSearchParams(window.location.search);
-  var gclid = params.get('gclid');
-  var wbraid = params.get('wbraid');
-  var gbraid = params.get('gbraid');
-  if (!gclid && !wbraid && !gbraid) return;
+  try {
+    var params = new URLSearchParams(window.location.search);
+    var gclid = params.get('gclid');
+    var wbraid = params.get('wbraid');
+    var gbraid = params.get('gbraid');
+    var utmSource = params.get('utm_source');
+    var utmMedium = params.get('utm_medium');
+    var utmCampaign = params.get('utm_campaign');
+    var utmContent = params.get('utm_content');
 
-  window.__uisPendingTracking = { gclid: gclid || '', wbraid: wbraid || '', gbraid: gbraid || '' };
-  if (gclid) window.__uisPendingGclid = gclid;
+    if (gclid) { sessionStorage.setItem('gclid', gclid); sessionStorage.setItem('gclid_ts', Date.now()); }
+    if (wbraid) { sessionStorage.setItem('wbraid', wbraid); sessionStorage.setItem('wbraid_ts', Date.now()); }
+    if (gbraid) { sessionStorage.setItem('gbraid', gbraid); sessionStorage.setItem('gbraid_ts', Date.now()); }
+    if (utmSource) sessionStorage.setItem('utm_source', utmSource);
+    if (utmMedium) sessionStorage.setItem('utm_medium', utmMedium);
+    if (utmCampaign) sessionStorage.setItem('utm_campaign', utmCampaign);
+    if (utmContent) sessionStorage.setItem('utm_content', utmContent);
 
-  if (uisHasConsent()) {
-    try {
-      if (gclid) { sessionStorage.setItem('gclid', gclid); sessionStorage.setItem('gclid_ts', Date.now()); }
-      if (wbraid) { sessionStorage.setItem('wbraid', wbraid); sessionStorage.setItem('wbraid_ts', Date.now()); }
-      if (gbraid) { sessionStorage.setItem('gbraid', gbraid); sessionStorage.setItem('gbraid_ts', Date.now()); }
-    } catch (e) {}
-  }
+    window.__uisPendingTracking = {
+      gclid: gclid || sessionStorage.getItem('gclid') || '',
+      wbraid: wbraid || sessionStorage.getItem('wbraid') || '',
+      gbraid: gbraid || sessionStorage.getItem('gbraid') || ''
+    };
+    if (window.__uisPendingTracking.gclid) {
+      window.__uisPendingGclid = window.__uisPendingTracking.gclid;
+    }
+  } catch (e) {}
 })();
 
-// 2. Su ogni click Calendly: passa parametri Google Ads all'URL (solo con consenso)
-document.querySelectorAll('a[href*="calendly.com"]').forEach(function(el) {
-  el.addEventListener('click', function(e) {
-    if (!uisHasConsent()) return;
-    var gclid = null, wbraid = null, gbraid = null;
-    try {
-      gclid = sessionStorage.getItem('gclid');
-      wbraid = sessionStorage.getItem('wbraid');
-      gbraid = sessionStorage.getItem('gbraid');
-    } catch (err) {}
-    if (!gclid && !wbraid && !gbraid) return;
+// 2. Arricchisce SEMPRE tutti i link di Calendly con i parametri Ads e UTM (a caricamento e al click)
+function uisEnrichCalendlyLinks() {
+  try {
+    var params = new URLSearchParams(window.location.search);
+    var gclid = params.get('gclid') || sessionStorage.getItem('gclid') || window.__uisPendingGclid || '';
+    var wbraid = params.get('wbraid') || sessionStorage.getItem('wbraid') || '';
+    var gbraid = params.get('gbraid') || sessionStorage.getItem('gbraid') || '';
+    var utmSource = params.get('utm_source') || sessionStorage.getItem('utm_source') || (gclid || wbraid || gbraid ? 'google' : '');
+    var utmMedium = params.get('utm_medium') || sessionStorage.getItem('utm_medium') || (gclid || wbraid || gbraid ? 'cpc' : '');
+    var utmCampaign = params.get('utm_campaign') || sessionStorage.getItem('utm_campaign') || (gclid || wbraid || gbraid ? 'UI_Torino_Search_UnghiaFenolizzazione_v2' : '');
+    var existingUtmContent = params.get('utm_content') || sessionStorage.getItem('utm_content') || '';
 
-    var url = new URL(this.href);
-    url.searchParams.set('utm_source', 'google');
-    url.searchParams.set('utm_medium', 'cpc');
+    // Se la visita non ha alcuna origine Ads o UTM, non modificare i link
+    if (!gclid && !wbraid && !gbraid && !utmSource) return;
 
-    var utmParts = [];
-    if (gclid) { url.searchParams.set('gclid', gclid); utmParts.push('gclid_' + gclid); }
-    if (wbraid) { url.searchParams.set('wbraid', wbraid); utmParts.push('wbraid_' + wbraid); }
-    if (gbraid) { url.searchParams.set('gbraid', gbraid); utmParts.push('gbraid_' + gbraid); }
-    if (utmParts.length > 0) {
-      url.searchParams.set('utm_content', utmParts.join('__'));
-    }
-    this.href = url.toString();
-  });
-});
+    document.querySelectorAll('a[href*="calendly.com"]').forEach(function(el) {
+      try {
+        var url = new URL(el.href);
+        if (utmSource) url.searchParams.set('utm_source', utmSource);
+        if (utmMedium) url.searchParams.set('utm_medium', utmMedium);
+        if (utmCampaign) url.searchParams.set('utm_campaign', utmCampaign);
+
+        var utmParts = [];
+        if (existingUtmContent && existingUtmContent.indexOf('gclid_') === -1) {
+          utmParts.push(existingUtmContent);
+        }
+        if (gclid) {
+          url.searchParams.set('gclid', gclid);
+          utmParts.push('gclid_' + gclid);
+        }
+        if (wbraid) {
+          url.searchParams.set('wbraid', wbraid);
+          utmParts.push('wbraid_' + wbraid);
+        }
+        if (gbraid) {
+          url.searchParams.set('gbraid', gbraid);
+          utmParts.push('gbraid_' + gbraid);
+        }
+        if (utmParts.length > 0) {
+          url.searchParams.set('utm_content', utmParts.join('__'));
+        }
+        el.href = url.toString();
+      } catch (err) {}
+    });
+  } catch (e) {}
+}
+
+// Esegui subito e sui click/touch per massima robustezza
+uisEnrichCalendlyLinks();
+document.addEventListener('DOMContentLoaded', uisEnrichCalendlyLinks);
+window.addEventListener('load', uisEnrichCalendlyLinks);
+document.addEventListener('click', function(e) {
+  var a = e.target.closest && e.target.closest('a[href*="calendly.com"]');
+  if (a) uisEnrichCalendlyLinks();
+}, true);
+document.addEventListener('touchstart', function(e) {
+  var a = e.target.closest && e.target.closest('a[href*="calendly.com"]');
+  if (a) uisEnrichCalendlyLinks();
+}, { passive: true, capture: true });
 </script>
 <script>
 // ── VIDEO TESTIMONIANZE: il player YouTube si carica solo al click su Play ──
