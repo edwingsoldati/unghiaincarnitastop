@@ -41,30 +41,31 @@
 })();
 </script>
 <!-- CONSENT MODE v2 — deve restare PRIMA di Google Tag Manager.
-     Di default tutto negato; si sblocca solo se il visitatore ha accettato dal banner.
-     ad_personalization resta sempre negato: niente pubblicità personalizzata su un sito sanitario. -->
+     analytics_storage, ad_storage e ad_user_data attivi di default;
+     si disattivano solo se il visitatore ha cliccato "Rifiuta" sul banner.
+     ad_personalization resta SEMPRE negato: niente pubblicità personalizzata su un sito sanitario. -->
 <script>
 window.dataLayer = window.dataLayer || [];
 function gtag(){dataLayer.push(arguments);}
 gtag('consent', 'default', {
-  ad_storage: 'denied',
-  ad_user_data: 'denied',
+  ad_storage: 'granted',
+  ad_user_data: 'granted',
   ad_personalization: 'denied',
-  analytics_storage: 'denied',
+  analytics_storage: 'granted',
   functionality_storage: 'granted',
-  security_storage: 'granted',
-  wait_for_update: 500
+  security_storage: 'granted'
 });
-gtag('set', 'ads_data_redaction', true);
 (function(){
   var c = null;
   try { c = localStorage.getItem('uis_cookie_consent'); } catch (e) {}
-  if (c === 'accepted') {
+  if (c === 'rejected') {
     gtag('consent', 'update', {
-      ad_storage: 'granted',
-      ad_user_data: 'granted',
-      analytics_storage: 'granted'
+      ad_storage: 'denied',
+      ad_user_data: 'denied',
+      ad_personalization: 'denied',
+      analytics_storage: 'denied'
     });
+    gtag('set', 'ads_data_redaction', true);
   }
 })();
 </script>
@@ -318,10 +319,10 @@ async function uisSha256(str) {
 (async function() {
   var booking = window.__uisBooking || { invitee_uuid: '', utm_content: '', invitee_email: '', invitee_phone: '', gclid: '', wbraid: '', gbraid: '' };
 
-  // ── 1. CONSENSO (Consent Mode v2) ──
+  // ── 1. CONSENSO (Consent Mode v2 — attivo salvo rifiuto esplicito) ──
   var consent = null;
   try { consent = localStorage.getItem('uis_cookie_consent'); } catch (e) {}
-  var hasConsent = (consent === 'accepted');
+  var hasConsent = (consent !== 'rejected');
 
   // ── 2. ANTI-DUPLICATO ──
   var lastInvitee = '';

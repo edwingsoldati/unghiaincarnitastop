@@ -2,30 +2,32 @@
 <html lang="it">
 <head>
 <!-- CONSENT MODE v2 — deve restare PRIMA di Google Tag Manager.
-     Di default tutto negato; si sblocca solo se il visitatore ha accettato dal banner.
-     ad_personalization resta sempre negato: niente pubblicità personalizzata su un sito sanitario. -->
+     analytics_storage, ad_storage e ad_user_data attivi di default per garantire
+     il tracciamento immediato su GA4 e Google Ads fin dal primo caricamento;
+     si disattivano se il visitatore clicca "Rifiuta" sul banner.
+     ad_personalization resta SEMPRE negato: niente pubblicità personalizzata su un sito sanitario. -->
 <script>
 window.dataLayer = window.dataLayer || [];
 function gtag(){dataLayer.push(arguments);}
 gtag('consent', 'default', {
-  ad_storage: 'denied',
-  ad_user_data: 'denied',
+  ad_storage: 'granted',
+  ad_user_data: 'granted',
   ad_personalization: 'denied',
-  analytics_storage: 'denied',
+  analytics_storage: 'granted',
   functionality_storage: 'granted',
-  security_storage: 'granted',
-  wait_for_update: 500
+  security_storage: 'granted'
 });
-gtag('set', 'ads_data_redaction', true);
 (function(){
   var c = null;
   try { c = localStorage.getItem('uis_cookie_consent'); } catch (e) {}
-  if (c === 'accepted') {
+  if (c === 'rejected') {
     gtag('consent', 'update', {
-      ad_storage: 'granted',
-      ad_user_data: 'granted',
-      analytics_storage: 'granted'
+      ad_storage: 'denied',
+      ad_user_data: 'denied',
+      ad_personalization: 'denied',
+      analytics_storage: 'denied'
     });
+    gtag('set', 'ads_data_redaction', true);
   }
 })();
 </script>
@@ -1505,11 +1507,11 @@ function pushEvent(name, params) {
 }
 
 // 1. CTA click — tutti i bottoni prenota
-document.querySelectorAll('a[href*="calendly"], .btn-primary, .btn-nav, .sticky-bar a').forEach(el => {
+document.querySelectorAll('a[href*="calendly"], .btn-primary, .btn-nav').forEach(el => {
   el.addEventListener('click', function() {
     pushEvent('cta_click', {
       cta_text: this.textContent.trim().substring(0, 50),
-      cta_location: this.closest('section')?.id || this.closest('header') ? 'navbar' : 'footer'
+      cta_location: this.closest('section')?.id || (this.closest('header') ? 'hero' : (this.closest('nav') ? 'navbar' : (this.closest('.sticky-bar') ? 'sticky_bar' : 'footer')))
     });
   });
 });
@@ -1517,14 +1519,20 @@ document.querySelectorAll('a[href*="calendly"], .btn-primary, .btn-nav, .sticky-
 // 2. Phone click
 document.querySelectorAll('a[href^="tel"]').forEach(el => {
   el.addEventListener('click', function() {
-    pushEvent('phone_click', { phone_number: '+393334217550' });
+    pushEvent('phone_click', {
+      phone_number: '+393334217550',
+      cta_location: this.closest('#ft-urg-box') ? 'fast_track_hero' : (this.closest('.sticky-bar') ? 'sticky_bar' : 'page')
+    });
   });
 });
 
 // 2b. WhatsApp click
 document.querySelectorAll('a[href*="wa.me"]').forEach(el => {
   el.addEventListener('click', function() {
-    pushEvent('whatsapp_click', { phone_number: '+393334217550' });
+    pushEvent('whatsapp_click', {
+      phone_number: '+393334217550',
+      cta_location: this.closest('#ft-urg-box') ? 'fast_track_hero' : (this.closest('.sticky-bar') ? 'sticky_bar' : 'page')
+    });
   });
 });
 
@@ -1655,8 +1663,10 @@ document.head.appendChild(s);
     gtag('consent', 'update', {
       ad_storage: 'granted',
       ad_user_data: 'granted',
+      ad_personalization: 'denied',
       analytics_storage: 'granted'
     });
+    gtag('set', 'ads_data_redaction', false);
     // Ora che c'è il consenso, salva i parametri di advertising (gclid, wbraid, gbraid)
     var pending = window.__uisPendingTracking || (window.__uisPendingGclid ? { gclid: window.__uisPendingGclid } : null);
     if (pending) {
@@ -1678,6 +1688,7 @@ document.head.appendChild(s);
       ad_personalization: 'denied',
       analytics_storage: 'denied'
     });
+    gtag('set', 'ads_data_redaction', true);
     try {
       sessionStorage.removeItem('gclid'); sessionStorage.removeItem('gclid_ts');
       sessionStorage.removeItem('wbraid'); sessionStorage.removeItem('wbraid_ts');
@@ -1692,7 +1703,7 @@ document.head.appendChild(s);
 <script>
 // ── GOOGLE ADS TRACKING CAPTURE & CALENDLY ENRICHMENT (GARANTITO 100%) ──
 function uisHasConsent() {
-  try { return localStorage.getItem('uis_cookie_consent') === 'accepted'; } catch (e) { return false; }
+  try { return localStorage.getItem('uis_cookie_consent') !== 'rejected'; } catch (e) { return true; }
 }
 
 // 1. Legge gclid, wbraid, gbraid e parametri UTM dall'URL e li conserva in sessione tecnica
