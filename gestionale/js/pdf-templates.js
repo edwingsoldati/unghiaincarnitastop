@@ -97,6 +97,8 @@ function generatePreventivoHTML(dati) {
     paziente, trattamento, importo, visitaPagata = 0,
     scontoVisita = false, descrizione, data, numero,
     ditaSede, dueSeduteSeparate,
+    costoAnestesista: customAnestesista,
+    costoSala: customSala,
   } = dati;
 
   const nomiTrattamento = {
@@ -108,8 +110,8 @@ function generatePreventivoHTML(dati) {
 
   const nomeTratt          = nomiTrattamento[trattamento] || trattamento;
   const imp                = Number(importo);
-  const costoAnestesista   = 150;
-  const costoSala          = 100;
+  const costoAnestesista   = (customAnestesista !== undefined && customAnestesista !== null && !isNaN(Number(customAnestesista))) ? Number(customAnestesista) : 150;
+  const costoSala          = (customSala !== undefined && customSala !== null && !isNaN(Number(customSala))) ? Number(customSala) : 100;
   const quotaFenolizzazione = Math.max(0, imp - (costoAnestesista + costoSala));
   const visita             = Number(visitaPagata);
   const netto              = scontoVisita && visita > 0 ? Math.max(0, imp - visita) : imp;

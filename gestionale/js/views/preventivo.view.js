@@ -123,6 +123,20 @@ export const PreventivoView = {
                 </div>
               </div>
 
+              <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+                <div class="form-group">
+                  <label class="form-label">Costo Anestesista (€)</label>
+                  <input type="number" id="prev-costo-anestesista" class="form-input form-input-mono" value="150" min="0" step="10">
+                  <span style="font-size:10px; color:var(--text-muted);">Default: € 150,00 (modificabile per assicurazione)</span>
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label">Costo Saletta / Sala (€)</label>
+                  <input type="number" id="prev-costo-sala" class="form-input form-input-mono" value="100" min="0" step="10">
+                  <span style="font-size:10px; color:var(--text-muted);">Default: € 100,00 (modificabile per assicurazione)</span>
+                </div>
+              </div>
+
               <div class="form-group">
                 <label class="form-label">Note Cliniche Speciali (Opzionale)</label>
                 <textarea id="prev-note" rows="2" class="form-textarea" placeholder="Indicazioni post-visita o accordi con il paziente..."></textarea>
@@ -150,11 +164,11 @@ export const PreventivoView = {
                   <div style="background:var(--bg-surface); border:1px solid var(--border-subtle); border-radius:var(--radius-md); padding:10px 12px; margin:8px 0 10px; display:flex; flex-direction:column; gap:5px;">
                     <div style="display:flex; justify-content:space-between; font-size:11.5px; color:var(--text-secondary);">
                       <span>• Anestesista dedicato:</span>
-                      <span class="font-mono-code" style="font-weight:600; color:var(--text-primary);">€ 150,00</span>
+                      <span class="font-mono-code" id="prev-disp-costo-anestesista" style="font-weight:600; color:var(--text-primary);">€ 150,00</span>
                     </div>
                     <div style="display:flex; justify-content:space-between; font-size:11.5px; color:var(--text-secondary);">
                       <span>• Sala chirurgica (Clinica Aurea):</span>
-                      <span class="font-mono-code" style="font-weight:600; color:var(--text-primary);">€ 100,00</span>
+                      <span class="font-mono-code" id="prev-disp-costo-sala" style="font-weight:600; color:var(--text-primary);">€ 100,00</span>
                     </div>
                     <div style="display:flex; justify-content:space-between; font-size:11.5px; font-weight:600; color:var(--text-primary); border-top:1px dashed var(--border-subtle); padding-top:6px;">
                       <span>• Trattamento di fenolizzazione:</span>
@@ -216,6 +230,8 @@ export const PreventivoView = {
     const sel = document.getElementById('prev-tipo-select');
     const inputLordo = document.getElementById('prev-prezzo-operazione');
     const inputSconto = document.getElementById('prev-sconto-visita');
+    const inputAnestesista = document.getElementById('prev-costo-anestesista');
+    const inputSala = document.getElementById('prev-costo-sala');
     const inputSede = document.getElementById('prev-sede-input');
     const inputNome = document.getElementById('prev-nome');
 
@@ -230,6 +246,8 @@ export const PreventivoView = {
 
     if (inputLordo) inputLordo.addEventListener('input', () => this.ricalcolaTotali());
     if (inputSconto) inputSconto.addEventListener('input', () => this.ricalcolaTotali());
+    if (inputAnestesista) inputAnestesista.addEventListener('input', () => this.ricalcolaTotali());
+    if (inputSala) inputSala.addEventListener('input', () => this.ricalcolaTotali());
     
     if (inputSede) {
       inputSede.addEventListener('input', (e) => {
@@ -265,6 +283,8 @@ export const PreventivoView = {
     const emailEl = document.getElementById('prev-email');
     const telEl = document.getElementById('prev-telefono');
     const scontoEl = document.getElementById('prev-sconto-visita');
+    const inputAnestesista = document.getElementById('prev-costo-anestesista');
+    const inputSala = document.getElementById('prev-costo-sala');
     const selEl = document.getElementById('prev-tipo-select');
     const inputLordo = document.getElementById('prev-prezzo-operazione');
     const sedeInput = document.getElementById('prev-sede-input');
@@ -275,6 +295,12 @@ export const PreventivoView = {
     if (telEl) telEl.value = p.telefono || '';
     if (scontoEl && p.primaVisitaVersata) {
       scontoEl.value = p.primaVisitaVersata;
+    }
+    if (inputAnestesista && p.costoAnestesista != null) {
+      inputAnestesista.value = p.costoAnestesista;
+    }
+    if (inputSala && p.costoSala != null) {
+      inputSala.value = p.costoSala;
     }
 
     // Configurazione automatica da diagnosi / dita selezionate
@@ -301,13 +327,15 @@ export const PreventivoView = {
 
   ricalcolaTotali() {
     const sel = document.getElementById('prev-tipo-select');
-    const lordo = parseFloat(document.getElementById('prev-prezzo-operazione').value) || 850;
-    const sconto = parseFloat(document.getElementById('prev-sconto-visita').value) || 0;
+    const lordo = parseFloat(document.getElementById('prev-prezzo-operazione')?.value) || 850;
+    const sconto = parseFloat(document.getElementById('prev-sconto-visita')?.value) || 0;
     const netto = Math.max(0, lordo - sconto);
 
-    // Scorporo 3 voci obbligatorie: Anestesista (150€), Sala (100€), Trattamento fenolizzazione (restante)
-    const costoAnestesista = 150;
-    const costoSala = 100;
+    // Scorporo 3 voci: Anestesista (default 150€), Sala (default 100€), Trattamento fenolizzazione (restante)
+    const inputAnest = document.getElementById('prev-costo-anestesista');
+    const inputSala = document.getElementById('prev-costo-sala');
+    const costoAnestesista = (inputAnest && inputAnest.value !== '') ? Math.max(0, parseFloat(inputAnest.value) || 0) : 150;
+    const costoSala = (inputSala && inputSala.value !== '') ? Math.max(0, parseFloat(inputSala.value) || 0) : 100;
     const quotaFenolizzazione = Math.max(0, lordo - (costoAnestesista + costoSala));
 
     const labelMap = {
@@ -318,6 +346,8 @@ export const PreventivoView = {
     };
 
     const dispTratt = document.getElementById('prev-disp-trattamento');
+    const dispAnest = document.getElementById('prev-disp-costo-anestesista');
+    const dispSala = document.getElementById('prev-disp-costo-sala');
     const dispQuotaFenolo = document.getElementById('prev-disp-quota-fenolizzazione');
     const dispLordo = document.getElementById('prev-disp-lordo');
     const dispSconto = document.getElementById('prev-disp-sconto');
@@ -325,6 +355,8 @@ export const PreventivoView = {
     const alertSedute = document.getElementById('prev-disp-alert-sedute');
 
     if (dispTratt && sel) dispTratt.textContent = labelMap[sel.value] || 'Fenolizzazione';
+    if (dispAnest) dispAnest.textContent = `€ ${costoAnestesista.toFixed(2)}`;
+    if (dispSala) dispSala.textContent = `€ ${costoSala.toFixed(2)}`;
     if (dispQuotaFenolo) dispQuotaFenolo.textContent = `€ ${quotaFenolizzazione.toFixed(2)}`;
     if (dispLordo) dispLordo.textContent = `€ ${lordo.toFixed(2)}`;
     if (dispSconto) dispSconto.textContent = `− € ${sconto.toFixed(2)}`;
@@ -390,8 +422,10 @@ export const PreventivoView = {
     const desc = document.getElementById('prev-disp-trattamento').textContent;
     const sede = document.getElementById('prev-sede-input')?.value.trim() || this.ditaSede || '';
 
-    const costoAnestesista = 150;
-    const costoSala = 100;
+    const inputAnest = document.getElementById('prev-costo-anestesista');
+    const inputSala = document.getElementById('prev-costo-sala');
+    const costoAnestesista = (inputAnest && inputAnest.value !== '') ? Math.max(0, parseFloat(inputAnest.value) || 0) : 150;
+    const costoSala = (inputSala && inputSala.value !== '') ? Math.max(0, parseFloat(inputSala.value) || 0) : 100;
     const quotaFenolizzazione = Math.max(0, lordo - (costoAnestesista + costoSala));
     const isDueSedute = sel === '2dita_bi' || this.dueSeduteSeparate;
 
@@ -440,12 +474,18 @@ export const PreventivoView = {
       const nomePaziente = document.getElementById('prev-nome')?.value.trim() || 'Paziente';
       const lordo = parseFloat(document.getElementById('prev-prezzo-operazione')?.value) || 850;
       const sconto = parseFloat(document.getElementById('prev-sconto-visita')?.value) || 0;
+      const inputAnest = document.getElementById('prev-costo-anestesista');
+      const inputSala = document.getElementById('prev-costo-sala');
+      const costoAnestesista = (inputAnest && inputAnest.value !== '') ? Math.max(0, parseFloat(inputAnest.value) || 0) : 150;
+      const costoSala = (inputSala && inputSala.value !== '') ? Math.max(0, parseFloat(inputSala.value) || 0) : 100;
       const sel = document.getElementById('prev-tipo-select')?.value || 'mono';
       const sede = document.getElementById('prev-sede-input')?.value.trim() || this.ditaSede || '';
       const htmlPrev = generatePreventivoHTML({
         paziente: nomePaziente,
         trattamento: sel,
         importo: lordo,
+        costoAnestesista,
+        costoSala,
         visitaPagata: sconto,
         scontoVisita: sconto > 0,
         ditaSede: sede,
@@ -531,6 +571,10 @@ export const PreventivoView = {
     const email = document.getElementById('prev-email').value.trim();
     const lordo = parseFloat(document.getElementById('prev-prezzo-operazione').value) || 850;
     const sconto = parseFloat(document.getElementById('prev-sconto-visita').value) || 0;
+    const inputAnest = document.getElementById('prev-costo-anestesista');
+    const inputSala = document.getElementById('prev-costo-sala');
+    const costoAnestesista = (inputAnest && inputAnest.value !== '') ? Math.max(0, parseFloat(inputAnest.value) || 0) : 150;
+    const costoSala = (inputSala && inputSala.value !== '') ? Math.max(0, parseFloat(inputSala.value) || 0) : 100;
     const sel = document.getElementById('prev-tipo-select').value;
     const desc = document.getElementById('prev-note')?.value || '';
     const sede = document.getElementById('prev-sede-input')?.value.trim() || this.ditaSede || '';
@@ -568,6 +612,8 @@ export const PreventivoView = {
         paziente: { nome, email },
         trattamento: sel,
         importo: lordo,
+        costoAnestesista,
+        costoSala,
         visitaPagata: sconto,
         scontoVisita: sconto > 0,
         descrizione: desc,
