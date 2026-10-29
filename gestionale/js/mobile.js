@@ -49,6 +49,7 @@ export const MobileUI = {
     this.agganciaNavigazione();
     this.agganciaPazienti();
     this.sincronizzaBadgeCRM();
+    this.sincronizzaBadgeStripe();
     this.evidenziaTab(state.activeTab || 'agenda');
     // Se si ruota/ridimensiona e si torna desktop, la scheda torna visibile normalmente
     MQ.addEventListener?.('change', () => { if (!isMobile()) this.esciDettaglio(true); });
@@ -75,6 +76,7 @@ export const MobileUI = {
       <button type="button" data-tab="${t.key}" aria-label="${t.label}">
         ${ICONE[t.key]}<span>${t.label}</span>
         ${t.key === 'crm' ? '<span class="m-tab-badge" id="m-crm-badge" style="display:none">0</span>' : ''}
+        ${t.key === 'documenti' ? '<span class="m-tab-badge" id="m-stripe-badge" style="display:none; background:#635bff;">0</span>' : ''}
       </button>`).join('');
     nav.addEventListener('click', e => {
       const b = e.target.closest('button[data-tab]');
@@ -148,6 +150,18 @@ export const MobileUI = {
   sincronizzaBadgeCRM() {
     const src = document.getElementById('nav-crm-badge');
     const dst = document.getElementById('m-crm-badge');
+    if (!src || !dst) return;
+    const copia = () => {
+      dst.textContent = src.textContent;
+      dst.style.display = (src.style.display === 'none' || !src.textContent.trim() || src.textContent.trim() === '0') ? 'none' : 'flex';
+    };
+    copia();
+    new MutationObserver(copia).observe(src, { attributes: true, childList: true, characterData: true, subtree: true });
+  },
+
+  sincronizzaBadgeStripe() {
+    const src = document.getElementById('nav-stripe-badge');
+    const dst = document.getElementById('m-stripe-badge');
     if (!src || !dst) return;
     const copia = () => {
       dst.textContent = src.textContent;
