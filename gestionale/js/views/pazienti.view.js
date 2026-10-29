@@ -136,6 +136,14 @@ export const PazientiView = {
       this.selectedPatient.visite = data.visite || [];
       this.selectedPatient.crm = data.crm || null;
       this.selectedPatient.foto = data.foto || [];
+
+      if (data.crm) {
+        this.selectedPatient.importo_preventivo = data.crm.importo_preventivo;
+        this.selectedPatient.preventivo_inviato = data.crm.preventivo_inviato;
+        this.selectedPatient.stripe_payment_link = data.crm.stripe_payment_link;
+        this.selectedPatient.crm_stato = data.crm.stato;
+        this.selectedPatient.note_crm = data.crm.note_crm;
+      }
       
       // Ripristina dita da cache sessione se presenti
       if (!this.selectedPatient.dita && this.pazientiDitaCache[id]) {
@@ -165,6 +173,10 @@ export const PazientiView = {
     const nomeCompleto = `${p.cognome ? p.cognome + ' ' : ''}${p.nome || 'Paziente'}`;
     const phoneClean = (p.telefono || '').replace(/\s+/g, '').replace(/^\+/, '');
     const isAureaPatient = Boolean((p.tipo || '').toLowerCase().includes('aurea') || (p.tipo || '').toLowerCase().includes('fenolizzazione'));
+
+    const impPrev = p.importo_preventivo || p.crm?.importo_preventivo;
+    const prevInviato = Boolean(p.preventivo_inviato || p.crm?.preventivo_inviato || (impPrev != null && Number(impPrev) > 0));
+    const importoPrevNum = impPrev ? Number(impPrev) : 0;
 
     container.innerHTML = `
       <!-- Header Anagrafica -->
@@ -388,10 +400,10 @@ export const PazientiView = {
                   Scomputo automatico del costo prima visita entro 30 giorni e dettaglio separato delle voci.
                 </span>
               </div>
-              ${(p.preventivo_inviato || p.importo_preventivo) ? `
+              ${prevInviato ? `
                 <div style="display:flex; gap:8px;">
-                  <button onclick="window.PazientiView.inviaLinkStripePreventivoEsistente()" class="btn btn-sm" style="background:#635bff; color:#fff; border:1px solid #635bff; font-weight:600;" title="Invia o copia il link Stripe per € ${Number(p.importo_preventivo).toFixed(2)}">
-                    💳 Invia Link Klarna (€ ${Number(p.importo_preventivo).toFixed(2)})
+                  <button onclick="window.PazientiView.inviaLinkStripePreventivoEsistente()" class="btn btn-sm" style="background:#635bff; color:#fff; border:1px solid #635bff; font-weight:600;" title="Invia o copia il link Stripe per € ${importoPrevNum.toFixed(2)}">
+                    💳 Invia Link Klarna (€ ${importoPrevNum.toFixed(2)})
                   </button>
                   <button id="btn-procedi-preventivo" onclick="window.PazientiView.procediVersoPreventivo()" class="btn btn-secondary btn-sm">
                     ✏️ Modifica Preventivo
@@ -403,16 +415,16 @@ export const PazientiView = {
                 </button>
               `}
             </div>
-            ${(p.preventivo_inviato || p.importo_preventivo) ? `
+            ${prevInviato ? `
               <div style="margin-top:10px; background:#f0fdf4; border:1px solid #86efac; border-radius:var(--radius-md); padding:10px 14px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
                 <div>
                   <div style="display:flex; align-items:center; gap:8px;">
                     <span class="badge badge-teal" style="font-weight:700;">✓ Preventivo Inviato</span>
-                    <strong style="font-size:15px; color:#166534;">Saldo Concordato: € ${Number(p.importo_preventivo).toFixed(2)}</strong>
-                    ${p.crm_stato ? `<span class="badge badge-neutral">${p.crm_stato.replace('_', ' ')}</span>` : ''}
+                    <strong style="font-size:15px; color:#166534;">Saldo Concordato: € ${importoPrevNum.toFixed(2)}</strong>
+                    ${(p.crm_stato || p.crm?.stato) ? `<span class="badge badge-neutral">${(p.crm_stato || p.crm?.stato).replace('_', ' ')}</span>` : ''}
                   </div>
                   <div style="font-size:11px; color:#15803d; margin-top:3px;">
-                    ${p.note_crm || 'Preventivo registrato e inviato al paziente.'}
+                    ${p.note_crm || p.crm?.note_crm || 'Preventivo registrato e inviato al paziente.'}
                   </div>
                 </div>
                 <button onclick="window.PazientiView.inviaLinkStripePreventivoEsistente()" class="btn btn-sm" style="background:#635bff; color:#fff; border:1px solid #635bff; font-weight:600;">
@@ -694,7 +706,7 @@ export const PazientiView = {
   async inviaLinkStripePreventivoEsistente() {
     const p = this.selectedPatient;
     if (!p) return;
-    const imp = p.importo_preventivo || 850;
+    const imp = p.importo_preventivo || p.crm?.importo_preventivo || 850;
 
     showToast(`Generazione link Stripe per € ${Number(imp).toFixed(2)} (anche rate Klarna)...`);
     try {
