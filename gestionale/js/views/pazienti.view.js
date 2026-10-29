@@ -388,10 +388,38 @@ export const PazientiView = {
                   Scomputo automatico del costo prima visita entro 30 giorni e dettaglio separato delle voci.
                 </span>
               </div>
-              <button id="btn-procedi-preventivo" onclick="window.PazientiView.procediVersoPreventivo()" class="btn btn-primary btn-sm">
-                Apri Configuratore Preventivo (850€ - 1.500€)
-              </button>
+              ${(p.preventivo_inviato || p.importo_preventivo) ? `
+                <div style="display:flex; gap:8px;">
+                  <button onclick="window.PazientiView.inviaLinkStripePreventivoEsistente()" class="btn btn-sm" style="background:#635bff; color:#fff; border:1px solid #635bff; font-weight:600;" title="Invia o copia il link Stripe per € ${Number(p.importo_preventivo).toFixed(2)}">
+                    💳 Invia Link Klarna (€ ${Number(p.importo_preventivo).toFixed(2)})
+                  </button>
+                  <button id="btn-procedi-preventivo" onclick="window.PazientiView.procediVersoPreventivo()" class="btn btn-secondary btn-sm">
+                    ✏️ Modifica Preventivo
+                  </button>
+                </div>
+              ` : `
+                <button id="btn-procedi-preventivo" onclick="window.PazientiView.procediVersoPreventivo()" class="btn btn-primary btn-sm">
+                  Apri Configuratore Preventivo (850€ - 1.500€)
+                </button>
+              `}
             </div>
+            ${(p.preventivo_inviato || p.importo_preventivo) ? `
+              <div style="margin-top:10px; background:#f0fdf4; border:1px solid #86efac; border-radius:var(--radius-md); padding:10px 14px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+                <div>
+                  <div style="display:flex; align-items:center; gap:8px;">
+                    <span class="badge badge-teal" style="font-weight:700;">✓ Preventivo Inviato</span>
+                    <strong style="font-size:15px; color:#166534;">Saldo Concordato: € ${Number(p.importo_preventivo).toFixed(2)}</strong>
+                    ${p.crm_stato ? `<span class="badge badge-neutral">${p.crm_stato.replace('_', ' ')}</span>` : ''}
+                  </div>
+                  <div style="font-size:11px; color:#15803d; margin-top:3px;">
+                    ${p.note_crm || 'Preventivo registrato e inviato al paziente.'}
+                  </div>
+                </div>
+                <button onclick="window.PazientiView.inviaLinkStripePreventivoEsistente()" class="btn btn-sm" style="background:#635bff; color:#fff; border:1px solid #635bff; font-weight:600;">
+                  💳 Copia / Invia Link Stripe (Klarna Rate)
+                </button>
+              </div>
+            ` : ''}
           </div>
 
           <!-- Step 3: Protocollo Seduta Operatoria Clinica Aurea (Giorno dell'Intervento) -->
@@ -660,6 +688,49 @@ export const PazientiView = {
       window.StatisticheView?.load();
     } catch (e) {
       showToast('Errore salvataggio visita: ' + e.message, 'error');
+    }
+  },
+
+  async inviaLinkStripePreventivoEsistente() {
+    const p = this.selectedPatient;
+    if (!p) return;
+    const imp = p.importo_preventivo || 850;
+
+    showToast(`Generazione link Stripe per € ${Number(imp).toFixed(2)} (anche rate Klarna)...`);
+    try {
+      const res = await api.creaStripeCheckout({
+        paziente_id: p.id,
+        customer_email: p.email || undefined,
+        customer_name: `${p.cognome ? p.cognome + ' ' : ''}${p.nome || ''}`.trim() || undefined,
+        customer_phone: p.telefono || undefined,
+        importo: Number(imp),
+        descrizione: `Trattamento Fenolizzazione (Clinica Aurea) - Saldo Preventivo`,
+        tipo: 'intervento',
+        success_url: `${window.location.origin}/gestionale/?pagamento=completato&pid=${p.id}`,
+        cancel_url: `${window.location.origin}/gestionale/?pagamento=annullato`
+      });
+
+      if (!res.url) throw new Error(res.error || 'Nessun URL restituito da Stripe');
+
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        await navigator.clipboard.writeText(res.url);
+      }
+
+      const telClean = (p.telefono || '').replace(/\s+/g, '').replace(/^\+/, '');
+      const msgWa = encodeURIComponent(
+        `Gentile ${p.nome || ''}, ecco il link sicuro per completare il pagamento dell'intervento (€ ${Number(imp).toFixed(2)}) con carta o in 3 comode rate a tasso zero con Klarna:\n${res.url}\n\nClinica Aurea / Studio Dott. Federico Grassi`
+      );
+      const waUrl = telClean ? `https://wa.me/${telClean}?text=${msgWa}` : null;
+
+      const ok = confirm(
+        `✓ Link Stripe generato e COPIATO negli appunti!\n\nImporto: € ${Number(imp).toFixed(2)}\nLink: ${res.url}\n\nPremi OK per inviarlo subito a ${p.nome} su WhatsApp, oppure ANNULLA per chiudere.`
+      );
+
+      if (ok && waUrl) {
+        window.open(waUrl, '_blank');
+      }
+    } catch (e) {
+      showToast('Errore creazione link Stripe: ' + e.message, 'error');
     }
   },
 

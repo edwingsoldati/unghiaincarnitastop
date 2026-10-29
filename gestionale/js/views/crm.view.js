@@ -249,6 +249,11 @@ export const CRMView = {
           </div>
 
           <div style="display:flex; align-items:center; gap:6px; flex-shrink:0;">
+            ${p.importo_preventivo ? `
+              <button onclick="window.CRMView.inviaLinkStripeCRM(${p.id}, ${p.importo_preventivo})" class="btn btn-sm" style="background:#635bff; color:#fff; border:1px solid #635bff; display:flex; align-items:center; gap:4px; font-weight:600;" title="Genera o invia link Stripe / 3 rate Klarna per € ${p.importo_preventivo}">
+                💳 Link Klarna (€ ${p.importo_preventivo})
+              </button>
+            ` : ''}
             ${phoneClean ? `
               <button onclick="window.CRMView.apriWhatsAppDialog('${encodeURIComponent(nomeCompleto)}', '${phoneClean}', '${p.stato || ''}', ${giorniRimanentiSconto})" class="btn btn-whatsapp btn-sm">
                 WhatsApp
@@ -266,6 +271,48 @@ export const CRMView = {
         </div>
       `;
     }).join('');
+  },
+
+  async inviaLinkStripeCRM(id, importo) {
+    const p = (this.crmList || []).find(x => x.id === id);
+    if (!p) return;
+
+    showToast(`Generazione link Stripe per € ${Number(importo).toFixed(2)} (anche rate Klarna)...`);
+    try {
+      const res = await api.creaStripeCheckout({
+        paziente_id: p.id,
+        customer_email: p.email || undefined,
+        customer_name: `${p.cognome ? p.cognome + ' ' : ''}${p.nome || ''}`.trim() || undefined,
+        customer_phone: p.telefono || undefined,
+        importo: Number(importo),
+        descrizione: `Trattamento Fenolizzazione (Clinica Aurea) - Saldo Preventivo`,
+        tipo: 'intervento',
+        success_url: `${window.location.origin}/gestionale/?pagamento=completato&pid=${p.id}`,
+        cancel_url: `${window.location.origin}/gestionale/?pagamento=annullato`
+      });
+
+      if (!res.url) throw new Error(res.error || 'Nessun URL restituito da Stripe');
+
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        await navigator.clipboard.writeText(res.url);
+      }
+
+      const telClean = (p.telefono || '').replace(/\s+/g, '').replace(/^\+/, '');
+      const msgWa = encodeURIComponent(
+        `Gentile ${p.nome || ''}, ecco il link sicuro per completare il pagamento dell'intervento (€ ${Number(importo).toFixed(2)}) con carta o in 3 comode rate a tasso zero con Klarna:\n${res.url}\n\nClinica Aurea / Studio Dott. Federico Grassi`
+      );
+      const waUrl = telClean ? `https://wa.me/${telClean}?text=${msgWa}` : null;
+
+      const ok = confirm(
+        `✓ Link Stripe generato e COPIATO negli appunti!\n\nImporto: € ${Number(importo).toFixed(2)}\nLink: ${res.url}\n\nPremi OK per inviarlo subito a ${p.nome} su WhatsApp, oppure ANNULLA per chiudere.`
+      );
+
+      if (ok && waUrl) {
+        window.open(waUrl, '_blank');
+      }
+    } catch (e) {
+      showToast('Errore creazione link Stripe: ' + e.message, 'error');
+    }
   },
 
   // Lettera di dimissioni direttamente dal Follow-up (paziente in "Operazione pianificata")
