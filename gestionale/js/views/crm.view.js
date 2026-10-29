@@ -7,7 +7,7 @@ import { api } from '../api.js';
 import { state, showToast } from '../state.js';
 
 export const CRMView = {
-  filtroCorrente: 'tutti',
+  filtroCorrente: 'tutti_preventivi',
   crmList: [],
 
   init() {
@@ -23,25 +23,26 @@ export const CRMView = {
       <div style="display:flex; flex-direction:column; gap:16px; max-width:960px; margin:0 auto;">
         
         <!-- Intestazione & Guida Pipeline -->
-        <div style="display:flex; justify-content:space-between; align-items:center; background:var(--bg-subtle); padding:12px 16px; border-radius:var(--radius-md); border:1px solid var(--border-subtle);">
+        <div style="display:flex; justify-content:space-between; align-items:center; background:var(--bg-subtle); padding:12px 16px; border-radius:var(--radius-md); border:1px solid var(--border-subtle); flex-wrap:wrap; gap:10px;">
           <div>
-            <strong style="font-size:13px; color:var(--text-primary); display:block;">Pipeline Pazienti & Tracciamento Sconto 30gg</strong>
-            <span style="font-size:11px; color:var(--text-muted);">
-              Monitoraggio automatico dei preventivi emessi per la Clinica Aurea e promemoria WhatsApp prima della scadenza.
+            <strong style="font-size:14px; color:var(--text-primary); display:block;">📋 Cruscotto Preventivi, Pagamenti & Follow-up Aurea</strong>
+            <span style="font-size:11.5px; color:var(--text-muted);">
+              Tracciamento stato preventivi (sconto 30gg), pagamenti incassati (Klarna/Stripe o Studio) e interventi prenotati su Calendly.
             </span>
           </div>
-          <button onclick="window.CRMView.loadCRMData()" class="btn btn-secondary btn-sm">
-            Aggiorna Pipeline
+          <button onclick="window.CRMView.loadCRMData()" class="btn btn-secondary btn-sm" style="display:flex; align-items:center; gap:5px;">
+            🔄 Aggiorna Dati
           </button>
         </div>
 
         <!-- Filtri Pipeline -->
         <div style="display:flex; flex-wrap:wrap; gap:8px;">
-          <button onclick="window.CRMView.setFiltro('tutti')" id="crm-flt-tutti" class="btn btn-dark btn-sm">Tutti</button>
-          <button onclick="window.CRMView.setFiltro('preventivo_inviato')" id="crm-flt-preventivo_inviato" class="btn btn-secondary btn-sm">Preventivi Aperti (30gg)</button>
+          <button onclick="window.CRMView.setFiltro('tutti_preventivi')" id="crm-flt-tutti_preventivi" class="btn btn-dark btn-sm">📋 Tutti i Preventivi</button>
+          <button onclick="window.CRMView.setFiltro('in_attesa_pagamento')" id="crm-flt-in_attesa_pagamento" class="btn btn-secondary btn-sm">⏳ In Attesa Pagamento</button>
+          <button onclick="window.CRMView.setFiltro('pagati')" id="crm-flt-pagati" class="btn btn-secondary btn-sm">💳 Pagati (Stripe o Studio)</button>
+          <button onclick="window.CRMView.setFiltro('operazione_pianificata')" id="crm-flt-operazione_pianificata" class="btn btn-secondary btn-sm">🏥 Intervento Prenotato (Aurea)</button>
+          <button onclick="window.CRMView.setFiltro('tutti')" id="crm-flt-tutti" class="btn btn-secondary btn-sm">Tutti i Contatti</button>
           <button onclick="window.CRMView.setFiltro('da_richiamare')" id="crm-flt-da_richiamare" class="btn btn-secondary btn-sm">Da Richiamare</button>
-          <button onclick="window.CRMView.setFiltro('in_attesa')" id="crm-flt-in_attesa" class="btn btn-secondary btn-sm">In Attesa Risposta</button>
-          <button onclick="window.CRMView.setFiltro('operazione_pianificata')" id="crm-flt-operazione_pianificata" class="btn btn-secondary btn-sm">Chirurgia Pianificata (Aurea)</button>
           <button onclick="window.CRMView.setFiltro('completato')" id="crm-flt-completato" class="btn btn-secondary btn-sm">Completati</button>
         </div>
 
@@ -108,7 +109,7 @@ export const CRMView = {
 
   setFiltro(stato) {
     this.filtroCorrente = stato;
-    const buttons = ['tutti', 'preventivo_inviato', 'da_richiamare', 'in_attesa', 'operazione_pianificata', 'completato'];
+    const buttons = ['tutti_preventivi', 'in_attesa_pagamento', 'pagati', 'operazione_pianificata', 'tutti', 'da_richiamare', 'completato'];
     buttons.forEach(b => {
       const btn = document.getElementById('crm-flt-' + b);
       if (btn) {
@@ -169,103 +170,123 @@ export const CRMView = {
     const container = document.getElementById('crm-list-container');
     if (!container) return;
 
+    // Normalizza campi per ogni paziente
+    this.crmList.forEach(p => {
+      p.ha_preventivo = Boolean(p.preventivo_inviato || (p.importo_preventivo != null && Number(p.importo_preventivo) > 0));
+      p.ha_pagato_stripe = Boolean(p.stripe_pagamento_id);
+      p.ha_pagato_studio = Boolean(p.studio_importo_pagato && Number(p.studio_importo_pagato) >= 300);
+      p.ha_pagato = Boolean(p.ha_pagato_stripe || p.ha_pagato_studio);
+      p.ha_prenotato = Boolean(p.operazione_pianificata || p.data_operazione || (p.note_crm && p.note_crm.includes('[Calendly]')));
+    });
+
     let filtered = this.crmList;
-    if (this.filtroCorrente !== 'tutti') {
-      filtered = this.crmList.filter(p => (p.stato || 'da_richiamare') === this.filtroCorrente);
+    if (this.filtroCorrente === 'tutti_preventivi') {
+      filtered = this.crmList.filter(p => p.ha_preventivo);
+    } else if (this.filtroCorrente === 'in_attesa_pagamento') {
+      filtered = this.crmList.filter(p => p.ha_preventivo && !p.ha_pagato);
+    } else if (this.filtroCorrente === 'pagati') {
+      filtered = this.crmList.filter(p => p.ha_pagato);
+    } else if (this.filtroCorrente === 'operazione_pianificata') {
+      filtered = this.crmList.filter(p => p.ha_prenotato || p.stato === 'operazione_pianificata');
+    } else if (this.filtroCorrente === 'da_richiamare') {
+      filtered = this.crmList.filter(p => p.stato === 'da_richiamare');
+    } else if (this.filtroCorrente === 'completato') {
+      filtered = this.crmList.filter(p => p.stato === 'completato');
+    } else if (this.filtroCorrente === 'tutti') {
+      filtered = this.crmList;
     }
 
     if (!filtered.length) {
-      container.innerHTML = `<div style="padding:32px; text-align:center; color:var(--text-muted); font-size:12px;">Nessun paziente in questa categoria di follow-up.</div>`;
+      container.innerHTML = `<div style="padding:36px; text-align:center; color:var(--text-muted); font-size:12.5px;">Nessun paziente trovato per questo filtro.</div>`;
       return;
     }
 
-    const statoLabels = {
-      da_richiamare: { label: 'Da Richiamare', cls: 'badge-danger' },
-      in_attesa: { label: 'In Attesa Risposta', cls: 'badge-warning' },
-      preventivo_inviato: { label: 'Preventivo Inviato', cls: 'badge-teal' },
-      operazione_pianificata: { label: 'Chirurgia Pianificata', cls: 'badge-neutral' },
-      completato: { label: 'Completato', cls: 'badge-success' }
-    };
-
     container.innerHTML = filtered.map(p => {
-      const st = statoLabels[p.stato] || { label: p.stato || 'Da richiamare', cls: 'badge-neutral' };
       const phoneClean = (p.telefono || '').replace(/\s+/g, '').replace(/^\+/, '');
-      const nomeCompleto = `${p.cognome ? p.cognome + ' ' : ''}${p.nome || 'Paziente'}`;
+      const nomeCompleto = `${p.cognome ? p.cognome + ' ' : ''}${p.nome || 'Paziente'}`.trim();
 
+      // Calcolo scadenza sconto 30 giorni
       let scadenzaHtml = '';
       let giorniRimanentiSconto = null;
-      let badgeLabel = st.label;
-      let badgeCls = st.cls;
+      const dataRif = p.data_ultimo_contatto || p.ultima_visita;
+      if (p.ha_preventivo && dataRif) {
+        const dt = new Date(dataRif + 'T12:00:00');
+        const giorniPassati = Math.floor((new Date() - dt) / 86400000);
+        giorniRimanentiSconto = 30 - giorniPassati;
 
-      // Logica avanzata per preventivi inviati (validità 30 giorni)
-      if (p.stato === 'preventivo_inviato') {
-        const dataRif = p.data_ultimo_contatto || p.ultima_visita;
-        if (dataRif) {
-          const dt = new Date(dataRif + 'T12:00:00');
-          const giorniPassati = Math.floor((new Date() - dt) / 86400000);
-          giorniRimanentiSconto = 30 - giorniPassati;
-
-          if (giorniRimanentiSconto > 7) {
-            badgeLabel = `Preventivo Inviato (${giorniRimanentiSconto} gg rimasti)`;
-            badgeCls = 'badge-teal';
-            scadenzaHtml = `<span style="color:var(--status-success-text); font-weight:600; font-size:11px;">Sconto 30gg attivo (ancora ${giorniRimanentiSconto} giorni)</span>`;
-          } else if (giorniRimanentiSconto >= 0) {
-            badgeLabel = `In Scadenza: ${giorniRimanentiSconto} gg rimasti!`;
-            badgeCls = 'badge-warning';
-            scadenzaHtml = `<span style="color:var(--status-warning-text); font-weight:700; font-size:11px;">Attenzione: mancano solo ${giorniRimanentiSconto} giorni alla scadenza dello sconto prima visita</span>`;
-          } else {
-            badgeLabel = `Sconto 30gg Scaduto (-${Math.abs(giorniRimanentiSconto)} gg)`;
-            badgeCls = 'badge-danger';
-            scadenzaHtml = `<span style="color:var(--status-danger-text); font-weight:700; font-size:11px;">Sconto 30gg SCADUTO da ${Math.abs(giorniRimanentiSconto)} giorni</span>`;
-          }
+        if (giorniRimanentiSconto > 7) {
+          scadenzaHtml = `<span style="color:#0f766e; font-weight:600; font-size:11px;">🟢 Sconto 30gg attivo (ancora ${giorniRimanentiSconto} gg)</span>`;
+        } else if (giorniRimanentiSconto >= 0) {
+          scadenzaHtml = `<span style="color:#b45309; font-weight:700; font-size:11px; background:#fef3c7; padding:2px 6px; border-radius:4px;">⚠️ In scadenza: ${giorniRimanentiSconto} gg rimasti!</span>`;
+        } else {
+          scadenzaHtml = `<span style="color:#b91c1c; font-weight:700; font-size:11px; background:#fee2e2; padding:2px 6px; border-radius:4px;">🔴 Sconto 30gg scaduto da ${Math.abs(giorniRimanentiSconto)} gg</span>`;
         }
-      } else if (p.data_prossimo_followup) {
-        const diff = Math.round((new Date(p.data_prossimo_followup) - new Date()) / 86400000);
-        if (diff < 0) scadenzaHtml = `<span style="color:var(--status-danger-text); font-weight:600; font-size:11px;">Scaduto da ${Math.abs(diff)} giorni</span>`;
-        else if (diff === 0) scadenzaHtml = `<span style="color:var(--status-warning-text); font-weight:600; font-size:11px;">Scadenza Oggi</span>`;
-        else scadenzaHtml = `<span style="color:var(--text-muted); font-size:11px;">Richiamo tra ${diff} giorni</span>`;
+      }
+
+      // Badge Pagamento (Stripe/Klarna o Studio)
+      let badgePagamento = '';
+      if (p.ha_pagato_stripe) {
+        const impPagato = Number(p.stripe_importo_pagato || p.importo_preventivo || 0).toFixed(2);
+        badgePagamento = `<span class="badge" style="background:#e0e7ff; color:#4338ca; font-weight:700; font-size:11px;">🟢 Pagato online Klarna/Stripe (€ ${impPagato})</span>`;
+      } else if (p.ha_pagato_studio) {
+        const impStudio = Number(p.studio_importo_pagato || p.importo_preventivo || 0).toFixed(2);
+        const metodoStudio = (p.studio_pagamento_metodo || 'POS').toUpperCase();
+        badgePagamento = `<span class="badge" style="background:#dcfce7; color:#15803d; font-weight:700; font-size:11px;">🟢 Pagato in Studio (${metodoStudio} € ${impStudio})</span>`;
+      } else if (p.ha_preventivo) {
+        badgePagamento = `<span class="badge" style="background:#fee2e2; color:#b91c1c; font-weight:700; font-size:11px;">🔴 In attesa di pagamento</span>`;
+      }
+
+      // Badge Prenotazione Intervento Clinica Aurea
+      let badgeAurea = '';
+      if (p.ha_prenotato) {
+        const dataAureaStr = p.data_operazione ? p.data_operazione.slice(0, 10) : '';
+        badgeAurea = `<span class="badge badge-teal" style="font-weight:700; font-size:11px;">🏥 Aurea: ${dataAureaStr ? 'Prenotato ' + dataAureaStr : 'Pianificato'}</span>`;
+      } else {
+        badgeAurea = `<span style="font-size:10.5px; color:var(--text-muted); background:var(--bg-subtle); padding:2px 6px; border-radius:4px;">⚪ Intervento non ancora prenotato</span>`;
       }
 
       return `
-        <div style="padding:16px 20px; border-bottom:1px solid var(--border-subtle); display:flex; justify-content:space-between; align-items:flex-start; gap:16px;">
-          <div>
-            <div style="display:flex; align-items:center; gap:8px;">
-              <strong style="font-size:13px; color:var(--text-primary);">${nomeCompleto}</strong>
-              <span class="badge ${badgeCls}">${badgeLabel}</span>
-              ${p.importo_preventivo ? `<span class="badge badge-neutral font-mono-code">Saldo: € ${p.importo_preventivo}</span>` : ''}
+        <div style="padding:16px 20px; border-bottom:1px solid var(--border-subtle); display:flex; justify-content:space-between; align-items:flex-start; gap:16px; flex-wrap:wrap;">
+          <div style="flex:1; min-width:280px;">
+            <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-bottom:4px;">
+              <strong style="font-size:14px; color:var(--text-primary);">${nomeCompleto}</strong>
+              ${p.importo_preventivo ? `<span class="badge badge-neutral font-mono-code" style="font-size:12px; font-weight:700;">Preventivo: € ${Number(p.importo_preventivo).toFixed(2)}</span>` : ''}
+              ${badgePagamento}
+              ${badgeAurea}
             </div>
 
-            <div style="font-size:11px; color:var(--text-secondary); margin-top:4px; line-height:1.5;">
-              <span>Tel: <strong class="font-mono-code">${p.telefono || '—'}</strong></span> · 
-              <span>Data riferimento: ${p.data_ultimo_contatto ? p.data_ultimo_contatto.slice(0,10) : (p.ultima_visita ? p.ultima_visita.slice(0,10) : '—')}</span>
-              ${scadenzaHtml ? ` · ${scadenzaHtml}` : ''}
+            <div style="font-size:11.5px; color:var(--text-secondary); margin-top:6px; display:flex; flex-wrap:wrap; gap:12px; align-items:center;">
+              <span>Tel: <strong class="font-mono-code">${p.telefono || '—'}</strong></span>
+              <span>Email: <strong>${p.email || '—'}</strong></span>
+              ${dataRif ? `<span>Data preventivo: <strong>${dataRif.slice(0, 10)}</strong></span>` : ''}
+              ${scadenzaHtml ? `<span>${scadenzaHtml}</span>` : ''}
             </div>
 
             ${p.note_crm ? `
-              <div style="font-size:11px; color:var(--text-primary); background:var(--bg-subtle); padding:6px 10px; border-radius:var(--radius-sm); margin-top:6px; max-width:600px;">
+              <div style="font-size:11.5px; color:var(--text-primary); background:#f8fafc; border:1px solid #e2e8f0; border-radius:6px; padding:6px 12px; margin-top:8px; line-height:1.45;">
                 ${p.note_crm}
               </div>
             ` : ''}
           </div>
 
-          <div style="display:flex; align-items:center; gap:6px; flex-shrink:0;">
-            ${p.importo_preventivo ? `
-              <button onclick="window.CRMView.inviaLinkStripeCRM(${p.id}, ${p.importo_preventivo})" class="btn btn-sm" style="background:#635bff; color:#fff; border:1px solid #635bff; display:flex; align-items:center; gap:4px; font-weight:600;" title="Genera o invia link Stripe / 3 rate Klarna per € ${p.importo_preventivo}">
-                💳 Link Klarna (€ ${p.importo_preventivo})
+          <div style="display:flex; align-items:center; gap:8px; flex-shrink:0; flex-wrap:wrap; justify-content:flex-end;">
+            ${(!p.ha_pagato && p.ha_preventivo) ? `
+              <button onclick="window.CRMView.inviaLinkStripeCRM(${p.id}, ${p.importo_preventivo || 850})" class="btn btn-sm" style="background:#635bff; color:#fff; border:1px solid #635bff; font-weight:600; display:flex; align-items:center; gap:4px;" title="Crea o invia il link Stripe con 3 rate Klarna per € ${p.importo_preventivo || 850}">
+                💳 Invia Link Klarna (€ ${p.importo_preventivo || 850})
               </button>
             ` : ''}
             ${phoneClean ? `
-              <button onclick="window.CRMView.apriWhatsAppDialog('${encodeURIComponent(nomeCompleto)}', '${phoneClean}', '${p.stato || ''}', ${giorniRimanentiSconto})" class="btn btn-whatsapp btn-sm">
-                WhatsApp
+              <button onclick="window.CRMView.apriWhatsAppDialog(${p.id})" class="btn btn-whatsapp btn-sm" style="display:flex; align-items:center; gap:4px;">
+                💬 WhatsApp
               </button>
             ` : ''}
-            ${p.stato === 'operazione_pianificata' ? `
+            ${p.ha_prenotato ? `
               <button onclick="window.CRMView.apriDimissioni(${p.id})" class="btn btn-primary btn-sm" title="Lettera di dimissioni per il medico curante">
                 Dimissioni
               </button>
             ` : ''}
             <button onclick="window.CRMView.apriModaleAggiornamento(${p.id})" class="btn btn-secondary btn-sm">
-              Aggiorna Stato
+              ✏️ Note / Stato
             </button>
           </div>
         </div>
@@ -322,24 +343,29 @@ export const CRMView = {
     window.DocumentiView.apriDocumentoPrecompilato('dimissioni', p);
   },
 
-  apriWhatsAppDialog(nomeEnc, phone, stato, giorniRimanentiSconto = null) {
-    const nome = decodeURIComponent(nomeEnc);
-    let defaultMsg = `Buongiorno ${nome}, la contatto dallo Studio Podologico del Dott. Federico Grassi riguardo al suo percorso per l'unghia incarnita. Volevo sapere come procede la situazione clinica. Cordiali saluti.`;
-    
-    if (stato === 'preventivo_inviato') {
-      if (giorniRimanentiSconto !== null && giorniRimanentiSconto <= 7 && giorniRimanentiSconto >= 0) {
-        defaultMsg = `Buongiorno ${nome}, le scrivo dallo Studio del Dott. Federico Grassi per ricordarle che il preventivo per l'intervento di fenolizzazione con la deduzione della prima visita scade tra ${giorniRimanentiSconto} giorni. Se desidera confermare la data dell'intervento presso la Clinica Aurea, può accedere direttamente al calendario qui: https://calendly.com/federico-grassi-unghiaincarnitastop/trattamento-per-unghia-incarnita-aurea. Restiamo a disposizione per qualsiasi chiarimento.`;
-      } else if (giorniRimanentiSconto !== null && giorniRimanentiSconto < 0) {
-        defaultMsg = `Buongiorno ${nome}, le scrivo dallo Studio del Dott. Federico Grassi. Il termine dei 30 giorni per la deduzione della prima visita è terminato, ma se desidera comunque programmare l'intervento di fenolizzazione alla Clinica Aurea restiamo a sua completa disposizione. Cordiali saluti.`;
-      } else {
-        const ggStr = (giorniRimanentiSconto !== null) ? ` (validità residua della deduzione: ${giorniRimanentiSconto} giorni)` : '';
-        defaultMsg = `Buongiorno ${nome}, le scrivo dallo Studio del Dott. Federico Grassi riguardo al preventivo rilasciato per l'intervento di fenolizzazione alla Clinica Aurea. Volevo verificare come procede il dolore e se avesse dubbi sul percorso${ggStr}. Può scegliere la data su Calendly da qui: https://calendly.com/federico-grassi-unghiaincarnitastop/trattamento-per-unghia-incarnita-aurea. Cordiali saluti.`;
-      }
+  apriWhatsAppDialog(id) {
+    const p = (this.crmList || []).find(x => x.id === id);
+    if (!p) return;
+
+    const phoneClean = (p.telefono || '').replace(/\s+/g, '').replace(/^\+/, '');
+    const nome = `${p.nome || 'Paziente'}`.trim();
+    let defaultMsg = '';
+
+    if (p.ha_pagato && p.ha_prenotato) {
+      const dataStr = p.data_operazione ? `il ${p.data_operazione.slice(0, 10)}` : 'come concordato';
+      defaultMsg = `Gentile ${nome}, confermiamo il suo intervento di fenolizzazione presso la Clinica Aurea (Via Pietro Palmieri 50, Torino) ${dataStr}.\n\nLe ricordiamo di compilare preventivamente il modulo obbligatorio di consenso informato al seguente link:\nhttps://www.unghiaincarnitastop.com/consensi/\n\nPer qualsiasi necessità siamo a sua completa disposizione. A presto!\n\nStudio Dott. Federico Grassi`;
+    } else if (p.ha_pagato && !p.ha_prenotato) {
+      defaultMsg = `Gentile ${nome}, le confermiamo con piacere la ricezione del pagamento per il trattamento di fenolizzazione.\n\nPer scegliere la data e l'orario dell'intervento presso la Clinica Aurea, può accedere direttamente al calendario qui:\nhttps://calendly.com/federico-grassi-unghiaincarnitastop/trattamento-per-unghia-incarnita-aurea\n\nRicordi inoltre di compilare il consenso informato prima della seduta su:\nhttps://www.unghiaincarnitastop.com/consensi/\n\nCordiali saluti,\nStudio Dott. Federico Grassi`;
+    } else if (p.ha_preventivo) {
+      const imp = p.importo_preventivo ? ` di € ${Number(p.importo_preventivo).toFixed(2)}` : '';
+      defaultMsg = `Buongiorno ${nome}, le scrivo dallo Studio Podologico del Dott. Federico Grassi riguardo al preventivo${imp} per l'intervento di fenolizzazione alla Clinica Aurea.\n\nLe ricordiamo che è possibile completare il saldo anche in 3 comode rate a tasso zero con Klarna.\n\nSe desidera fissare la data dell'intervento può utilizzare il calendario qui: https://calendly.com/federico-grassi-unghiaincarnitastop/trattamento-per-unghia-incarnita-aurea\n\nRestiamo a disposizione per qualsiasi dubbio o chiarimento. Buona giornata!`;
+    } else {
+      defaultMsg = `Buongiorno ${nome}, la contatto dallo Studio Podologico del Dott. Federico Grassi riguardo al suo percorso per l'unghia incarnita. Volevo sapere come procede la situazione clinica. Cordiali saluti.`;
     }
 
     const msg = prompt(`Messaggio WhatsApp per ${nome} (modificabile prima dell'invio):`, defaultMsg);
     if (msg !== null && msg.trim()) {
-      window.open(`https://wa.me/${phone}?text=${encodeURIComponent(msg.trim())}`, '_blank');
+      window.open(`https://wa.me/${phoneClean}?text=${encodeURIComponent(msg.trim())}`, '_blank');
     }
   },
 
