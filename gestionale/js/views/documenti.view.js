@@ -31,6 +31,7 @@ export const DocumentiView = {
 
   init() {
     this.renderContainer();
+    this.caricaPagamentiStripe();
   },
 
   renderContainer() {
@@ -40,6 +41,25 @@ export const DocumentiView = {
     container.innerHTML = `
       <div style="display:flex; flex-direction:column; gap:20px; max-width:960px; margin:0 auto;">
         
+        <!-- Sezione Pagamenti Stripe in attesa di revisione -->
+        <div id="stripe-pending-card" class="card" style="border-left: 4px solid #635bff; background: #fff; display:none;">
+          <div class="card-header" style="display:flex; justify-content:space-between; align-items:center;">
+            <div style="display:flex; align-items:center; gap:8px;">
+              <span class="card-title" style="color:#635bff; font-weight:700;">💳 Pagamenti Stripe Ricevuti da Visionare</span>
+              <span id="stripe-pending-badge" class="badge" style="background:#635bff; color:#fff; font-size:11px;">0 da visionare</span>
+            </div>
+            <button onclick="window.DocumentiView.caricaPagamentiStripe()" class="btn btn-secondary btn-sm" style="display:flex; align-items:center; gap:4px;">
+              🔄 Aggiorna
+            </button>
+          </div>
+          <p style="font-size:11px; color:var(--text-secondary); margin:4px 0 12px; line-height:1.4;">
+            I seguenti pagamenti online sono stati incassati con successo tramite Stripe (o Klarna in 3 rate). Controlla e correggi i dati del paziente prima dell'invio ufficiale a Fatture in Cloud.
+          </p>
+          <div id="stripe-pending-list" style="display:flex; flex-direction:column; gap:8px;">
+            <!-- Elenco dinamico -->
+          </div>
+        </div>
+
         <div class="card">
           <div class="card-header">
             <div>
@@ -1070,6 +1090,214 @@ iframe{display:block;width:100%;height:calc(100% - 48px);border:0}</style></head
       ? `https://wa.me/${cleanTel}?text=${encodeURIComponent(testo)}`
       : `https://wa.me/?text=${encodeURIComponent(testo)}`;
     window.open(url, '_blank');
+  },
+
+  async caricaPagamentiStripe() {
+    try {
+      const res = await api.getStripePagamentiDaVisionare();
+      const list = res.pagamenti || [];
+      this.stripePendingList = list;
+
+      const navBadge = document.getElementById('nav-stripe-badge');
+      if (navBadge) {
+        navBadge.textContent = list.length;
+        navBadge.style.display = list.length > 0 ? 'inline-block' : 'none';
+      }
+
+      const card = document.getElementById('stripe-pending-card');
+      const badge = document.getElementById('stripe-pending-badge');
+      const containerList = document.getElementById('stripe-pending-list');
+
+      if (!card || !containerList) return;
+
+      if (list.length === 0) {
+        card.style.display = 'none';
+        return;
+      }
+
+      card.style.display = 'block';
+      if (badge) badge.textContent = `${list.length} da visionare`;
+
+      containerList.innerHTML = list.map(item => {
+        const nomePaziente = `${item.paz_cognome ? item.paz_cognome + ' ' : ''}${item.paz_nome || item.customer_name || 'Paziente'}`.trim();
+        const dataStr = item.created_at ? item.created_at.slice(0, 16).replace('T', ' ') : 'Data non disp.';
+        const importoStr = item.importo ? Number(item.importo).toFixed(2) : '0.00';
+        const tipoEtichetta = item.tipo === 'intervento' ? 'Intervento Fenolizzazione' : 'Prima Visita';
+
+        return `
+          <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:6px; padding:10px 14px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+            <div>
+              <div style="display:flex; align-items:center; gap:8px;">
+                <strong style="font-size:13px; color:#1e293b;">${nomePaziente}</strong>
+                <span class="badge ${item.tipo === 'intervento' ? 'badge-teal' : 'badge-neutral'}" style="font-size:10px;">${tipoEtichetta}</span>
+                <span style="font-size:10px; color:#635bff; background:#e0e7ff; padding:1px 6px; border-radius:4px; font-weight:600;">Stripe / Klarna</span>
+              </div>
+              <div style="font-size:11px; color:#64748b; margin-top:3px;">
+                <span>Data: ${dataStr}</span> · 
+                <span>Email: ${item.customer_email || '—'}</span>
+                ${item.paz_cf ? ` · <span>CF: <strong class="font-mono-code">${item.paz_cf}</strong></span>` : ''}
+              </div>
+            </div>
+
+            <div style="display:flex; align-items:center; gap:12px;">
+              <strong style="font-size:15px; color:#1e293b;">€ ${importoStr}</strong>
+              <button onclick="window.DocumentiView.apriRevisioneStripe(${item.id})" class="btn btn-sm btn-primary" style="background:#635bff; border-color:#635bff; font-weight:600;">
+                🔍 Visiona ed Emetti Fattura
+              </button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    } catch (e) {
+      console.error('Errore caricamento pagamenti Stripe da visionare:', e);
+    }
+  },
+
+  apriRevisioneStripe(id) {
+    const item = (this.stripePendingList || []).find(p => p.id === id);
+    if (!item) {
+      showToast('Pagamento non trovato', 'error');
+      return;
+    }
+    this.currentStripeItem = item;
+
+    document.getElementById('stripe-modal-pagamento-id').value = item.id;
+    document.getElementById('stripe-modal-paziente-id').value = item.paziente_id || '';
+    document.getElementById('stripe-modal-trans-info').textContent = `Transazione: ${item.session_id ? item.session_id.slice(-16) : item.id} · Incassato: ${item.created_at ? item.created_at.slice(0, 16).replace('T', ' ') : ''}`;
+    document.getElementById('stripe-modal-importo-display').textContent = `€ ${item.importo ? Number(item.importo).toFixed(2) : '0.00'}`;
+
+    const nomePaz = `${item.paz_cognome ? item.paz_cognome + ' ' : ''}${item.paz_nome || item.customer_name || ''}`.trim();
+    document.getElementById('stripe-modal-nome').value = nomePaz;
+    document.getElementById('stripe-modal-cf').value = (item.paz_cf || '').toUpperCase();
+    document.getElementById('stripe-modal-email').value = item.customer_email || '';
+    document.getElementById('stripe-modal-indirizzo').value = item.paz_indirizzo || '';
+    document.getElementById('stripe-modal-citta').value = item.paz_citta || 'Torino';
+    document.getElementById('stripe-modal-provincia').value = 'TO';
+    document.getElementById('stripe-modal-cap').value = '';
+
+    // Se l'indirizzo salvato contiene CAP o provincia, estraili
+    if (item.paz_indirizzo && item.paz_indirizzo.includes(',')) {
+      const parts = item.paz_indirizzo.split(',').map(s => s.trim());
+      document.getElementById('stripe-modal-indirizzo').value = parts[0] || '';
+      const tail = parts.slice(1).join(' ');
+      const capMatch = tail.match(/\b\d{5}\b/);
+      if (capMatch) document.getElementById('stripe-modal-cap').value = capMatch[0];
+    }
+
+    const defaultDesc = item.tipo === 'intervento'
+      ? 'Trattamento di fenolizzazione matrice ungueale'
+      : 'Visita Podologica';
+    document.getElementById('stripe-modal-desc').value = defaultDesc;
+    document.getElementById('stripe-modal-data').value = new Date().toISOString().split('T')[0];
+    document.getElementById('stripe-modal-importo').value = item.importo ? Number(item.importo).toFixed(2) : '0';
+
+    const btnConf = document.getElementById('btn-conferma-stripe-fic');
+    if (btnConf) {
+      btnConf.disabled = false;
+      btnConf.textContent = '✓ Approva ed Emetti Fattura FIC';
+    }
+
+    document.getElementById('modal-stripe-fattura').classList.add('open');
+  },
+
+  async confermaEmissioneFatturaStripe() {
+    const item = this.currentStripeItem;
+    if (!item) return;
+
+    const nome = document.getElementById('stripe-modal-nome').value.trim();
+    const cf = document.getElementById('stripe-modal-cf').value.trim().toUpperCase();
+    const email = document.getElementById('stripe-modal-email').value.trim();
+    const indirizzo = document.getElementById('stripe-modal-indirizzo').value.trim();
+    const cap = document.getElementById('stripe-modal-cap').value.trim();
+    const citta = document.getElementById('stripe-modal-citta').value.trim();
+    const prov = document.getElementById('stripe-modal-provincia').value.trim().toUpperCase();
+    const desc = document.getElementById('stripe-modal-desc').value.trim();
+    const data = document.getElementById('stripe-modal-data').value;
+    const importo = parseFloat(document.getElementById('stripe-modal-importo').value);
+
+    if (!nome) {
+      alert('Inserisci il nome e cognome del paziente intestatario della fattura.');
+      return;
+    }
+    if (!cf || cf.length < 11) {
+      alert('Inserisci un Codice Fiscale valido per poter emettere la fattura sanitaria.');
+      return;
+    }
+    if (!importo || importo <= 0) {
+      alert('Importo non valido.');
+      return;
+    }
+
+    const btn = document.getElementById('btn-conferma-stripe-fic');
+    if (btn) {
+      btn.disabled = true;
+      btn.textContent = 'Emissione fattura su FIC in corso...';
+    }
+
+    try {
+      const parts = nome.split(' ');
+      const cognome = parts.length > 1 ? parts.pop() : '';
+      const nomePaz = parts.join(' ') || cognome;
+
+      const payload = {
+        pagamento_id: item.id,
+        paziente: {
+          id: item.paziente_id || null,
+          nome: nomePaz,
+          cognome: cognome,
+          codice_fiscale: cf,
+          email: email,
+          telefono: item.customer_phone || item.paz_telefono || '',
+          indirizzo: indirizzo,
+          cap: cap,
+          citta: citta,
+          provincia: prov
+        },
+        descrizione: desc || 'Trattamento Podologico',
+        importo: importo,
+        data: data || new Date().toISOString().split('T')[0]
+      };
+
+      const res = await api.emettiFatturaStripe(payload);
+      if (res.error) throw new Error(res.error);
+
+      document.getElementById('modal-stripe-fattura').classList.remove('open');
+      showToast('✓ Fattura ufficiale emessa con successo su Fatture in Cloud!', 'success');
+      await this.caricaPagamentiStripe();
+
+      // Se disponibile PDF della fattura, offri di aprirlo
+      const docData = res.fattura?.data || res.fattura || {};
+      if (docData.url) {
+        if (confirm('Fattura creata con successo! Vuoi visualizzare il PDF ufficiale di Fatture in Cloud?')) {
+          window.open(docData.url, '_blank');
+        }
+      }
+    } catch (err) {
+      console.error(err);
+      alert('Errore durante l\'emissione della fattura su Fatture in Cloud: ' + err.message);
+      if (btn) {
+        btn.disabled = false;
+        btn.textContent = '✓ Approva ed Emetti Fattura FIC';
+      }
+    }
+  },
+
+  async ignoraPagamentoStripe() {
+    const item = this.currentStripeItem;
+    if (!item) return;
+
+    if (!confirm('Sei sicuro di voler ignorare questo pagamento Stripe? Non verrà inviata alcuna fattura a Fatture in Cloud per questa transazione.')) {
+      return;
+    }
+
+    try {
+      await api.ignoraFatturaStripe({ pagamento_id: item.id });
+      document.getElementById('modal-stripe-fattura').classList.remove('open');
+      showToast('Pagamento contrassegnato come ignorato.');
+      await this.caricaPagamentiStripe();
+    } catch (err) {
+      showToast('Errore: ' + err.message, 'error');
+    }
   }
 };
 

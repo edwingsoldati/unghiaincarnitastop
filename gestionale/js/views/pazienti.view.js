@@ -184,7 +184,10 @@ export const PazientiView = {
           </div>
         </div>
 
-        <div style="display:flex; gap:8px;">
+        <div style="display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-end;">
+          <button onclick="window.PazientiView.generaLinkStripePaziente()" class="btn btn-sm" style="background:#635bff; color:#fff; border:1px solid #635bff; display:flex; align-items:center; gap:5px;" title="Crea link di pagamento con carta o rate Klarna">
+            💳 Link Stripe / Rate
+          </button>
           ${phoneClean ? `
             <a href="https://wa.me/${phoneClean}" target="_blank" class="btn btn-whatsapp btn-sm">
               WhatsApp
@@ -313,7 +316,7 @@ export const PazientiView = {
               <p style="font-size:11px; color:var(--text-secondary); margin:6px 0 12px; line-height:1.4;">
                 L'unghia guarisce con cure in studio. Federico inserisce l'importo concordato ed emette subito la quietanza o la fattura.
               </p>
-              <div style="display:flex; gap:8px;">
+              <div style="display:flex; gap:8px; margin-bottom:8px;">
                 <button onclick="window.PazientiView.apriModaleConservativo('ricevuta')" class="btn btn-primary btn-sm" style="flex:1;">
                   Ricevuta (€)
                 </button>
@@ -321,6 +324,9 @@ export const PazientiView = {
                   Fattura FIC (€)
                 </button>
               </div>
+              <button onclick="window.PazientiView.generaLinkStripePaziente()" class="btn btn-sm" style="width:100%; background:#f5f3ff; color:#635bff; border:1px solid #c4b5fd; display:flex; align-items:center; justify-content:center; gap:6px;">
+                💳 Link Pagamento Stripe / Rate Klarna
+              </button>
             </div>
 
             <!-- Opzione B: Indicazione Chirurgica (DA OPERARE) -->
@@ -654,6 +660,79 @@ export const PazientiView = {
       window.StatisticheView?.load();
     } catch (e) {
       showToast('Errore salvataggio visita: ' + e.message, 'error');
+    }
+  },
+
+  async generaLinkStripePaziente(importoPrefissato) {
+    const p = this.selectedPatient;
+    if (!p) {
+      showToast('Seleziona prima un paziente dalla lista.', 'error');
+      return;
+    }
+
+    let imp = importoPrefissato;
+    if (imp == null) {
+      const defaultImp = p.ultimaVisitaImporto ? String(p.ultimaVisitaImporto) : '100';
+      const importoInput = prompt(
+        `Generazione Link Pagamento Stripe / Rate Klarna per ${p.cognome ? p.cognome + ' ' : ''}${p.nome || ''}\n\nInserisci l'importo concordato da addebitare in Euro:`,
+        defaultImp
+      );
+      if (importoInput === null) return;
+      imp = parseImporto(importoInput);
+    }
+
+    if (!Number.isFinite(imp) || imp <= 0) {
+      showToast('Importo non valido: scrivi solo la cifra, es. 100 oppure 100,50', 'error');
+      return;
+    }
+
+    const defaultDesc = imp >= 300
+      ? 'Trattamento Podologico / Intervento Fenolizzazione'
+      : 'Visita Podologica Specialistica - Dott. Federico Grassi';
+
+    const descInput = prompt(
+      `Descrizione prestazione per la ricevuta Stripe (visibile al paziente durante il checkout):`,
+      defaultDesc
+    );
+    if (descInput === null) return;
+
+    showToast('Generazione link Stripe Checkout in corso...');
+    try {
+      const res = await api.creaStripeCheckout({
+        paziente_id: p.id || null,
+        tipo: imp >= 300 ? 'intervento' : 'prima_visita',
+        importo: imp,
+        descrizione: (descInput && descInput.trim()) ? descInput.trim() : defaultDesc,
+        customer_email: p.email || undefined,
+        customer_name: `${p.cognome ? p.cognome + ' ' : ''}${p.nome || ''}`.trim() || undefined,
+        customer_phone: p.telefono || undefined,
+        success_url: `${window.location.origin}/gestionale/?pagamento=completato&pid=${p.id || ''}`,
+        cancel_url: `${window.location.origin}/gestionale/?pagamento=annullato`
+      });
+
+      if (!res.url) throw new Error(res.error || 'Nessun URL restituito da Stripe');
+
+      // Copia link negli appunti
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        await navigator.clipboard.writeText(res.url);
+      }
+
+      const telClean = (p.telefono || '').replace(/\s+/g, '').replace(/^\+/, '');
+      const msgWa = encodeURIComponent(
+        `Gentile ${p.nome || ''}, ecco il link sicuro per completare il pagamento di € ${imp.toFixed(2)} con carta o a rate con Klarna:\n${res.url}\n\nStudio Podologico Dott. Federico Grassi`
+      );
+      const waUrl = telClean ? `https://wa.me/${telClean}?text=${msgWa}` : null;
+
+      const visualizzaScelta = confirm(
+        `✓ Link di pagamento Stripe generato e COPIATO negli appunti!\n\nImporto: € ${imp.toFixed(2)}\nLink: ${res.url}\n\nPremi OK per inviarlo subito via WhatsApp al paziente, oppure ANNULLA per chiudere.`
+      );
+
+      if (visualizzaScelta && waUrl) {
+        window.open(waUrl, '_blank');
+      }
+    } catch (err) {
+      console.error(err);
+      showToast('Errore creazione link Stripe: ' + err.message, 'error');
     }
   },
 

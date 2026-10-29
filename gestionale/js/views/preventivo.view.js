@@ -214,6 +214,10 @@ export const PreventivoView = {
                 <button onclick="window.PreventivoView.stampaPreventivoPDF()" class="btn btn-secondary" style="width:100%;">
                   <span>Stampa Copia Cartacea Ufficiale</span>
                 </button>
+                <button type="button" onclick="window.PreventivoView.copiaLinkStripeIntervento()" class="btn btn-ghost" style="width:100%; border:1px solid #0f766e; color:#0f766e; background:#f0fdfa; font-weight:600; font-size:12px; padding:9px 12px; border-radius:var(--radius-md); display:flex; align-items:center; justify-content:center; gap:6px;">
+                  <svg style="width:15px;height:15px;" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect><line x1="1" y1="10" x2="23" y2="10"></line></svg>
+                  <span>Copia Link Pagamento Stripe / Rate Klarna</span>
+                </button>
               </div>
 
             </div>
@@ -413,7 +417,7 @@ export const PreventivoView = {
     }
   },
 
-  apriEditorAnteprimaInvio() {
+  async apriEditorAnteprimaInvio() {
     const nome = document.getElementById('prev-nome').value.trim() || 'Gentile Paziente';
     const lordo = parseFloat(document.getElementById('prev-prezzo-operazione').value) || 850;
     const sconto = parseFloat(document.getElementById('prev-sconto-visita').value) || 0;
@@ -434,18 +438,67 @@ export const PreventivoView = {
 
     const sedeDitaStr = sede ? `\nSede anatomica valutata: ${sede}\n` : '';
 
-    const body = `Gentile ${nome},\n\nfacendo seguito alla valutazione clinica svolta in studio, le rimettiamo il prospetto economico per il trattamento di fenolizzazione (${desc}).${sedeDitaStr}\nL'intervento verrà eseguito presso la Clinica Aurea, sita in Via Pietro Palmieri 50, Torino.\n\nCOMPOSIZIONE ECONOMICA DEL PREVENTIVO:\n• Trattamento di fenolizzazione: € ${quotaFenolizzazione.toFixed(2)}\n• Anestesista dedicato in sala: € ${costoAnestesista.toFixed(2)}\n• Sala chirurgica (Clinica Aurea): € ${costoSala.toFixed(2)}\n--------------------------------------------------\nTotale complessivo trattamento: € ${lordo.toFixed(2)}\n• Deduzione prima visita (entro 30 giorni): − € ${sconto.toFixed(2)}\nSALDO NETTO EFFETTIVO: € ${netto.toFixed(2)}\n${notaDueSedute}\nISTRUZIONI PER LA PRENOTAZIONE E CONSENSI:\nPer confermare l'intervento e scegliere la data, utilizzi il seguente link dedicato:\nhttps://calendly.com/federico-grassi-unghiaincarnitastop/trattamento-per-unghia-incarnita-aurea\n\nPrima dell'intervento è obbligatorio compilare il modulo di consenso informato all'indirizzo:\nhttps://www.unghiaincarnitastop.com/consensi/\n\nRestiamo a sua completa disposizione per qualsiasi chiarimento.\n\nCordiali saluti,\nDott. Federico Grassi — Podologo\nVia Filadelfia 200, Torino · Tel. +39 333 421 7550`;
+    // Genera link di pagamento Stripe online (saldo netto con Klarna 3 rate)
+    let linkStripe = '';
+    const emailPaziente = document.getElementById('prev-email')?.value.trim() || state.activePatient?.email || '';
+    try {
+      showToast('Generazione link di pagamento online (anche rate Klarna)...');
+      const p = await this.assicuratiPazienteRegistrato();
+      const resStripe = await api.creaStripeCheckout({
+        paziente_id: p?.id || null,
+        email: emailPaziente,
+        importo: netto,
+        descrizione: `Trattamento Fenolizzazione (${desc})`,
+        tipo: 'intervento'
+      });
+      if (resStripe && resStripe.url) {
+        linkStripe = resStripe.url;
+      }
+    } catch (eStripe) {
+      console.warn('Stripe checkout error per preventivo:', eStripe);
+    }
+
+    const bloccoStripe = linkStripe
+      ? `PAGAMENTO ONLINE (ANCHE A RATE CON KLARNA):\nPer saldare l'intervento (€ ${netto.toFixed(2)}) online con carta o in 3 comode rate a tasso zero con Klarna, utilizzi il seguente link sicuro:\n${linkStripe}\n\n`
+      : '';
+
+    const body = `Gentile ${nome},\n\nfacendo seguito alla valutazione clinica svolta in studio, le rimettiamo il prospetto economico per il trattamento di fenolizzazione (${desc}).${sedeDitaStr}\nL'intervento verrà eseguito presso la Clinica Aurea, sita in Via Pietro Palmieri 50, Torino.\n\nCOMPOSIZIONE ECONOMICA DEL PREVENTIVO:\n• Trattamento di fenolizzazione: € ${quotaFenolizzazione.toFixed(2)}\n• Anestesista dedicato in sala: € ${costoAnestesista.toFixed(2)}\n• Sala chirurgica (Clinica Aurea): € ${costoSala.toFixed(2)}\n--------------------------------------------------\nTotale complessivo trattamento: € ${lordo.toFixed(2)}\n• Deduzione prima visita (entro 30 giorni): − € ${sconto.toFixed(2)}\nSALDO NETTO EFFETTIVO: € ${netto.toFixed(2)}\n${notaDueSedute}\n${bloccoStripe}ISTRUZIONI PER LA PRENOTAZIONE E CONSENSI:\nPer confermare l'intervento e scegliere la data, utilizzi il seguente link dedicato:\nhttps://calendly.com/federico-grassi-unghiaincarnitastop/trattamento-per-unghia-incarnita-aurea\n\nPrima dell'intervento è obbligatorio compilare il modulo di consenso informato all'indirizzo:\nhttps://www.unghiaincarnitastop.com/consensi/\n\nRestiamo a sua completa disposizione per qualsiasi chiarimento.\n\nCordiali saluti,\nDott. Federico Grassi — Podologo\nVia Filadelfia 200, Torino · Tel. +39 333 421 7550`;
 
     document.getElementById('prev-edit-subject').value = subject;
     document.getElementById('prev-edit-body').value = body;
 
-    const emailPaziente = document.getElementById('prev-email')?.value.trim() || state.activePatient?.email || '';
     const modalEmail = document.getElementById('prev-modal-email');
     if (modalEmail) modalEmail.value = emailPaziente;
     const modalSender = document.getElementById('prev-modal-sender');
     if (modalSender) modalSender.value = 'preventivi@unghiaincarnitastop.com';
 
     document.getElementById('modal-editor-preventivo').classList.add('open');
+  },
+
+  async copiaLinkStripeIntervento() {
+    const lordo = parseFloat(document.getElementById('prev-prezzo-operazione')?.value) || 850;
+    const sconto = parseFloat(document.getElementById('prev-sconto-visita')?.value) || 0;
+    const netto = Math.max(0, lordo - sconto);
+    const desc = document.getElementById('prev-disp-trattamento')?.textContent || 'Fenolizzazione';
+    const email = document.getElementById('prev-email')?.value.trim();
+
+    showToast(`Generazione link Stripe per € ${netto.toFixed(2)} (anche rate Klarna)...`);
+    try {
+      const p = await this.assicuratiPazienteRegistrato();
+      const res = await api.creaStripeCheckout({
+        paziente_id: p?.id || null,
+        email: email || p?.email || '',
+        importo: netto,
+        descrizione: `Trattamento Fenolizzazione (${desc})`,
+        tipo: 'intervento'
+      });
+      if (res && res.url) {
+        await navigator.clipboard.writeText(res.url);
+        showToast(`✓ Link Stripe per € ${netto.toFixed(2)} (con 3 rate Klarna) copiato negli appunti!`, 'success');
+      }
+    } catch (e) {
+      showToast('Errore creazione link Stripe: ' + e.message, 'error');
+    }
   },
 
   async confermaInvioEmail() {

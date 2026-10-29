@@ -228,4 +228,22 @@ export const api = {
       body: JSON.stringify(payload),
     });
   },
+
+  getStripePagamentiDaVisionare() {
+    return this.request('/api/stripe/da-visionare');
+  },
+
+  emettiFatturaStripe(payload) {
+    return this.request('/api/stripe/emetti-fattura', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    });
+  },
+
+  ignoraFatturaStripe(payload) {
+    return this.request('/api/stripe/ignora-fattura', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    });
+  },
 };

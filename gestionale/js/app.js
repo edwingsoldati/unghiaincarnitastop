@@ -46,6 +46,7 @@ export const app = {
     state.activeTab = tabKey;
     if (tabKey === 'admin') StatisticheView.load();
     if (tabKey === 'crm') CRMView.loadCRMData();
+    if (tabKey === 'documenti') DocumentiView.caricaPagamentiStripe();
 
     const tabs = ['agenda', 'pazienti', 'preventivo', 'documenti', 'crm', 'admin'];
     tabs.forEach(t => {

@@ -71,6 +71,7 @@
         <button id="nav-documenti" class="btn btn-secondary" style="width:100%; justify-content:flex-start; border:none; padding:10px 12px; font-size:12px;">
           <svg style="width:15px;height:15px;flex-shrink:0;" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
           <span style="flex:1; text-align:left;">Documenti & Fatture</span>
+          <span id="nav-stripe-badge" class="badge font-mono-code" style="display:none; background:#635bff; color:#fff; font-size:10px; padding:1px 6px;">0</span>
         </button>
 
         <!-- 5. CRM -->
@@ -412,6 +413,126 @@
         <button onclick="window.PreventivoView.confermaInvioEmail()" id="btn-conferma-invio-prev" class="btn btn-primary">
           Conferma e Invia Email al Paziente
         </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= MODALE: REVISIONE FATTURA STRIPE ================= -->
+  <div id="modal-stripe-fattura" class="modal-overlay">
+    <div class="modal-card modal-card-lg" style="max-width:680px;">
+      <div class="modal-header" style="background:#f8fafc; border-bottom:1px solid #e2e8f0; display:flex; justify-content:space-between; align-items:center;">
+        <div style="display:flex; align-items:center; gap:10px;">
+          <span style="font-weight:700; font-size:14px; color:#1e293b;">💳 Revisione Pagamento Stripe & Emissione Fattura FIC</span>
+          <span class="badge" style="background:#e0e7ff; color:#4338ca; font-size:11px;">Da Visionare</span>
+        </div>
+        <button onclick="document.getElementById('modal-stripe-fattura').classList.remove('open')" class="btn btn-secondary btn-sm">✕</button>
+      </div>
+
+      <div class="modal-body" style="padding:16px; display:flex; flex-direction:column; gap:12px; max-height:75vh; overflow-y:auto;">
+        
+        <!-- Info Banner Pagamento Ricevuto -->
+        <div style="background:#eff6ff; border:1px solid #bfdbfe; border-radius:8px; padding:12px; display:flex; justify-content:space-between; align-items:center;">
+          <div>
+            <div style="font-size:12px; font-weight:700; color:#1e40af;">
+              Pagamento Incassato con Successo tramite Stripe
+            </div>
+            <div style="font-size:11px; color:#3b82f6; margin-top:2px;" id="stripe-modal-trans-info">
+              Transazione: —
+            </div>
+          </div>
+          <div style="text-align:right;">
+            <span style="font-size:11px; color:#6b7280; display:block;">Importo Pagato:</span>
+            <strong style="font-size:18px; color:#1e40af;" id="stripe-modal-importo-display">€ 0,00</strong>
+          </div>
+        </div>
+
+        <input type="hidden" id="stripe-modal-pagamento-id">
+        <input type="hidden" id="stripe-modal-paziente-id">
+
+        <!-- Destinatario Fattura -->
+        <div style="background:var(--bg-main); border:1px solid var(--border-light); border-radius:8px; padding:12px;">
+          <div style="font-size:11px; font-weight:700; text-transform:uppercase; color:var(--text-muted); margin-bottom:8px;">
+            1. Dati Anagrafici Paziente (Verifica e completa)
+          </div>
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+            <div class="form-group" style="grid-column:1 / -1; margin-bottom:0;">
+              <label class="form-label" style="font-size:11px;">Intestatario Fattura (Nome e Cognome) *</label>
+              <input type="text" id="stripe-modal-nome" class="form-input">
+            </div>
+            <div class="form-group" style="margin-bottom:0;">
+              <label class="form-label" style="font-size:11px;">Codice Fiscale *</label>
+              <input type="text" id="stripe-modal-cf" class="form-input form-input-mono" maxlength="16" style="text-transform:uppercase; font-weight:600;" placeholder="Codice Fiscale a 16 caratteri">
+            </div>
+            <div class="form-group" style="margin-bottom:0;">
+              <label class="form-label" style="font-size:11px;">Email Paziente</label>
+              <input type="email" id="stripe-modal-email" class="form-input">
+            </div>
+          </div>
+
+          <!-- Indirizzo e residenza -->
+          <div style="display:grid; grid-template-columns:2fr 1fr; gap:8px; margin-top:8px;">
+            <div class="form-group" style="margin-bottom:0;">
+              <label class="form-label" style="font-size:11px;">Indirizzo (Via e Civico) *</label>
+              <input type="text" id="stripe-modal-indirizzo" class="form-input" placeholder="Via e civico">
+            </div>
+            <div class="form-group" style="margin-bottom:0;">
+              <label class="form-label" style="font-size:11px;">CAP *</label>
+              <input type="text" id="stripe-modal-cap" class="form-input form-input-mono" placeholder="10100" maxlength="5">
+            </div>
+          </div>
+          <div style="display:grid; grid-template-columns:2fr 1fr; gap:8px; margin-top:8px;">
+            <div class="form-group" style="margin-bottom:0;">
+              <label class="form-label" style="font-size:11px;">Città di Residenza *</label>
+              <input type="text" id="stripe-modal-citta" class="form-input" placeholder="Città" value="Torino">
+            </div>
+            <div class="form-group" style="margin-bottom:0;">
+              <label class="form-label" style="font-size:11px;">Provincia *</label>
+              <input type="text" id="stripe-modal-provincia" class="form-input form-input-mono" placeholder="TO" maxlength="2" style="text-transform:uppercase;" value="TO">
+            </div>
+          </div>
+        </div>
+
+        <!-- Dettaglio Prestazione -->
+        <div style="background:var(--bg-main); border:1px solid var(--border-light); border-radius:8px; padding:12px;">
+          <div style="font-size:11px; font-weight:700; text-transform:uppercase; color:var(--text-muted); margin-bottom:8px;">
+            2. Dettaglio Prestazione & Data Emissione
+          </div>
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+            <div class="form-group" style="grid-column:1 / -1; margin-bottom:0;">
+              <label class="form-label" style="font-size:11px;">Descrizione in Fattura</label>
+              <input type="text" id="stripe-modal-desc" class="form-input" value="Visita Podologica">
+            </div>
+            <div class="form-group" style="margin-bottom:0;">
+              <label class="form-label" style="font-size:11px;">Data Emissione</label>
+              <input type="date" id="stripe-modal-data" class="form-input form-input-mono">
+            </div>
+            <div class="form-group" style="margin-bottom:0;">
+              <label class="form-label" style="font-size:11px;">Imponibile Netto (€)</label>
+              <input type="number" id="stripe-modal-importo" class="form-input form-input-mono" step="0.01">
+            </div>
+          </div>
+
+          <div style="margin-top:10px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:6px; padding:10px; font-size:11px; color:var(--text-muted);">
+            ℹ️ Questa operazione invierà la fattura ufficiale a <strong>Fatture in Cloud</strong> con metodo di pagamento "Stripe", aggiornerà il database clinico e invierà l'aggiornamento a <strong>Google Ads Offline Conversions</strong>.
+          </div>
+        </div>
+
+      </div>
+
+      <div class="modal-footer" style="display:flex; justify-content:space-between; align-items:center;">
+        <div>
+          <button type="button" onclick="window.DocumentiView.ignoraPagamentoStripe()" class="btn btn-secondary btn-sm" style="color:#b91c1c;">
+            ✕ Ignora (non fatturare)
+          </button>
+        </div>
+        <div style="display:flex; gap:8px;">
+          <button onclick="document.getElementById('modal-stripe-fattura').classList.remove('open')" class="btn btn-secondary">
+            Annulla
+          </button>
+          <button onclick="window.DocumentiView.confermaEmissioneFatturaStripe()" id="btn-conferma-stripe-fic" class="btn btn-primary" style="background:#635bff; border-color:#635bff;">
+            ✓ Approva ed Emetti Fattura FIC
+          </button>
+        </div>
       </div>
     </div>
   </div>
