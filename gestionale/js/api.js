@@ -30,7 +30,7 @@ export const api = {
       const res = await fetch(url, { ...options, headers });
       const data = await res.json().catch(() => ({}));
 
-      if (res.status === 401 && _token && !endpoint.startsWith('/api/auth/')) {
+      if (res.status === 401 && _token && endpoint !== '/api/auth/login' && endpoint !== '/api/auth/passkey/login') {
         this.onNonAutorizzato?.();
       }
       if (!res.ok) {
