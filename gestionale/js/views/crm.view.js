@@ -38,6 +38,7 @@ export const CRMView = {
         <!-- Filtri Pipeline -->
         <div style="display:flex; flex-wrap:wrap; gap:8px;">
           <button onclick="window.CRMView.setFiltro('tutti_preventivi')" id="crm-flt-tutti_preventivi" class="btn btn-dark btn-sm">📋 Tutti i Preventivi</button>
+          <button onclick="window.CRMView.setFiltro('tca')" id="crm-flt-tca" class="btn btn-secondary btn-sm" style="border-color:#fca5a5; color:#991b1b; font-weight:700;">🔴 TCA</button>
           <button onclick="window.CRMView.setFiltro('in_attesa_pagamento')" id="crm-flt-in_attesa_pagamento" class="btn btn-secondary btn-sm">⏳ In Attesa Pagamento</button>
           <button onclick="window.CRMView.setFiltro('pagati')" id="crm-flt-pagati" class="btn btn-secondary btn-sm">💳 Pagati (Stripe o Studio)</button>
           <button onclick="window.CRMView.setFiltro('operazione_pianificata')" id="crm-flt-operazione_pianificata" class="btn btn-secondary btn-sm">🏥 Intervento Prenotato (Aurea)</button>
@@ -109,11 +110,19 @@ export const CRMView = {
 
   setFiltro(stato) {
     this.filtroCorrente = stato;
-    const buttons = ['tutti_preventivi', 'in_attesa_pagamento', 'pagati', 'operazione_pianificata', 'tutti', 'da_richiamare', 'completato'];
+    const buttons = ['tutti_preventivi', 'tca', 'in_attesa_pagamento', 'pagati', 'operazione_pianificata', 'tutti', 'da_richiamare', 'completato'];
     buttons.forEach(b => {
       const btn = document.getElementById('crm-flt-' + b);
       if (btn) {
-        btn.className = (b === stato) ? 'btn btn-dark btn-sm' : 'btn btn-secondary btn-sm';
+        if (b === 'tca') {
+          btn.className = (b === stato) ? 'btn btn-sm' : 'btn btn-secondary btn-sm';
+          btn.style.background = (b === stato) ? '#991b1b' : '';
+          btn.style.color = (b === stato) ? '#ffffff' : '#991b1b';
+          btn.style.borderColor = (b === stato) ? '#991b1b' : '#fca5a5';
+          btn.style.fontWeight = '700';
+        } else {
+          btn.className = (b === stato) ? 'btn btn-dark btn-sm' : 'btn btn-secondary btn-sm';
+        }
       }
     });
     this.renderList();
@@ -182,6 +191,8 @@ export const CRMView = {
     let filtered = this.crmList;
     if (this.filtroCorrente === 'tutti_preventivi') {
       filtered = this.crmList.filter(p => p.ha_preventivo);
+    } else if (this.filtroCorrente === 'tca') {
+      filtered = this.crmList.filter(p => p.protocollo === 'tca');
     } else if (this.filtroCorrente === 'in_attesa_pagamento') {
       filtered = this.crmList.filter(p => p.ha_preventivo && !p.ha_pagato);
     } else if (this.filtroCorrente === 'pagati') {
@@ -250,6 +261,7 @@ export const CRMView = {
           <div style="flex:1; min-width:280px;">
             <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-bottom:4px;">
               <strong style="font-size:14px; color:var(--text-primary);">${nomeCompleto}</strong>
+              ${p.protocollo === 'tca' ? '<span class="badge" style="background:#fee2e2; color:#991b1b; border:1px solid #f87171; font-weight:700; font-size:11px;">🔴 TCA</span>' : ''}
               ${p.importo_preventivo ? `<span class="badge badge-neutral font-mono-code" style="font-size:12px; font-weight:700;">Preventivo: € ${Number(p.importo_preventivo).toFixed(2)}</span>` : ''}
               ${badgePagamento}
               ${badgeAurea}

@@ -117,7 +117,10 @@ export const PazientiView = {
       return `
         <div onclick="window.PazientiView.selezionaPazienteById(${p.id})" style="padding:12px 14px; border-bottom:1px solid var(--border-subtle); cursor:pointer; transition:background 0.15s; ${borderStyle}">
           <div style="display:flex; justify-content:space-between; align-items:center;">
-            <strong style="font-size:13px; color:var(--text-primary);">${p.cognome ? p.cognome + ' ' : ''}${p.nome || ''}</strong>
+            <div style="display:flex; align-items:center; gap:6px;">
+              <strong style="font-size:13px; color:var(--text-primary);">${p.cognome ? p.cognome + ' ' : ''}${p.nome || ''}</strong>
+              ${p.protocollo === 'tca' ? '<span style="font-size:9.5px; background:#fee2e2; color:#991b1b; border:1px solid #fca5a5; border-radius:4px; padding:1px 5px; font-weight:700;">TCA</span>' : ''}
+            </div>
             <span style="font-size:11px; color:var(--text-muted);" class="font-mono-code">${p.n_visite || 0} vis.</span>
           </div>
           <div style="font-size:11px; color:var(--text-muted); margin-top:2px;">
@@ -185,6 +188,7 @@ export const PazientiView = {
           <div style="display:flex; align-items:center; gap:10px;">
             <h2 style="font-size:18px; font-weight:700; color:var(--text-primary); letter-spacing:-0.3px;">${nomeCompleto}</h2>
             ${p.id ? `<span class="badge badge-neutral font-mono-code">ID: ${p.id}</span>` : ''}
+            ${p.protocollo === 'tca' ? '<span class="badge" style="background:#fee2e2; color:#991b1b; border:1px solid #f87171; font-weight:700;">🔴 TCA</span>' : ''}
             ${isAureaPatient ? `<span class="badge badge-teal">Prenotato Clinica Aurea</span>` : ''}
           </div>
           
@@ -347,9 +351,14 @@ export const PazientiView = {
               <p style="font-size:11px; color:var(--text-secondary); margin:6px 0 12px; line-height:1.4;">
                 Richiede matricectomia chimica alla Clinica Aurea. Passa alla documentazione fotografica e alla generazione del preventivo con deduzione 30gg.
               </p>
-              <button onclick="document.getElementById('sec-fenolizzazione-flow').scrollIntoView({behavior:'smooth'})" class="btn btn-secondary btn-sm" style="width:100%;">
-                Avvia Protocollo Fenolizzazione ↓
-              </button>
+              <div style="display:flex; gap:8px; align-items:center;">
+                <button onclick="document.getElementById('sec-fenolizzazione-flow').scrollIntoView({behavior:'smooth'})" class="btn btn-secondary btn-sm" style="flex:1;">
+                  Avvia Protocollo Fenolizzazione ↓
+                </button>
+                <button onclick="window.PazientiView.toggleTCA()" class="btn btn-sm" style="background:${p.protocollo === 'tca' ? '#991b1b' : '#dc2626'}; color:#ffffff; font-weight:700; border:1px solid #991b1b; padding:0 18px; height:32px; display:inline-flex; align-items:center; justify-content:center; gap:4px; border-radius:var(--radius-sm); white-space:nowrap;" title="Contrassegna paziente con tecnica TCA">
+                  ${p.protocollo === 'tca' ? '✓ TCA' : 'TCA'}
+                </button>
+              </div>
             </div>
 
           </div>
@@ -816,6 +825,36 @@ export const PazientiView = {
     } catch (err) {
       console.error(err);
       showToast('Errore creazione link Stripe: ' + err.message, 'error');
+    }
+  },
+
+  async toggleTCA() {
+    const p = this.selectedPatient;
+    if (!p || !p.id) {
+      showToast('Seleziona prima un paziente dalla lista.', 'error');
+      return;
+    }
+    const nuovoStato = (p.protocollo === 'tca') ? 'fenolizzazione' : 'tca';
+    try {
+      await api.aggiornaPaziente(p.id, { protocollo: nuovoStato });
+      p.protocollo = nuovoStato;
+      if (p.crm) p.crm.protocollo = nuovoStato;
+
+      if (this.pazientiList) {
+        const found = this.pazientiList.find(item => item.id === p.id);
+        if (found) found.protocollo = nuovoStato;
+      }
+      this.renderDettaglioPaziente(p);
+      this.renderPazientiList(this.pazientiList);
+
+      if (nuovoStato === 'tca') {
+        showToast('✓ Paziente impostato su protocollo TCA');
+      } else {
+        showToast('✓ Paziente reimpostato su protocollo Fenolizzazione');
+      }
+    } catch (err) {
+      console.error(err);
+      showToast('Errore salvataggio protocollo TCA: ' + err.message, 'error');
     }
   },
 
