@@ -120,6 +120,7 @@ export const PazientiView = {
             <div style="display:flex; align-items:center; gap:6px;">
               <strong style="font-size:13px; color:var(--text-primary);">${p.cognome ? p.cognome + ' ' : ''}${p.nome || ''}</strong>
               ${p.protocollo === 'tca' ? '<span style="font-size:9.5px; background:#fee2e2; color:#991b1b; border:1px solid #fca5a5; border-radius:4px; padding:1px 5px; font-weight:700;">TCA</span>' : ''}
+              ${p.note_private ? '<span title="Note private presenti" style="font-size:10px;">🔒</span>' : ''}
             </div>
             <span style="font-size:11px; color:var(--text-muted);" class="font-mono-code">${p.n_visite || 0} vis.</span>
           </div>
@@ -362,6 +363,25 @@ export const PazientiView = {
             </div>
 
           </div>
+        </div>
+
+        <!-- Note Private Paziente (Riservate a Federico) -->
+        <div class="card" style="border-left: 3px solid #f59e0b; background: var(--bg-surface);">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; flex-wrap:wrap; gap:8px;">
+            <div style="display:flex; align-items:center; gap:8px;">
+              <span class="card-title" style="display:flex; align-items:center; gap:6px; font-size:13px; font-weight:700;">
+                🔒 NOTE PRIVATE (Riservate a Federico)
+              </span>
+              <span class="badge" style="background:#fef3c7; color:#92400e; font-size:10px; font-weight:700; border:1px solid #fde68a;">Solo Uso Interno</span>
+            </div>
+            <button onclick="window.PazientiView.salvaNotePrivate()" id="btn-salva-note-private" class="btn btn-secondary btn-sm" style="display:flex; align-items:center; gap:4px; font-weight:600;">
+              💾 Salva Note
+            </button>
+          </div>
+          <p style="font-size:11px; color:var(--text-muted); margin:0 0 10px 0;">
+            Note strettamente confidenziali per Federico. Non verranno <strong>mai</strong> inviate né inserite in alcun documento, referto o messaggio al paziente.
+          </p>
+          <textarea id="paziente-note-private" class="form-textarea" rows="3" style="width:100%; font-size:12.5px; line-height:1.45; resize:vertical;" placeholder="Inserisci qui annotazioni personali, accordi o appunti riservati su questo paziente..." onblur="window.PazientiView.salvaNotePrivate(true)">${p.note_private || ''}</textarea>
         </div>
 
         <!-- Sezione Flusso Fenolizzazione (Foto prima, poi Preventivo e Clinica Aurea) -->
@@ -855,6 +875,44 @@ export const PazientiView = {
     } catch (err) {
       console.error(err);
       showToast('Errore salvataggio protocollo TCA: ' + err.message, 'error');
+    }
+  },
+
+  async salvaNotePrivate(silenzioso = false) {
+    const p = this.selectedPatient;
+    if (!p || !p.id) {
+      if (!silenzioso) showToast('Seleziona prima un paziente dalla lista.', 'error');
+      return;
+    }
+    const textarea = document.getElementById('paziente-note-private');
+    if (!textarea) return;
+
+    const note = textarea.value.trim();
+    if (note === (p.note_private || '').trim()) {
+      if (!silenzioso) showToast('Nessuna modifica alle note private.');
+      return;
+    }
+
+    try {
+      const btn = document.getElementById('btn-salva-note-private');
+      if (btn && !silenzioso) btn.textContent = 'Salvataggio...';
+
+      await api.aggiornaPaziente(p.id, { note_private: note });
+      p.note_private = note;
+
+      if (this.pazientiList) {
+        const found = this.pazientiList.find(item => item.id === p.id);
+        if (found) found.note_private = note;
+      }
+      this.renderPazientiList(this.pazientiList);
+
+      if (btn) btn.textContent = '💾 Salva Note';
+      showToast('✓ Note private salvate');
+    } catch (err) {
+      console.error(err);
+      const btn = document.getElementById('btn-salva-note-private');
+      if (btn) btn.textContent = '💾 Salva Note';
+      showToast('Errore salvataggio note private: ' + err.message, 'error');
     }
   },
 
