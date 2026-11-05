@@ -371,11 +371,15 @@ const TERAPIA_DIMISSIONI_DEFAULT = [
 ].join('\n');
 
 function generateLetteraDimissioniHTML(dati) {
-  const { paziente, dataIntervento, diagnosi, prognosi, terapia } = dati;
+  const { paziente, dataIntervento, diagnosi, prognosi, terapia, luogoNascita, dataNascita, codiceFiscale } = dati;
   const esc = v => String(v || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
   const dataDoc = fmtDateLong(dataIntervento || new Date().toISOString().split('T')[0]);
   const righeTerapia = String(terapia || TERAPIA_DIMISSIONI_DEFAULT)
     .split('\n').map(r => r.replace(/^\s*[-•·]\s*/, '').trim()).filter(Boolean);
+
+  const natoLuogo = luogoNascita ? esc(luogoNascita) : '……………';
+  const natoData = dataNascita ? esc(dataNascita) : '……………';
+  const cfTesto = codiceFiscale ? esc(codiceFiscale) : '……………';
 
   return pdfHeader() + `<title>Lettera di Dimissioni — ${esc(paziente)}</title></head><body>
 <div class="page">
@@ -386,8 +390,11 @@ function generateLetteraDimissioniHTML(dati) {
     <em>Alla cortese attenzione del medico curante.</em>
   </p>
 
-  <p class="body-text" style="text-align:left;margin-bottom:10px">
-    Dimettiamo in data odierna il/la paziente: <strong>${esc(paziente)}</strong>
+  <p class="body-text" style="text-align:left;margin-bottom:12px;line-height:1.7">
+    Dimettiamo in data odierna il/la paziente: <strong>${esc(paziente)}</strong><br>
+    <span style="font-size:13px;color:#1e293b;">
+      nata/o a: <strong>${natoLuogo}</strong>&nbsp;&nbsp;&nbsp;&nbsp;Il: <strong>${natoData}</strong>&nbsp;&nbsp;&nbsp;&nbsp;Codice fiscale: <strong style="letter-spacing:0.5px;">${cfTesto}</strong>
+    </span>
   </p>
 
   <p class="body-text" style="text-align:left;margin-bottom:10px">

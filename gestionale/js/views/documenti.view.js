@@ -5,6 +5,7 @@
 import { api } from '../api.js';
 import { state, showToast } from '../state.js';
 import { registraFenolizzazione, oggiLocale } from '../visite.js';
+import { dataNascitaDaCF } from './cartella.view.js';
 import {
   generateRicevutaHTML,
   generateAttestoPresenzaHTML,
@@ -238,8 +239,32 @@ export const DocumentiView = {
       `;
     } else if (tipo === 'dimissioni') {
       title.textContent = 'Lettera di Dimissioni — Clinica Aurea';
+      const cfInit = (p.codice_fiscale || '').trim().toUpperCase();
+      let nascitaInit = '';
+      if (p.data_nascita) {
+        const parts = String(p.data_nascita).split('T')[0].split('-');
+        nascitaInit = (parts.length === 3) ? `${parts[2]}/${parts[1]}/${parts[0]}` : p.data_nascita;
+      } else if (cfInit) {
+        nascitaInit = dataNascitaDaCF(cfInit) || '';
+      }
+      const luogoInit = p.citta || p.comune_nascita || '';
+
       body.innerHTML = `
         ${headerCampiHTML}
+        <div style="display:grid; grid-template-columns:1fr 1fr 1.2fr; gap:10px; margin-bottom:12px; background:#f8fafc; padding:10px 12px; border-radius:6px; border:1px solid #e2e8f0;">
+          <div class="form-group" style="margin-bottom:0;">
+            <label class="form-label" style="font-size:11px;">Nata/o a</label>
+            <input type="text" id="doc-inp-dim-luogo" class="form-input" placeholder="Es. Torino" value="${luogoInit}">
+          </div>
+          <div class="form-group" style="margin-bottom:0;">
+            <label class="form-label" style="font-size:11px;">Data di nascita</label>
+            <input type="text" id="doc-inp-dim-nascita" class="form-input form-input-mono" placeholder="GG/MM/AAAA" value="${nascitaInit}">
+          </div>
+          <div class="form-group" style="margin-bottom:0;">
+            <label class="form-label" style="font-size:11px;">Codice Fiscale</label>
+            <input type="text" id="doc-inp-dim-cf" class="form-input form-input-mono" placeholder="Es. BLDLLA84C55L219Z" value="${cfInit}" style="text-transform:uppercase;">
+          </div>
+        </div>
         <div style="display:grid; grid-template-columns:1fr 2fr; gap:10px;">
           <div class="form-group">
             <label class="form-label">Data intervento</label>
@@ -264,6 +289,19 @@ export const DocumentiView = {
         </div>
       `;
       this._precompilaDiagnosi(p);
+
+      const inpCf = document.getElementById('doc-inp-dim-cf');
+      const inpNascita = document.getElementById('doc-inp-dim-nascita');
+      if (inpCf && inpNascita) {
+        inpCf.addEventListener('input', () => {
+          inpCf.value = inpCf.value.toUpperCase();
+          const v = inpCf.value.trim();
+          if (v.length === 16 && !inpNascita.value.trim()) {
+            const calcolata = dataNascitaDaCF(v);
+            if (calcolata) inpNascita.value = calcolata;
+          }
+        });
+      }
     }
 
     modal.classList.add('open');
@@ -326,14 +364,34 @@ export const DocumentiView = {
       const diagnosi = document.getElementById('doc-inp-dim-diagnosi')?.value.trim() || '';
       const prognosi = document.getElementById('doc-inp-dim-prognosi')?.value.trim() || '';
       const terapia = document.getElementById('doc-inp-dim-terapia')?.value || '';
+      const luogoNascita = document.getElementById('doc-inp-dim-luogo')?.value.trim() || '';
+      const dataNascita = document.getElementById('doc-inp-dim-nascita')?.value.trim() || '';
+      const codiceFiscale = document.getElementById('doc-inp-dim-cf')?.value.trim().toUpperCase() || '';
+
+      // Se Federico ha inserito/aggiornato il Codice Fiscale e il paziente è presente nel DB D1, salvataggio in background
+      if (this.currentDocPatient?.id && codiceFiscale && codiceFiscale !== this.currentDocPatient.codice_fiscale) {
+        this.currentDocPatient.codice_fiscale = codiceFiscale;
+        api.aggiornaPaziente(this.currentDocPatient.id, { codice_fiscale: codiceFiscale }).catch(console.error);
+      }
+
       doc.dataDocumento = dataIntervento;
-      doc.htmlDoc = generateLetteraDimissioniHTML({ paziente: nome, dataIntervento, diagnosi, prognosi, terapia });
+      doc.htmlDoc = generateLetteraDimissioniHTML({
+        paziente: nome,
+        dataIntervento,
+        diagnosi,
+        prognosi,
+        terapia,
+        luogoNascita,
+        dataNascita,
+        codiceFiscale
+      });
       doc.subject = `Lettera di Dimissioni — ${nome}`;
       doc.filename = `Lettera_Dimissioni_${nome.replace(/[^\w.-]/g, '_')}.pdf`;
       doc.dettagliExtra = [
         { label: 'Trattamento', value: 'Onicectomia parziale in anestesia tronculare (Clinica Aurea, Torino)' },
         { label: 'Destinatario', value: 'Da consegnare al proprio medico curante' }
       ];
+      if (codiceFiscale) doc.dettagliExtra.push({ label: 'Codice Fiscale', value: codiceFiscale });
     }
 
     return doc;
