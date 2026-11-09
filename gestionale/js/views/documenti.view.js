@@ -2,7 +2,7 @@
  * Vista Documenti Sanitari Ufficiali (Anteprima Modificabile & FattureInCloud)
  */
 
-import { api } from '../api.js';
+import { api } from '../api.js?v=20261109_v2';
 import { state, showToast } from '../state.js';
 import { registraFenolizzazione, oggiLocale } from '../visite.js';
 import { dataNascitaDaCF } from './cartella.view.js';
@@ -1347,10 +1347,20 @@ iframe{display:block;width:100%;height:calc(100% - 48px);border:0}</style></head
     if (numFattura === null) return; // annullato dall'utente
 
     try {
-      await api.segnaGiaFatturataStripe({
-        pagamento_id: id,
-        numero_fattura: numFattura.trim() || 'Manuale'
-      });
+      if (typeof api.segnaGiaFatturataStripe === 'function') {
+        await api.segnaGiaFatturataStripe({
+          pagamento_id: id,
+          numero_fattura: numFattura.trim() || 'Manuale'
+        });
+      } else {
+        await api.request('/api/stripe/segna-gia-fatturata', {
+          method: 'POST',
+          body: JSON.stringify({
+            pagamento_id: id,
+            numero_fattura: numFattura.trim() || 'Manuale'
+          })
+        });
+      }
       showToast(`✓ Pagamento contrassegnato come già fatturato${numFattura.trim() ? ' (Fattura nr. ' + numFattura.trim() + ')' : ''}!`, 'success');
       await this.caricaPagamentiStripe();
     } catch (err) {
@@ -1366,10 +1376,20 @@ iframe{display:block;width:100%;height:calc(100% - 48px);border:0}</style></head
     if (numFattura === null) return;
 
     try {
-      await api.segnaGiaFatturataStripe({
-        pagamento_id: item.id,
-        numero_fattura: numFattura.trim() || 'Manuale'
-      });
+      if (typeof api.segnaGiaFatturataStripe === 'function') {
+        await api.segnaGiaFatturataStripe({
+          pagamento_id: item.id,
+          numero_fattura: numFattura.trim() || 'Manuale'
+        });
+      } else {
+        await api.request('/api/stripe/segna-gia-fatturata', {
+          method: 'POST',
+          body: JSON.stringify({
+            pagamento_id: item.id,
+            numero_fattura: numFattura.trim() || 'Manuale'
+          })
+        });
+      }
       document.getElementById('modal-stripe-fattura').classList.remove('open');
       showToast(`✓ Pagamento contrassegnato come già fatturato${numFattura.trim() ? ' (Fattura nr. ' + numFattura.trim() + ')' : ''}!`, 'success');
       await this.caricaPagamentiStripe();

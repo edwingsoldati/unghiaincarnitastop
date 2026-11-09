@@ -2,7 +2,7 @@
  * App Main Controller & Router — UnghiaIncarnitaStop
  */
 
-import { api } from './api.js';
+import { api } from './api.js?v=20261109_v2';
 import { state, showToast } from './state.js';
 import { AgendaView } from './views/agenda.view.js';
 import { PazientiView } from './views/pazienti.view.js';
