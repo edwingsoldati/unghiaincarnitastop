@@ -287,37 +287,31 @@
         <div style="background:var(--bg-main); border:1px solid var(--border-light); border-radius:8px; padding:12px;">
           <div style="font-size:11px; font-weight:700; text-transform:uppercase; color:var(--text-muted); margin-bottom:8px;">2. Dettaglio Prestazione Sanitaria</div>
           <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
-            <div class="form-group" style="margin-bottom:0;">
-              <label class="form-label" style="font-size:11px;">Seleziona Prestazione Tipica</label>
-              <select id="fic-preset-prestazione" class="form-select" onchange="window.DocumentiView.onFicPresetSelect(this.value)">
-                <option value="visita" data-name="Visita Podologica" data-price="80">Visita Podologica (80,00 €)</option>
-                <option value="unghia" data-name="Trattamento di Unghia Incarnita" data-price="100">Trattamento di Unghia Incarnita (100,00 €)</option>
-                <option value="podologico" data-name="Trattamento Podologico" data-price="80">Trattamento Podologico (80,00 €)</option>
-                <option value="fenolizzazione" data-name="Trattamento di fenolizzazione" data-price="350">Trattamento di fenolizzazione (350,00 €)</option>
-                <option value="custom">Altra prestazione personalizzata...</option>
+            <div class="form-group" style="grid-column:1 / -1; margin-bottom:0;">
+              <label class="form-label" style="font-size:11px; font-weight:700;">Prestazione Eseguita (Dicitura Ufficiale Blindata) *</label>
+              <select id="fic-desc" class="form-select" style="font-weight:600; font-size:13px; border:1.5px solid var(--border-medium);">
+                <option value="Visita Podologica per unghia incarnita">Visita Podologica per unghia incarnita</option>
+                <option value="Visita Podologica">Visita Podologica</option>
+                <option value="Trattamento Podologico per unghia incarnita">Trattamento Podologico per unghia incarnita</option>
               </select>
             </div>
-            <div class="form-group" style="margin-bottom:0;">
+            <div class="form-group" style="grid-column:1 / -1; margin-bottom:0;">
               <label class="form-label" style="font-size:11px;">Data Prestazione</label>
               <input type="date" id="fic-data" class="form-input form-input-mono">
-            </div>
-            <div class="form-group" style="grid-column:1 / -1; margin-bottom:0;">
-              <label class="form-label" style="font-size:11px;">Descrizione in Fattura</label>
-              <input type="text" id="fic-desc" class="form-input" value="Visita Podologica">
             </div>
           </div>
 
           <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:8px; align-items:flex-end;">
             <div class="form-group" style="margin-bottom:0;">
-              <label class="form-label" style="font-size:11px;">Imponibile Netto (€) *</label>
-              <input type="number" id="fic-importo" class="form-input form-input-mono" value="80" min="1" step="5" oninput="window.DocumentiView.aggiornaRiepilogoFIC()">
+              <label class="form-label" style="font-size:11px; font-weight:700;">Imponibile Netto (€) *</label>
+              <input type="number" id="fic-importo" class="form-input form-input-mono" placeholder="es. 80" min="1" step="5" oninput="window.DocumentiView.aggiornaRiepilogoFIC()" style="font-size:14px; font-weight:700;">
             </div>
             <div class="form-group" style="margin-bottom:0;">
               <label class="form-label" style="font-size:11px;">Metodo di Pagamento</label>
               <div style="display:flex; gap:6px;">
                 <button type="button" class="btn btn-sm btn-dark fic-pay-btn" data-pay="POS" onclick="window.DocumentiView.selezionaMetodoPagamento('POS', this)" style="flex:1;">POS</button>
-                <button type="button" class="btn btn-sm btn-secondary fic-pay-btn" data-pay="Contanti" onclick="window.DocumentiView.selezionaMetodoPagamento('Contanti', this)" style="flex:1;">Contanti</button>
                 <button type="button" class="btn btn-sm btn-secondary fic-pay-btn" data-pay="Bonifico" onclick="window.DocumentiView.selezionaMetodoPagamento('Bonifico', this)" style="flex:1;">Bonifico</button>
+                <button type="button" class="btn btn-sm btn-secondary fic-pay-btn" data-pay="Contanti" onclick="window.DocumentiView.selezionaMetodoPagamento('Contanti', this)" style="flex:1;">Contanti</button>
               </div>
             </div>
           </div>

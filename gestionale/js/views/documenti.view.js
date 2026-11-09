@@ -666,45 +666,7 @@ iframe{display:block;width:100%;height:calc(100% - 48px);border:0}</style></head
   },
 
   onFicPresetSelect(val) {
-    const selectEl = document.getElementById('fic-preset-prestazione');
-    const selectedOpt = selectEl ? selectEl.selectedOptions[0] : null;
-    const descInp = document.getElementById('fic-desc');
-    const impInp = document.getElementById('fic-importo');
-    if (!descInp || !impInp) return;
-
-    this.selectedFicVatId = null;
-
-    if (val === 'custom') {
-      descInp.focus();
-      this.aggiornaRiepilogoFIC();
-      return;
-    }
-
-    if (selectedOpt && selectedOpt.hasAttribute('data-name')) {
-      const pName = selectedOpt.getAttribute('data-name');
-      const pPrice = selectedOpt.getAttribute('data-price');
-      const pVat = selectedOpt.getAttribute('data-vat-id');
-
-      if (pName) descInp.value = pName;
-      if (pPrice && Number(pPrice) > 0) {
-        impInp.value = pPrice;
-      } else {
-        impInp.focus();
-      }
-      if (pVat) this.selectedFicVatId = Number(pVat);
-    } else if (val === 'visita') {
-      descInp.value = 'Visita Podologica';
-      impInp.value = '80';
-    } else if (val === 'unghia') {
-      descInp.value = 'Trattamento di Unghia Incarnita';
-      impInp.value = '100';
-    } else if (val === 'podologico') {
-      descInp.value = 'Trattamento Podologico';
-      impInp.value = '80';
-    } else if (val === 'fenolizzazione') {
-      descInp.value = 'Trattamento di fenolizzazione';
-      impInp.value = '350';
-    }
+    // Non più necessario: la prestazione è ora un menu a tendina blindato con le sole 3 opzioni ufficiali
     this.aggiornaRiepilogoFIC();
   },
 
@@ -772,19 +734,30 @@ iframe{display:block;width:100%;height:calc(100% - 48px);border:0}</style></head
     // Data odierna
     document.getElementById('fic-data').value = new Date().toISOString().split('T')[0];
 
-    // Reset prestazione
-    const selectPreset = document.getElementById('fic-preset-prestazione');
-    if (p.importo && Number(p.importo) > 0) {
-      document.getElementById('fic-importo').value = p.importo;
-      if (selectPreset) selectPreset.value = 'custom';
-      document.getElementById('fic-desc').value = p.descrizione || (p.tipo === 'fenolizzazione' ? 'Trattamento di fenolizzazione' : 'Visita Podologica');
-    } else {
-      if (selectPreset) selectPreset.value = 'visita';
-      document.getElementById('fic-desc').value = 'Visita Podologica';
-      document.getElementById('fic-importo').value = '80';
+    // Prestazione: selezione da menu blindato a sole 3 voci ufficiali
+    const descEl = document.getElementById('fic-desc');
+    if (descEl) {
+      const tipoLower = (p.tipo || p.descrizione || '').toLowerCase();
+      if (tipoLower.includes('trattamento') || tipoLower.includes('chirurg') || tipoLower.includes('onicectomia') || tipoLower.includes('fenoliz')) {
+        descEl.value = 'Trattamento Podologico per unghia incarnita';
+      } else if (tipoLower === 'visita podologica' || tipoLower === 'controllo') {
+        descEl.value = 'Visita Podologica';
+      } else {
+        descEl.value = 'Visita Podologica per unghia incarnita';
+      }
     }
 
-    // Reset metodo pagamento a POS
+    // Prezzo inserito a mano libera: se presente nel paziente precompila, altrimenti vuoto
+    const impInp = document.getElementById('fic-importo');
+    if (impInp) {
+      if (p.importo && Number(p.importo) > 0) {
+        impInp.value = p.importo;
+      } else {
+        impInp.value = '';
+      }
+    }
+
+    // Reset metodo pagamento a POS di default
     this.currentFicPaymentMethod = 'POS';
     document.querySelectorAll('.fic-pay-btn').forEach(b => {
       if (b.getAttribute('data-pay') === 'POS') {
@@ -801,7 +774,8 @@ iframe{display:block;width:100%;height:calc(100% - 48px);border:0}</style></head
     if (resCard) resCard.style.display = 'none';
     this.currentFicResult = null;
 
-    // Reset bottoni
+    // Reset bottoni e lock
+    this._isFatturando = false;
     const btnBozza = document.getElementById('btn-bozza-fic');
     const btnEmetti = document.getElementById('btn-emetti-fic');
     if (btnBozza) { btnBozza.disabled = false; btnBozza.textContent = 'Anteprima Bozza FIC'; }
@@ -811,41 +785,14 @@ iframe{display:block;width:100%;height:calc(100% - 48px);border:0}</style></head
     this.aggiornaRiepilogoFIC();
 
     document.getElementById('modal-fic').classList.add('open');
-
-    // Carica prodotti FIC se disponibili in background
-    api.getFatturaInfo().then(info => {
-      if (info && info.vat_id) {
-        this.defaultFicVatId = info.vat_id;
-      }
-      if (info && info.products && info.products.length > 0 && selectPreset) {
-        // Rimuovi eventuali opzioni dinamiche precedenti per evitare duplicati
-        selectPreset.querySelectorAll('.fic-dynamic-opt').forEach(o => o.remove());
-        const customOpt = selectPreset.querySelector('option[value="custom"]');
-        info.products.forEach(prod => {
-          const opt = document.createElement('option');
-          opt.className = 'fic-dynamic-opt';
-          opt.value = `fic_${prod.id}`;
-          opt.setAttribute('data-fic-id', prod.id);
-
-          const price = (prod.net_price != null && Number(prod.net_price) > 0)
-            ? Number(prod.net_price)
-            : ((prod.gross_price != null && Number(prod.gross_price) > 0) ? Number(prod.gross_price) : 0);
-
-          opt.setAttribute('data-price', price > 0 ? price : '');
-          opt.setAttribute('data-name', prod.name);
-          if (prod.default_vat && prod.default_vat.id) {
-            opt.setAttribute('data-vat-id', prod.default_vat.id);
-          }
-
-          const labelPrice = price > 0 ? `${price.toFixed(2).replace('.', ',')} €` : 'prezzo a scelta';
-          opt.textContent = `${prod.name} (${labelPrice})`;
-          selectPreset.insertBefore(opt, customOpt);
-        });
-      }
-    }).catch(() => {});
   },
 
   async eseguiFatturaFIC(isBozza) {
+    if (this._isFatturando) {
+      console.warn('Emissione fattura già in corso, blocco chiamata duplicata');
+      return;
+    }
+
     const nome = document.getElementById('fic-nome').value.trim();
     const cf = document.getElementById('fic-cf').value.trim().toUpperCase();
     const email = document.getElementById('fic-email').value.trim();
@@ -882,14 +829,28 @@ iframe{display:block;width:100%;height:calc(100% - 48px);border:0}</style></head
       return;
     }
     if (importo <= 0) {
-      showToast('Inserisci un importo valido', 'error');
+      showToast('Inserisci un importo valido (superiore a 0 €)', 'error');
       document.getElementById('fic-importo').focus();
       return;
     }
 
-    // ── OPZIONE 2: ANTEPRIMA BOZZA INTERNA AL GESTIONALE ──────────────────────
+    // Validazione rigorosa: solo una delle 3 diciture ufficiali blindate
+    const DICITURE_AMMESSE = [
+      'Visita Podologica per unghia incarnita',
+      'Visita Podologica',
+      'Trattamento Podologico per unghia incarnita'
+    ];
+    let prestazioneFinale = desc;
+    if (!DICITURE_AMMESSE.includes(prestazioneFinale)) {
+      prestazioneFinale = 'Visita Podologica per unghia incarnita';
+    }
+
+    const bolloPreview = importo > 77.47 ? 2.00 : 0.00;
+    const totPreview = importo + bolloPreview;
+    const bolloTesto = bolloPreview > 0 ? ` (incluso bollo virtuale di legge € 2,00)` : ``;
+
+    // ── OPZIONE 1: ANTEPRIMA BOZZA INTERNA AL GESTIONALE ──────────────────────
     if (isBozza) {
-      const bollo = importo > 77.47 ? 2.00 : 0.00;
       const payloadBozza = {
         paziente: {
           nome,
@@ -901,9 +862,9 @@ iframe{display:block;width:100%;height:calc(100% - 48px);border:0}</style></head
           citta,
           provincia: provincia || 'TO'
         },
-        descrizione: desc || 'Visita Podologica',
+        descrizione: prestazioneFinale,
         importo,
-        bollo,
+        bollo: bolloPreview,
         data,
         metodo_pagamento: this.currentFicPaymentMethod
       };
@@ -955,12 +916,27 @@ iframe{display:block;width:100%;height:calc(100% - 48px);border:0}</style></head
       return;
     }
 
-    // ── EMISSIONE FATTURA UFFICIALE SU FATTURE IN CLOUD ───────────────────────
+    // ── CONFERMA DI SICUREZZA PRIMA DI EMETTERE SU FATTURE IN CLOUD ───────────
+    const ok = confirm(
+      `CONFERMA EMISSIONE FATTURA SU FATTURE IN CLOUD:\n\n` +
+      `• Paziente: ${nome}\n` +
+      `• Codice Fiscale: ${cf}\n` +
+      `• Prestazione: ${prestazioneFinale}\n` +
+      `• Importo Totale: € ${totPreview.toFixed(2)}${bolloTesto}\n` +
+      `• Modalità di Pagamento: ${this.currentFicPaymentMethod || 'POS'}\n\n` +
+      `Confermi l'emissione del documento ufficiale?`
+    );
+    if (!ok) return;
+
+    // ── EMISSIONE FATTURA UFFICIALE SU FATTURE IN CLOUD (CON LOCK ANTI-CLIC) ──
     const btnBozza = document.getElementById('btn-bozza-fic');
     const btnEmetti = document.getElementById('btn-emetti-fic');
-    btnBozza.disabled = true;
-    btnEmetti.disabled = true;
-    btnEmetti.textContent = 'Emissione in corso...';
+    this._isFatturando = true;
+    if (btnBozza) btnBozza.disabled = true;
+    if (btnEmetti) {
+      btnEmetti.disabled = true;
+      btnEmetti.textContent = 'Emissione in corso...';
+    }
 
     let successEmissione = false;
     try {
@@ -979,7 +955,7 @@ iframe{display:block;width:100%;height:calc(100% - 48px);border:0}</style></head
           citta,
           provincia: provincia || 'TO'
         },
-        descrizione: desc || 'Visita Podologica',
+        descrizione: prestazioneFinale,
         importo,
         data,
         metodo_pagamento: this.currentFicPaymentMethod,
@@ -1081,11 +1057,13 @@ iframe{display:block;width:100%;height:calc(100% - 48px);border:0}</style></head
     } catch (e) {
       showToast('Errore Fatture in Cloud: ' + e.message, 'error');
     } finally {
+      this._isFatturando = false;
       if (!successEmissione) {
-        btnBozza.disabled = false;
-        btnEmetti.disabled = false;
-        btnBozza.textContent = 'Anteprima Bozza (Controllo)';
-        btnEmetti.textContent = 'Emetti Fattura Ufficiale';
+        if (btnBozza) btnBozza.disabled = false;
+        if (btnEmetti) {
+          btnEmetti.disabled = false;
+          btnEmetti.textContent = 'Emetti Fattura Ufficiale';
+        }
       }
     }
   },
