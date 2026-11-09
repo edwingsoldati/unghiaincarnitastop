@@ -5,24 +5,39 @@
 
 const WORKER_URL = 'https://gestionale-worker.eracle-soldati.workers.dev';
 
-// Sessione di login (impostata da auth.js)
+// Sessione di login (impostata da auth.js o recuperata da localStorage)
 let _token = null;
+
+function getToken() {
+  if (_token) return _token;
+  try {
+    const s = JSON.parse(localStorage.getItem('gs_sessione') || 'null');
+    if (s && s.token) {
+      _token = s.token;
+      return _token;
+    }
+  } catch (_) {}
+  return null;
+}
 
 export const api = {
   setToken(t) { _token = t || null; },
+  getToken() { return getToken(); },
   onNonAutorizzato: null, // richiamata quando il server risponde 401 (sessione scaduta)
 
   // Indirizzo foto per <img>: il browser non può inviare l'header, quindi passa la sessione
   fotoUrl(key) {
-    return `${WORKER_URL}/api/foto/${encodeURIComponent(key)}?t=${encodeURIComponent(_token || '')}`;
+    const t = getToken();
+    return `${WORKER_URL}/api/foto/${encodeURIComponent(key)}?t=${encodeURIComponent(t || '')}`;
   },
 
   // Config & Base Fetch
   async request(endpoint, options = {}) {
     const url = `${WORKER_URL}${endpoint}`;
+    const token = getToken();
     const headers = {
       'Content-Type': 'application/json',
-      ...(_token ? { Authorization: `Bearer ${_token}` } : {}),
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
       ...(options.headers || {}),
     };
 
@@ -30,7 +45,7 @@ export const api = {
       const res = await fetch(url, { ...options, headers });
       const data = await res.json().catch(() => ({}));
 
-      if (res.status === 401 && _token && endpoint !== '/api/auth/login' && endpoint !== '/api/auth/passkey/login') {
+      if (res.status === 401 && token && endpoint !== '/api/auth/login' && endpoint !== '/api/auth/passkey/login') {
         this.onNonAutorizzato?.();
       }
       if (!res.ok) {
@@ -254,3 +269,5 @@ export const api = {
     });
   },
 };
+
+window.api = api;

@@ -2,7 +2,7 @@
  * Vista Documenti Sanitari Ufficiali (Anteprima Modificabile & FattureInCloud)
  */
 
-import { api } from '../api.js?v=20261109_v2';
+import { api } from '../api.js';
 import { state, showToast } from '../state.js';
 import { registraFenolizzazione, oggiLocale } from '../visite.js';
 import { dataNascitaDaCF } from './cartella.view.js';

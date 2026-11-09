@@ -3,7 +3,7 @@
  * Studio Podologico Dott. Federico Grassi — UnghiaIncarnitaStop
  */
 
-import { api } from '../api.js?v=20261109_v2';
+import { api } from '../api.js';
 import { state, showToast } from '../state.js';
 
 export const CRMView = {
