@@ -3,7 +3,7 @@
  * Studio Podologico Dott. Federico Grassi — UnghiaIncarnitaStop
  */
 
-import { api } from '../api.js';
+import { api } from '../api.js?v=20261109_v2';
 import { state, showToast } from '../state.js';
 
 export const CRMView = {
@@ -102,6 +102,99 @@ export const CRMView = {
           <div class="modal-footer">
             <button onclick="document.getElementById('modal-update-crm').classList.remove('open')" class="btn btn-secondary">Annulla</button>
             <button onclick="window.CRMView.salvaStatoCRM()" class="btn btn-primary">Salva su D1</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Modale Rapida: Segna Pagato Preventivo -->
+      <div id="modal-crm-pagato" class="modal-overlay">
+        <div class="modal-card" style="max-width:440px;">
+          <div class="modal-header" style="background:#f0fdf4; border-bottom:1px solid #bbf7d0;">
+            <div style="display:flex; align-items:center; gap:8px;">
+              <span style="font-size:16px;">💳</span>
+              <strong style="font-size:13.5px; color:#166534;">Registra Pagamento Preventivo</strong>
+            </div>
+            <button onclick="document.getElementById('modal-crm-pagato').classList.remove('open')" class="btn btn-secondary btn-sm">✕</button>
+          </div>
+          <div class="modal-body" style="display:flex; flex-direction:column; gap:12px; padding:16px;">
+            <input type="hidden" id="crm-pag-paziente-id">
+            <div class="form-group" style="margin-bottom:0;">
+              <label class="form-label" style="font-size:11px;">Paziente</label>
+              <input type="text" id="crm-pag-nome" class="form-input" readonly style="background:var(--bg-subtle); font-weight:600;">
+            </div>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+              <div class="form-group" style="margin-bottom:0;">
+                <label class="form-label" style="font-size:11px;">Importo Saldato (€) *</label>
+                <input type="number" id="crm-pag-importo" class="form-input form-input-mono" step="0.01" style="font-weight:700; color:#166534;">
+              </div>
+              <div class="form-group" style="margin-bottom:0;">
+                <label class="form-label" style="font-size:11px;">Metodo di Pagamento *</label>
+                <select id="crm-pag-metodo" class="form-select">
+                  <option value="bonifico">Bonifico Bancario</option>
+                  <option value="pos">POS in Studio</option>
+                  <option value="contanti">Contanti</option>
+                  <option value="stripe">Stripe / Klarna</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-group" style="margin-bottom:0;">
+              <label class="form-label" style="font-size:11px;">Data Pagamento</label>
+              <input type="date" id="crm-pag-data" class="form-input form-input-mono">
+            </div>
+            <div class="form-group" style="margin-bottom:0;">
+              <label class="form-label" style="font-size:11px;">Note (opzionale)</label>
+              <input type="text" id="crm-pag-note" class="form-input" placeholder="Es. Bonifico confermato da Cristina">
+            </div>
+          </div>
+          <div class="modal-footer" style="display:flex; justify-content:space-between;">
+            <button onclick="document.getElementById('modal-crm-pagato').classList.remove('open')" class="btn btn-secondary">Annulla</button>
+            <button onclick="window.CRMView.confermaRegistraPagamento()" id="btn-conferma-crm-pagamento" class="btn btn-primary" style="background:#16a34a; border-color:#16a34a; font-weight:600;">
+              ✓ Conferma Pagamento
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Modale Rapida: Fissa Intervento Clinica Aurea -->
+      <div id="modal-crm-fissa-aurea" class="modal-overlay">
+        <div class="modal-card" style="max-width:440px;">
+          <div class="modal-header" style="background:#f0fdfa; border-bottom:1px solid #99f6e4;">
+            <div style="display:flex; align-items:center; gap:8px;">
+              <span style="font-size:16px;">🏥</span>
+              <strong style="font-size:13.5px; color:#115e59;">Fissa Intervento Clinica Aurea</strong>
+            </div>
+            <button onclick="document.getElementById('modal-crm-fissa-aurea').classList.remove('open')" class="btn btn-secondary btn-sm">✕</button>
+          </div>
+          <div class="modal-body" style="display:flex; flex-direction:column; gap:12px; padding:16px;">
+            <input type="hidden" id="crm-aur-paziente-id">
+            <div class="form-group" style="margin-bottom:0;">
+              <label class="form-label" style="font-size:11px;">Paziente</label>
+              <input type="text" id="crm-aur-nome" class="form-input" readonly style="background:var(--bg-subtle); font-weight:600;">
+            </div>
+            <div style="display:grid; grid-template-columns:1.4fr 1fr; gap:10px;">
+              <div class="form-group" style="margin-bottom:0;">
+                <label class="form-label" style="font-size:11px;">Data Intervento *</label>
+                <input type="date" id="crm-aur-data" class="form-input form-input-mono" style="font-weight:700; color:#0f766e;">
+              </div>
+              <div class="form-group" style="margin-bottom:0;">
+                <label class="form-label" style="font-size:11px;">Orario (opzionale)</label>
+                <input type="time" id="crm-aur-ora" class="form-input form-input-mono" value="09:00">
+              </div>
+            </div>
+            <div class="form-group" style="margin-bottom:0;">
+              <label class="form-label" style="font-size:11px;">Sede Intervento</label>
+              <input type="text" id="crm-aur-sede" class="form-input" value="Clinica Aurea" readonly style="background:var(--bg-subtle);">
+            </div>
+            <div class="form-group" style="margin-bottom:0;">
+              <label class="form-label" style="font-size:11px;">Note Intervento (opzionale)</label>
+              <input type="text" id="crm-aur-note" class="form-input" placeholder="Es. Alluce destro (DX)">
+            </div>
+          </div>
+          <div class="modal-footer" style="display:flex; justify-content:space-between;">
+            <button onclick="document.getElementById('modal-crm-fissa-aurea').classList.remove('open')" class="btn btn-secondary">Annulla</button>
+            <button onclick="window.CRMView.confermaFissaIntervento()" id="btn-conferma-crm-aurea" class="btn btn-primary" style="background:#0d9488; border-color:#0d9488; font-weight:600;">
+              ✓ Salva Data Intervento
+            </button>
           </div>
         </div>
       </div>
@@ -281,10 +374,27 @@ export const CRMView = {
             ` : ''}
           </div>
 
-          <div style="display:flex; align-items:center; gap:8px; flex-shrink:0; flex-wrap:wrap; justify-content:flex-end;">
+          <div style="display:flex; align-items:center; gap:6px; flex-shrink:0; flex-wrap:wrap; justify-content:flex-end;">
+            <!-- Azione Rapida: Non Risponde (+3gg) -->
+            <button onclick="window.CRMView.segnaNonRisponde(${p.id})" class="btn btn-sm btn-secondary" style="border-color:#fde047; background:#fefce8; color:#854d0e; font-weight:600; display:flex; align-items:center; gap:4px;" title="Rimanda il ricontatto di 3 giorni e aggiunge nota 'Non risponde'">
+              📞 Non risponde (+3gg)
+            </button>
+
+            <!-- Azione Rapida: Segna Pagato (se non ancora saldato) -->
+            ${!p.ha_pagato ? `
+              <button onclick="window.CRMView.apriModalePagamentoStudio(${p.id})" class="btn btn-sm btn-secondary" style="border-color:#86efac; background:#f0fdf4; color:#166534; font-weight:600; display:flex; align-items:center; gap:4px;" title="Registra che il paziente ha saldato il preventivo (Bonifico, POS o Contanti)">
+                💳 Segna Pagato
+              </button>
+            ` : ''}
+
+            <!-- Azione Rapida: Fissa / Modifica Intervento Clinica Aurea -->
+            <button onclick="window.CRMView.apriModaleFissaIntervento(${p.id})" class="btn btn-sm btn-secondary" style="border-color:#99f6e4; background:#f0fdfa; color:#115e59; font-weight:600; display:flex; align-items:center; gap:4px;" title="${p.ha_prenotato ? 'Modifica data intervento Clinica Aurea' : 'Fissa data intervento Clinica Aurea'}">
+              🏥 ${p.ha_prenotato ? 'Modifica Data Aurea' : 'Fissa Data Aurea'}
+            </button>
+
             ${(!p.ha_pagato && p.ha_preventivo) ? `
               <button onclick="window.CRMView.inviaLinkStripeCRM(${p.id}, ${p.importo_preventivo || 850})" class="btn btn-sm" style="background:#635bff; color:#fff; border:1px solid #635bff; font-weight:600; display:flex; align-items:center; gap:4px;" title="Crea o invia il link Stripe con 3 rate Klarna per € ${p.importo_preventivo || 850}">
-                💳 Invia Link Klarna (€ ${p.importo_preventivo || 850})
+                Link Klarna
               </button>
             ` : ''}
             ${phoneClean ? `
@@ -297,8 +407,8 @@ export const CRMView = {
                 Dimissioni
               </button>
             ` : ''}
-            <button onclick="window.CRMView.apriModaleAggiornamento(${p.id})" class="btn btn-secondary btn-sm">
-              ✏️ Note / Stato
+            <button onclick="window.CRMView.apriModaleAggiornamento(${p.id})" class="btn btn-secondary btn-sm" title="Modifica note o stato personalizzato">
+              ✏️ Note
             </button>
           </div>
         </div>
@@ -382,6 +492,225 @@ export const CRMView = {
   },
 
   selectedCRMId: null,
+  selectedCRMPagamentoId: null,
+  selectedCRMInterventoId: null,
+
+  async segnaNonRisponde(pid) {
+    const p = (this.crmList || []).find(x => x.id === pid);
+    if (!p) return;
+
+    const nomeCompleto = `${p.cognome ? p.cognome + ' ' : ''}${p.nome || 'questo paziente'}`.trim();
+    if (!confirm(`Vuoi rimandare di 3 giorni il follow-up per ${nomeCompleto} con nota 'Non risponde'?`)) {
+      return;
+    }
+
+    const now = new Date();
+    const dd_today = String(now.getDate()).padStart(2, '0');
+    const mm_today = String(now.getMonth() + 1).padStart(2, '0');
+    const yyyy_today = now.getFullYear();
+    const oggiIso = `${yyyy_today}-${mm_today}-${dd_today}`;
+    const oggiFormatted = `${dd_today}/${mm_today}/${yyyy_today}`;
+
+    const targetDate = new Date();
+    targetDate.setDate(targetDate.getDate() + 3);
+    const dd_target = String(targetDate.getDate()).padStart(2, '0');
+    const mm_target = String(targetDate.getMonth() + 1).padStart(2, '0');
+    const yyyy_target = targetDate.getFullYear();
+    const targetIso = `${yyyy_target}-${mm_target}-${dd_target}`;
+    const targetFormatted = `${dd_target}/${mm_target}/${yyyy_target}`;
+
+    const nuovaNota = `[${oggiFormatted}] Chiamato: non risponde (ricontatto fissato per il ${targetFormatted})`;
+    const noteAggiornate = p.note_crm ? `${p.note_crm}\n${nuovaNota}` : nuovaNota;
+
+    try {
+      await api.aggiornaCRM(pid, {
+        stato: 'da_richiamare',
+        priorita: p.priorita || 'normale',
+        data_ultimo_contatto: oggiIso,
+        data_prossimo_followup: targetIso,
+        note_crm: noteAggiornate
+      });
+      showToast(`✓ Follow-up rimandato al ${targetFormatted} per ${nomeCompleto}`, 'success');
+      await this.loadCRMData();
+    } catch (e) {
+      showToast('Errore: ' + e.message, 'error');
+    }
+  },
+
+  apriModalePagamentoStudio(pid) {
+    const p = (this.crmList || []).find(x => x.id === pid);
+    if (!p) return;
+    this.selectedCRMPagamentoId = pid;
+
+    const nomeCompleto = `${p.cognome ? p.cognome + ' ' : ''}${p.nome || ''}`.trim();
+    document.getElementById('crm-pag-paziente-id').value = pid;
+    document.getElementById('crm-pag-nome').value = nomeCompleto;
+    document.getElementById('crm-pag-importo').value = p.importo_preventivo ? Number(p.importo_preventivo).toFixed(2) : '850.00';
+    document.getElementById('crm-pag-metodo').value = 'bonifico';
+    document.getElementById('crm-pag-data').value = new Date().toISOString().split('T')[0];
+    document.getElementById('crm-pag-note').value = 'Saldo preventivo intervento';
+
+    const btn = document.getElementById('btn-conferma-crm-pagamento');
+    if (btn) {
+      btn.disabled = false;
+      btn.textContent = '✓ Conferma Pagamento';
+    }
+
+    document.getElementById('modal-crm-pagato').classList.add('open');
+  },
+
+  async confermaRegistraPagamento() {
+    const pid = this.selectedCRMPagamentoId;
+    const p = (this.crmList || []).find(x => x.id === pid);
+    if (!p) return;
+
+    const importo = parseFloat(document.getElementById('crm-pag-importo').value);
+    const metodo = document.getElementById('crm-pag-metodo').value;
+    const dataPag = document.getElementById('crm-pag-data').value || new Date().toISOString().split('T')[0];
+    const note = document.getElementById('crm-pag-note').value.trim();
+
+    if (!importo || importo <= 0) {
+      alert('Inserisci un importo valido.');
+      return;
+    }
+
+    const btn = document.getElementById('btn-conferma-crm-pagamento');
+    if (btn) {
+      btn.disabled = true;
+      btn.textContent = 'Registrazione in corso...';
+    }
+
+    const now = new Date();
+    const dd_today = String(now.getDate()).padStart(2, '0');
+    const mm_today = String(now.getMonth() + 1).padStart(2, '0');
+    const yyyy_today = now.getFullYear();
+    const oggiFormatted = `${dd_today}/${mm_today}/${yyyy_today}`;
+
+    try {
+      // 1. Registra in visite per il calcolo fatturato e visualizzazione stato studio
+      await api.registraVisita(pid, {
+        data_visita: dataPag,
+        tipo: 'fenolizzazione',
+        importo: importo,
+        sede: 'Studio Filadelfia',
+        pagamento_metodo: metodo,
+        pagamento_stato: 'saldato',
+        note: note ? `Pagamento registrato da Follow-up CRM (${metodo.toUpperCase()}): ${note}` : `Pagamento registrato da Follow-up CRM (${metodo.toUpperCase()})`
+      });
+
+      // 2. Aggiorna CRM con nota e data contatto
+      const metodoEtichetta = metodo === 'bonifico' ? 'Bonifico Bancario' : (metodo === 'pos' ? 'POS in Studio' : (metodo === 'contanti' ? 'Contanti' : 'Stripe Online'));
+      const nuovaNota = `[${oggiFormatted}] Pagamento di € ${importo.toFixed(2)} saldato tramite ${metodoEtichetta}`;
+      const noteAggiornate = p.note_crm ? `${p.note_crm}\n${nuovaNota}` : nuovaNota;
+
+      await api.aggiornaCRM(pid, {
+        stato: p.ha_prenotato ? 'operazione_pianificata' : 'in_attesa',
+        priorita: p.priorita || 'normale',
+        data_ultimo_contatto: dataPag,
+        note_crm: noteAggiornate
+      });
+
+      document.getElementById('modal-crm-pagato').classList.remove('open');
+      showToast(`✓ Pagamento di € ${importo.toFixed(2)} registrato con successo!`, 'success');
+      await this.loadCRMData();
+    } catch (e) {
+      alert('Errore registrazione pagamento: ' + e.message);
+      if (btn) {
+        btn.disabled = false;
+        btn.textContent = '✓ Conferma Pagamento';
+      }
+    }
+  },
+
+  apriModaleFissaIntervento(pid) {
+    const p = (this.crmList || []).find(x => x.id === pid);
+    if (!p) return;
+    this.selectedCRMInterventoId = pid;
+
+    const nomeCompleto = `${p.cognome ? p.cognome + ' ' : ''}${p.nome || ''}`.trim();
+    document.getElementById('crm-aur-paziente-id').value = pid;
+    document.getElementById('crm-aur-nome').value = nomeCompleto;
+
+    let dataDef = '';
+    let oraDef = '09:00';
+    if (p.data_operazione) {
+      const parts = p.data_operazione.split(' ');
+      dataDef = parts[0] || '';
+      if (parts[1]) oraDef = parts[1].slice(0, 5);
+    } else {
+      // Default: prossima settimana
+      const d = new Date();
+      d.setDate(d.getDate() + 7);
+      dataDef = d.toISOString().split('T')[0];
+    }
+
+    document.getElementById('crm-aur-data').value = dataDef;
+    document.getElementById('crm-aur-ora').value = oraDef;
+    document.getElementById('crm-aur-note').value = '';
+
+    const btn = document.getElementById('btn-conferma-crm-aurea');
+    if (btn) {
+      btn.disabled = false;
+      btn.textContent = '✓ Salva Data Intervento';
+    }
+
+    document.getElementById('modal-crm-fissa-aurea').classList.add('open');
+  },
+
+  async confermaFissaIntervento() {
+    const pid = this.selectedCRMInterventoId;
+    const p = (this.crmList || []).find(x => x.id === pid);
+    if (!p) return;
+
+    const dataOp = document.getElementById('crm-aur-data').value;
+    const oraOp = document.getElementById('crm-aur-ora').value;
+    const noteOp = document.getElementById('crm-aur-note').value.trim();
+
+    if (!dataOp) {
+      alert('Seleziona la data dell\'intervento.');
+      return;
+    }
+
+    const btn = document.getElementById('btn-conferma-crm-aurea');
+    if (btn) {
+      btn.disabled = true;
+      btn.textContent = 'Salvataggio in corso...';
+    }
+
+    const strDataOra = oraOp ? `${dataOp} ${oraOp}` : dataOp;
+    const now = new Date();
+    const dd_today = String(now.getDate()).padStart(2, '0');
+    const mm_today = String(now.getMonth() + 1).padStart(2, '0');
+    const yyyy_today = now.getFullYear();
+    const oggiFormatted = `${dd_today}/${mm_today}/${yyyy_today}`;
+
+    const dataParts = dataOp.split('-');
+    const dataOpFormatted = dataParts.length === 3 ? `${dataParts[2]}/${dataParts[1]}/${dataParts[0]}` : dataOp;
+
+    const nuovaNota = `[${oggiFormatted}] Fissato intervento Clinica Aurea per il ${dataOpFormatted}${oraOp ? ' ore ' + oraOp : ''}${noteOp ? ' (' + noteOp + ')' : ''}`;
+    const noteAggiornate = p.note_crm ? `${p.note_crm}\n${nuovaNota}` : nuovaNota;
+
+    try {
+      await api.aggiornaCRM(pid, {
+        stato: 'operazione_pianificata',
+        priorita: 'alta',
+        operazione_pianificata: 1,
+        data_operazione: strDataOra,
+        note_crm: noteAggiornate,
+        data_ultimo_contatto: new Date().toISOString().split('T')[0]
+      });
+
+      document.getElementById('modal-crm-fissa-aurea').classList.remove('open');
+      showToast(`✓ Intervento Clinica Aurea fissato per il ${dataOpFormatted}!`, 'success');
+      await this.loadCRMData();
+    } catch (e) {
+      alert('Errore salvataggio intervento: ' + e.message);
+      if (btn) {
+        btn.disabled = false;
+        btn.textContent = '✓ Salva Data Intervento';
+      }
+    }
+  },
 
   apriModaleAggiornamento(pid) {
     const p = this.crmList.find(x => x.id === pid);
@@ -401,6 +730,7 @@ export const CRMView = {
   async salvaStatoCRM() {
     if (!this.selectedCRMId) return;
 
+    const p = (this.crmList || []).find(x => x.id === this.selectedCRMId) || {};
     const stato = document.getElementById('crm-mod-stato').value;
     const priorita = document.getElementById('crm-mod-priorita').value;
     const dataFollowup = document.getElementById('crm-mod-data-followup').value || null;
@@ -412,7 +742,11 @@ export const CRMView = {
         priorita,
         data_prossimo_followup: dataFollowup,
         note_crm: note,
-        data_ultimo_contatto: new Date().toISOString().split('T')[0]
+        data_ultimo_contatto: new Date().toISOString().split('T')[0],
+        operazione_pianificata: p.operazione_pianificata,
+        data_operazione: p.data_operazione,
+        preventivo_inviato: p.preventivo_inviato,
+        importo_preventivo: p.importo_preventivo
       });
 
       showToast('Stato CRM aggiornato su D1');
