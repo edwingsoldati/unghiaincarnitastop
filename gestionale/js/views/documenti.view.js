@@ -1175,10 +1175,13 @@ iframe{display:block;width:100%;height:calc(100% - 48px);border:0}</style></head
               </div>
             </div>
 
-            <div style="display:flex; align-items:center; gap:12px;">
+            <div style="display:flex; align-items:center; gap:8px;">
               <strong style="font-size:15px; color:#1e293b;">€ ${importoStr}</strong>
               <button onclick="window.DocumentiView.apriRevisioneStripe(${item.id})" class="btn btn-sm btn-primary" style="background:#635bff; border-color:#635bff; font-weight:600;">
                 🔍 Visiona ed Emetti Fattura
+              </button>
+              <button onclick="window.DocumentiView.segnaGiaFatturataStripeQuick(${item.id})" class="btn btn-sm btn-secondary" style="font-weight:600; color:#15803d; border-color:#86efac; background:#f0fdf4;" title="Segna come già fatturata manualmente da Cristina senza emetterla di nuovo su FIC">
+                ✓ Già Fatturata
               </button>
             </div>
           </div>
@@ -1330,6 +1333,45 @@ iframe{display:block;width:100%;height:calc(100% - 48px);border:0}</style></head
       await api.ignoraFatturaStripe({ pagamento_id: item.id });
       document.getElementById('modal-stripe-fattura').classList.remove('open');
       showToast('Pagamento contrassegnato come ignorato.');
+      await this.caricaPagamentiStripe();
+    } catch (err) {
+      showToast('Errore: ' + err.message, 'error');
+    }
+  },
+
+  async segnaGiaFatturataStripeQuick(id) {
+    const item = (this.stripePendingList || []).find(p => p.id === id);
+    const nomePaz = item ? `${item.paz_cognome ? item.paz_cognome + ' ' : ''}${item.paz_nome || item.customer_name || 'questo paziente'}`.trim() : 'il paziente';
+    
+    const numFattura = prompt(`La fattura per ${nomePaz} è già stata emessa manualmente da Cristina su Fatture in Cloud?\n\nInserisci il numero della fattura (es: 617) oppure lascia vuoto se non lo ricordi:`, '617');
+    if (numFattura === null) return; // annullato dall'utente
+
+    try {
+      await api.segnaGiaFatturataStripe({
+        pagamento_id: id,
+        numero_fattura: numFattura.trim() || 'Manuale'
+      });
+      showToast(`✓ Pagamento contrassegnato come già fatturato${numFattura.trim() ? ' (Fattura nr. ' + numFattura.trim() + ')' : ''}!`, 'success');
+      await this.caricaPagamentiStripe();
+    } catch (err) {
+      showToast('Errore: ' + err.message, 'error');
+    }
+  },
+
+  async segnaGiaFatturataStripeModal() {
+    const item = this.currentStripeItem;
+    if (!item) return;
+
+    const numFattura = prompt(`Inserisci il numero della fattura già emessa da Cristina su Fatture in Cloud (es: 617, oppure lascia vuoto):`, '617');
+    if (numFattura === null) return;
+
+    try {
+      await api.segnaGiaFatturataStripe({
+        pagamento_id: item.id,
+        numero_fattura: numFattura.trim() || 'Manuale'
+      });
+      document.getElementById('modal-stripe-fattura').classList.remove('open');
+      showToast(`✓ Pagamento contrassegnato come già fatturato${numFattura.trim() ? ' (Fattura nr. ' + numFattura.trim() + ')' : ''}!`, 'success');
       await this.caricaPagamentiStripe();
     } catch (err) {
       showToast('Errore: ' + err.message, 'error');

@@ -246,4 +246,11 @@ export const api = {
       body: JSON.stringify(payload),
     });
   },
+
+  segnaGiaFatturataStripe(payload) {
+    return this.request('/api/stripe/segna-gia-fatturata', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    });
+  },
 };

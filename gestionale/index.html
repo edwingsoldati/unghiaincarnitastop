@@ -516,10 +516,13 @@
 
       </div>
 
-      <div class="modal-footer" style="display:flex; justify-content:space-between; align-items:center;">
-        <div>
+      <div class="modal-footer" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+        <div style="display:flex; gap:8px;">
           <button type="button" onclick="window.DocumentiView.ignoraPagamentoStripe()" class="btn btn-secondary btn-sm" style="color:#b91c1c;">
             ✕ Ignora (non fatturare)
+          </button>
+          <button type="button" onclick="window.DocumentiView.segnaGiaFatturataStripeModal()" class="btn btn-secondary btn-sm" style="color:#15803d; border-color:#86efac; background:#f0fdf4; font-weight:600;">
+            ✓ Già Fatturata da Cristina / Manuale
           </button>
         </div>
         <div style="display:flex; gap:8px;">
