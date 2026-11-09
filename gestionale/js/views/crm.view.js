@@ -283,11 +283,11 @@ export const CRMView = {
 
     let filtered = this.crmList;
     if (this.filtroCorrente === 'tutti_preventivi') {
-      filtered = this.crmList.filter(p => p.ha_preventivo);
+      filtered = this.crmList.filter(p => p.ha_preventivo && p.stato !== 'completato');
     } else if (this.filtroCorrente === 'tca') {
       filtered = this.crmList.filter(p => p.protocollo === 'tca');
     } else if (this.filtroCorrente === 'in_attesa_pagamento') {
-      filtered = this.crmList.filter(p => p.ha_preventivo && !p.ha_pagato);
+      filtered = this.crmList.filter(p => p.ha_preventivo && !p.ha_pagato && p.stato !== 'completato');
     } else if (this.filtroCorrente === 'pagati') {
       filtered = this.crmList.filter(p => p.ha_pagato);
     } else if (this.filtroCorrente === 'operazione_pianificata') {
@@ -354,6 +354,7 @@ export const CRMView = {
           <div style="flex:1; min-width:280px;">
             <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-bottom:4px;">
               <strong style="font-size:14px; color:var(--text-primary);">${nomeCompleto}</strong>
+              ${p.stato === 'completato' ? '<span class="badge" style="background:#dcfce7; color:#15803d; font-weight:700; font-size:11px;">✅ Concluso / Dimesso</span>' : ''}
               ${p.protocollo === 'tca' ? '<span class="badge" style="background:#fee2e2; color:#991b1b; border:1px solid #f87171; font-weight:700; font-size:11px;">🔴 TCA</span>' : ''}
               ${p.importo_preventivo ? `<span class="badge badge-neutral font-mono-code" style="font-size:12px; font-weight:700;">Preventivo: € ${Number(p.importo_preventivo).toFixed(2)}</span>` : ''}
               ${badgePagamento}
@@ -375,13 +376,26 @@ export const CRMView = {
           </div>
 
           <div style="display:flex; align-items:center; gap:6px; flex-shrink:0; flex-wrap:wrap; justify-content:flex-end;">
+            <!-- Azione: Concludi Percorso oppure Riapri -->
+            ${p.stato === 'completato' ? `
+              <button onclick="window.CRMView.riapriPercorso(${p.id})" class="btn btn-sm btn-secondary" style="font-weight:600; display:flex; align-items:center; gap:4px;" title="Riapri il percorso di follow-up">
+                ↩️ Riapri Percorso
+              </button>
+            ` : `
+              <button onclick="window.CRMView.segnaCompletato(${p.id})" class="btn btn-sm btn-secondary" style="border-color:#86efac; background:#f0fdf4; color:#15803d; font-weight:700; display:flex; align-items:center; gap:4px;" title="Ha saldato e fatto tutto: archivia nei Completati">
+                ✅ Concludi Percorso
+              </button>
+            `}
+
             <!-- Azione Rapida: Non Risponde (+3gg) -->
-            <button onclick="window.CRMView.segnaNonRisponde(${p.id})" class="btn btn-sm btn-secondary" style="border-color:#fde047; background:#fefce8; color:#854d0e; font-weight:600; display:flex; align-items:center; gap:4px;" title="Rimanda il ricontatto di 3 giorni e aggiunge nota 'Non risponde'">
-              📞 Non risponde (+3gg)
-            </button>
+            ${p.stato !== 'completato' ? `
+              <button onclick="window.CRMView.segnaNonRisponde(${p.id})" class="btn btn-sm btn-secondary" style="border-color:#fde047; background:#fefce8; color:#854d0e; font-weight:600; display:flex; align-items:center; gap:4px;" title="Rimanda il ricontatto di 3 giorni e aggiunge nota 'Non risponde'">
+                📞 Non risponde (+3gg)
+              </button>
+            ` : ''}
 
             <!-- Azione Rapida: Segna Pagato (se non ancora saldato) -->
-            ${!p.ha_pagato ? `
+            ${(!p.ha_pagato && p.stato !== 'completato') ? `
               <button onclick="window.CRMView.apriModalePagamentoStudio(${p.id})" class="btn btn-sm btn-secondary" style="border-color:#86efac; background:#f0fdf4; color:#166534; font-weight:600; display:flex; align-items:center; gap:4px;" title="Registra che il paziente ha saldato il preventivo (Bonifico, POS o Contanti)">
                 💳 Segna Pagato
               </button>
@@ -494,6 +508,62 @@ export const CRMView = {
   selectedCRMId: null,
   selectedCRMPagamentoId: null,
   selectedCRMInterventoId: null,
+
+  async segnaCompletato(pid) {
+    const p = (this.crmList || []).find(x => x.id === pid);
+    if (!p) return;
+
+    const nomeCompleto = `${p.cognome ? p.cognome + ' ' : ''}${p.nome || 'questo paziente'}`.trim();
+    if (!confirm(`Confermi che ${nomeCompleto} ha saldato, eseguito l'intervento ed è tutto a posto?\n\nIl paziente verrà archiviato nella sezione "Completati".`)) {
+      return;
+    }
+
+    const now = new Date();
+    const dd_today = String(now.getDate()).padStart(2, '0');
+    const mm_today = String(now.getMonth() + 1).padStart(2, '0');
+    const yyyy_today = now.getFullYear();
+    const oggiFormatted = `${dd_today}/${mm_today}/${yyyy_today}`;
+
+    const nuovaNota = `[${oggiFormatted}] Percorso concluso con successo (intervento eseguito e saldato)`;
+    const noteAggiornate = p.note_crm ? `${p.note_crm}\n${nuovaNota}` : nuovaNota;
+
+    try {
+      await api.aggiornaCRM(pid, {
+        stato: 'completato',
+        priorita: 'bassa',
+        note_crm: noteAggiornate,
+        data_ultimo_contatto: new Date().toISOString().split('T')[0]
+      });
+
+      showToast(`✓ Percorso concluso per ${nomeCompleto}! Spostato nei Completati.`, 'success');
+      await this.loadCRMData();
+    } catch (e) {
+      showToast('Errore: ' + e.message, 'error');
+    }
+  },
+
+  async riapriPercorso(pid) {
+    const p = (this.crmList || []).find(x => x.id === pid);
+    if (!p) return;
+
+    const nomeCompleto = `${p.cognome ? p.cognome + ' ' : ''}${p.nome || 'questo paziente'}`.trim();
+    if (!confirm(`Vuoi riaprire il percorso di follow-up per ${nomeCompleto}?`)) {
+      return;
+    }
+
+    try {
+      await api.aggiornaCRM(pid, {
+        stato: p.ha_prenotato ? 'operazione_pianificata' : (p.ha_pagato ? 'in_attesa' : 'da_richiamare'),
+        priorita: 'normale',
+        data_ultimo_contatto: new Date().toISOString().split('T')[0]
+      });
+
+      showToast(`✓ Percorso riaperto per ${nomeCompleto}`, 'success');
+      await this.loadCRMData();
+    } catch (e) {
+      showToast('Errore: ' + e.message, 'error');
+    }
+  },
 
   async segnaNonRisponde(pid) {
     const p = (this.crmList || []).find(x => x.id === pid);
