@@ -113,12 +113,16 @@ export const PazientiView = {
     container.innerHTML = list.map(p => {
       const isSelected = this.selectedPatient && this.selectedPatient.id === p.id;
       const borderStyle = isSelected ? 'border-left: 3px solid var(--text-primary); background-color: var(--bg-subtle);' : 'border-left: 3px solid transparent;';
+      const dot = p.sito_provenienza ? this.renderMiniDot(p.sito_provenienza) : '';
+      const hasGAds = Boolean(p.gclid || p.wbraid || p.gbraid || (p.utm_source || '').toLowerCase().includes('google'));
       
       return `
         <div onclick="window.PazientiView.selezionaPazienteById(${p.id})" style="padding:12px 14px; border-bottom:1px solid var(--border-subtle); cursor:pointer; transition:background 0.15s; ${borderStyle}">
           <div style="display:flex; justify-content:space-between; align-items:center;">
             <div style="display:flex; align-items:center; gap:6px;">
+              ${dot ? `<span style="font-size:11px;" title="Provenienza Calendly: ${p.sito_provenienza}">${dot}</span>` : ''}
               <strong style="font-size:13px; color:var(--text-primary);">${p.cognome ? p.cognome + ' ' : ''}${p.nome || ''}</strong>
+              ${hasGAds ? '<span title="Provenienza Google Ads" style="font-size:9px; background:#e8f0fe; color:#1967d2; border:1px solid #aecbfa; border-radius:3px; padding:0 3px; font-weight:700;">G-Ads</span>' : ''}
               ${p.protocollo === 'tca' ? '<span style="font-size:9.5px; background:#fee2e2; color:#991b1b; border:1px solid #fca5a5; border-radius:4px; padding:1px 5px; font-weight:700;">TCA</span>' : ''}
               ${p.note_private ? '<span title="Note private presenti" style="font-size:10px;">🔒</span>' : ''}
             </div>
@@ -140,6 +144,7 @@ export const PazientiView = {
       this.selectedPatient.visite = data.visite || [];
       this.selectedPatient.crm = data.crm || null;
       this.selectedPatient.foto = data.foto || [];
+      this.selectedPatient.prenotazioni_calendly = data.prenotazioni_calendly || [];
 
       if (data.crm) {
         this.selectedPatient.importo_preventivo = data.crm.importo_preventivo;
@@ -169,6 +174,75 @@ export const PazientiView = {
     this.renderDettaglioPaziente(p);
   },
 
+  renderBadgeProvenienza(p) {
+    const canale = p.sito_provenienza || (
+      /fenolizz|aurea/i.test(p.tipo || '') ? 'fenolizzazione' :
+      /segreteria|telefon/i.test(p.tipo || '') ? 'segreteria' : (p.calendly_event_slug ? 'sito_it' : null)
+    );
+    if (!canale) return '';
+
+    let label = '🟢 Sito .it';
+    let bg = '#ecfdf5';
+    let color = '#065f46';
+    let border = '#a7f3d0';
+
+    if (canale === 'sito_it') {
+      label = '🟢 Sito .it';
+      bg = '#ecfdf5';
+      color = '#065f46';
+      border = '#a7f3d0';
+    } else if (canale === 'sito_com') {
+      label = '🟣 Landing .com';
+      bg = '#f5f3ff';
+      color = '#5b21b6';
+      border = '#ddd6fe';
+    } else if (canale === 'segreteria') {
+      label = '🔵 Segreteria (Tel)';
+      bg = '#eff6ff';
+      color = '#1e40af';
+      border = '#bfdbfe';
+    } else if (canale === 'fenolizzazione') {
+      label = '🔴 Fenolizzazione';
+      bg = '#fef2f2';
+      color = '#991b1b';
+      border = '#fecaca';
+    }
+
+    return `<span class="badge" style="background:${bg}; color:${color}; border:1px solid ${border}; font-size:11px; font-weight:700; padding:2px 8px; border-radius:4px; display:inline-flex; align-items:center; gap:4px;">${label}</span>`;
+  },
+
+  renderBadgeGoogleAds(p) {
+    const hasGclid = Boolean(p.gclid || p.wbraid || p.gbraid);
+    const utmSource = String(p.utm_source || '').toLowerCase();
+    const isGoogle = hasGclid || utmSource.includes('google');
+
+    if (!isGoogle) return '';
+
+    const campaign = p.utm_campaign ? `Campagna: ${p.utm_campaign}` : 'Google Ads';
+    const tooltip = [
+      campaign,
+      p.gclid ? `GCLID: ${p.gclid}` : '',
+      p.utm_content ? `Contenuto: ${p.utm_content}` : ''
+    ].filter(Boolean).join(' · ');
+
+    return `
+      <span class="badge" title="${tooltip.replace(/"/g, '&quot;')}" style="background:#e8f0fe; color:#1967d2; border:1px solid #aecbfa; font-size:10.5px; font-weight:700; padding:2px 7px; border-radius:4px; display:inline-flex; align-items:center; gap:3px; cursor:help;">
+        <svg style="width:11px;height:11px;" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z"/></svg>
+        Google Ads
+      </span>
+    `;
+  },
+
+  renderMiniDot(sito_provenienza) {
+    switch (sito_provenienza) {
+      case 'sito_it': return '🟢';
+      case 'sito_com': return '🟣';
+      case 'segreteria': return '🔵';
+      case 'fenolizzazione': return '🔴';
+      default: return '⚪';
+    }
+  },
+
   renderDettaglioPaziente(p) {
     const container = document.getElementById('paziente-dettaglio-container');
     if (!container) return;
@@ -182,13 +256,18 @@ export const PazientiView = {
     const prevInviato = Boolean(p.preventivo_inviato || p.crm?.preventivo_inviato || (impPrev != null && Number(impPrev) > 0));
     const importoPrevNum = impPrev ? Number(impPrev) : 0;
 
+    const provenienzaBadge = this.renderBadgeProvenienza(p);
+    const googleAdsBadge = this.renderBadgeGoogleAds(p);
+
     container.innerHTML = `
       <!-- Header Anagrafica -->
       <div style="padding:20px; border-bottom:1px solid var(--border-subtle); display:flex; justify-content:space-between; align-items:flex-start;">
         <div>
-          <div style="display:flex; align-items:center; gap:10px;">
+          <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
             <h2 style="font-size:18px; font-weight:700; color:var(--text-primary); letter-spacing:-0.3px;">${nomeCompleto}</h2>
             ${p.id ? `<span class="badge badge-neutral font-mono-code">ID: ${p.id}</span>` : ''}
+            ${provenienzaBadge}
+            ${googleAdsBadge}
             ${p.protocollo === 'tca' ? '<span class="badge" style="background:#fee2e2; color:#991b1b; border:1px solid #f87171; font-weight:700;">🔴 TCA</span>' : ''}
             ${isAureaPatient ? `<span class="badge badge-teal">Prenotato Clinica Aurea</span>` : ''}
           </div>
@@ -198,7 +277,21 @@ export const PazientiView = {
             <span>Tel: <strong class="font-mono-code">${p.telefono || '—'}</strong></span>
             <span>Codice Fiscale: <strong class="font-mono-code" id="scheda-cf-display">${p.codice_fiscale || 'Non ancora inserito'}</strong></span>
             <span>Città: <strong>${p.citta || p.indirizzo || 'Torino'}</strong></span>
+            ${p.sito_provenienza ? `<span>Canale: <strong>${p.sito_provenienza === 'sito_it' ? '🟢 Sito .it' : p.sito_provenienza === 'sito_com' ? '🟣 Landing .com' : p.sito_provenienza === 'segreteria' ? '🔵 Segreteria' : '🔴 Fenolizzazione'}</strong></span>` : ''}
+            ${p.gclid || p.utm_source ? `<span title="GCLID: ${p.gclid || ''} · Campagna: ${p.utm_campaign || ''}">Sorgente: <strong class="font-mono-code">${p.utm_campaign ? p.utm_campaign : (p.gclid ? 'Google Ads' : p.utm_source)}</strong></span>` : ''}
           </div>
+
+          ${(p.prenotazioni_calendly && p.prenotazioni_calendly.length > 0) ? `
+            <div style="margin-top:10px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:6px; padding:8px 12px; font-size:11.5px; display:flex; flex-wrap:wrap; align-items:center; gap:8px;">
+              <span style="font-weight:700; color:#334155;">🗓️ Prenotazioni Calendly:</span>
+              ${p.prenotazioni_calendly.map(pc => `
+                <span class="badge" style="background:#ffffff; border:1px solid #cbd5e1; color:#0f172a; padding:3px 7px; font-size:11px; display:inline-flex; align-items:center; gap:4px;">
+                  ${this.renderMiniDot(pc.sito_provenienza)} <strong>${pc.data_appuntamento || ''} ${pc.ora_appuntamento || ''}</strong> &mdash; ${pc.event_name || 'Visita'}${pc.stato === 'canceled' ? ' <span style="color:#b91c1c;font-weight:700;">(ANNULLATO)</span>' : ''}
+                  ${pc.gclid ? '<span style="color:#1967d2;font-size:9.5px;font-weight:700;">[Google Ads]</span>' : ''}
+                </span>
+              `).join('')}
+            </div>
+          ` : ''}
         </div>
 
         <div style="display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-end;">

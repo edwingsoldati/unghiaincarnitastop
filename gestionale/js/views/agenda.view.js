@@ -102,6 +102,10 @@ export const AgendaView = {
                 <svg style="width:12px;height:12px;" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
                 <span>Sincronizza</span>
               </button>
+
+              <button id="agenda-backfill-btn" class="btn btn-secondary btn-sm" title="Sincronizza e recupera storico 60gg da Calendly" onclick="window.AgendaView.avviaBackfillStorico()">
+                <span>🔄 Storico 60gg</span>
+              </button>
             </div>
 
           </div>
@@ -329,6 +333,8 @@ export const AgendaView = {
       const isAurea = (a.tipo || '').toLowerCase().includes('fenolizzazione') || (a.tipo || '').toLowerCase().includes('aurea');
       const badgeClass = isAurea ? 'badge-teal' : 'badge-neutral';
       const badgeLabel = isAurea ? 'Clinica Aurea: Fenolizzazione' : (a.tipo || 'Prima Visita');
+      const provenienzaBadge = this.renderBadgeProvenienza(a);
+      const googleAdsBadge = this.renderBadgeGoogleAds(a);
 
       // ── CASO A: FASCIA ORARIA ATTUALE (PAZIENTE ATTUALE) ───────────────────
       if (status === 'corrente') {
@@ -346,7 +352,13 @@ export const AgendaView = {
               </div>
             </td>
             <td style="vertical-align:top;">
-              <span class="badge ${badgeClass}">${badgeLabel}</span>
+              <div style="display:flex; flex-direction:column; gap:5px; align-items:flex-start;">
+                <span class="badge ${badgeClass}">${badgeLabel}</span>
+                <div style="display:flex; flex-wrap:wrap; gap:4px; align-items:center;">
+                  ${provenienzaBadge}
+                  ${googleAdsBadge}
+                </div>
+              </div>
             </td>
             <td style="vertical-align:top;">
               <div style="font-size:12px; color:#1e293b; background:#ffffff; border:1px solid #ccfbf1; border-radius:8px; padding:6px 10px; max-width:320px; line-height:1.4;">
@@ -385,7 +397,13 @@ export const AgendaView = {
               </div>
             </td>
             <td style="vertical-align:top;">
-              <span class="badge ${badgeClass}">${badgeLabel}</span>
+              <div style="display:flex; flex-direction:column; gap:5px; align-items:flex-start;">
+                <span class="badge ${badgeClass}">${badgeLabel}</span>
+                <div style="display:flex; flex-wrap:wrap; gap:4px; align-items:center;">
+                  ${provenienzaBadge}
+                  ${googleAdsBadge}
+                </div>
+              </div>
             </td>
             <td style="vertical-align:top;">
               <div style="font-size:11px; color:var(--text-secondary); max-width:320px; line-height:1.4;">
@@ -424,7 +442,13 @@ export const AgendaView = {
               </div>
             </td>
             <td style="vertical-align:top;">
-              <span class="badge ${badgeClass}" style="opacity:0.8;">${badgeLabel}</span>
+              <div style="display:flex; flex-direction:column; gap:5px; align-items:flex-start;">
+                <span class="badge ${badgeClass}" style="opacity:0.8;">${badgeLabel}</span>
+                <div style="display:flex; flex-wrap:wrap; gap:4px; align-items:center;">
+                  ${provenienzaBadge}
+                  ${googleAdsBadge}
+                </div>
+              </div>
             </td>
             <td style="vertical-align:top;">
               <div style="font-size:11px; color:var(--text-muted); max-width:320px; line-height:1.4;">
@@ -467,7 +491,13 @@ export const AgendaView = {
               </div>
             </td>
             <td style="vertical-align:top;">
-              <span class="badge ${badgeClass}" style="opacity:0.7;">${badgeLabel}</span>
+              <div style="display:flex; flex-direction:column; gap:5px; align-items:flex-start;">
+                <span class="badge ${badgeClass}" style="opacity:0.7;">${badgeLabel}</span>
+                <div style="display:flex; flex-wrap:wrap; gap:4px; align-items:center;">
+                  ${provenienzaBadge}
+                  ${googleAdsBadge}
+                </div>
+              </div>
             </td>
             <td style="vertical-align:top;">
               <div style="font-size:11px; color:var(--text-muted); max-width:320px; line-height:1.4;">
@@ -502,7 +532,13 @@ export const AgendaView = {
             </div>
           </td>
           <td style="vertical-align:top;">
-            <span class="badge ${badgeClass}">${badgeLabel}</span>
+            <div style="display:flex; flex-direction:column; gap:5px; align-items:flex-start;">
+              <span class="badge ${badgeClass}">${badgeLabel}</span>
+              <div style="display:flex; flex-wrap:wrap; gap:4px; align-items:center;">
+                ${provenienzaBadge}
+                ${googleAdsBadge}
+              </div>
+            </div>
           </td>
           <td style="vertical-align:top;">
             <div style="font-size:11px; color:var(--text-secondary); max-width:320px; line-height:1.4;">
@@ -524,6 +560,79 @@ export const AgendaView = {
         </tr>
       `;
     }).join('');
+  },
+
+  renderBadgeProvenienza(a) {
+    const canale = a.sito_provenienza || (
+      /fenolizz|aurea/i.test(a.tipo || '') ? 'fenolizzazione' :
+      /segreteria|telefon/i.test(a.tipo || '') ? 'segreteria' : 'sito_it'
+    );
+
+    let label = '🟢 Sito .it';
+    let bg = '#ecfdf5';
+    let color = '#065f46';
+    let border = '#a7f3d0';
+
+    if (canale === 'sito_it') {
+      label = '🟢 Sito .it';
+      bg = '#ecfdf5';
+      color = '#065f46';
+      border = '#a7f3d0';
+    } else if (canale === 'sito_com') {
+      label = '🟣 Landing .com';
+      bg = '#f5f3ff';
+      color = '#5b21b6';
+      border = '#ddd6fe';
+    } else if (canale === 'segreteria') {
+      label = '🔵 Segreteria (Tel)';
+      bg = '#eff6ff';
+      color = '#1e40af';
+      border = '#bfdbfe';
+    } else if (canale === 'fenolizzazione') {
+      label = '🔴 Fenolizzazione';
+      bg = '#fef2f2';
+      color = '#991b1b';
+      border = '#fecaca';
+    } else if (a.provenienza_label) {
+      label = a.provenienza_label;
+    }
+
+    return `<span class="badge" style="background:${bg}; color:${color}; border:1px solid ${border}; font-size:10.5px; font-weight:700; padding:2px 7px; border-radius:4px; display:inline-flex; align-items:center; gap:3px;">${label}</span>`;
+  },
+
+  renderBadgeGoogleAds(a) {
+    const hasGclid = Boolean(a.gclid || a.wbraid || a.gbraid);
+    const utmSource = String(a.utm_source || '').toLowerCase();
+    const isGoogle = hasGclid || utmSource.includes('google');
+
+    if (!isGoogle) return '';
+
+    const campaign = a.utm_campaign ? `Campagna: ${a.utm_campaign}` : 'Google Ads';
+    const tooltip = [
+      campaign,
+      a.gclid ? `GCLID: ${a.gclid}` : '',
+      a.utm_content ? `Contenuto: ${a.utm_content}` : ''
+    ].filter(Boolean).join(' · ');
+
+    return `
+      <span class="badge" title="${tooltip.replace(/"/g, '&quot;')}" style="background:#e8f0fe; color:#1967d2; border:1px solid #aecbfa; font-size:10px; font-weight:700; padding:2px 6px; border-radius:4px; display:inline-flex; align-items:center; gap:3px; cursor:help;">
+        <svg style="width:10px;height:10px;" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z"/></svg>
+        Google Ads
+      </span>
+    `;
+  },
+
+  async avviaBackfillStorico() {
+    if (!confirm('Vuoi sincronizzare gli appuntamenti e tracciare la provenienza degli ultimi 60 giorni da Calendly verso il database?')) return;
+    showToast('Sincronizzazione storico Calendly in corso...', 'info');
+    try {
+      const res = await api.backfillCalendly(60);
+      showToast(`✓ Sincronizzati ${res.appuntamenti_processati || 0} appuntamenti (${res.con_gclid || 0} con Google Ads)`, 'success');
+      this.loadAgenda(this.currentDateISO);
+      window.PazientiView?.loadPazienti(true);
+    } catch (e) {
+      showToast('Errore backfill Calendly: ' + e.message, 'error');
+    }
   },
 
   openWhatsAppModal(nomeEnc, phone, ora, isAurea = false) {

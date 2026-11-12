@@ -71,6 +71,14 @@ export const api = {
     return this.request(`/api/agenda/today${param}`);
   },
 
+  // Backfill storico Calendly (30-60gg)
+  backfillCalendly(giorni = 60) {
+    return this.request('/api/calendly/backfill', {
+      method: 'POST',
+      body: JSON.stringify({ giorni }),
+    });
+  },
+
   // Anagrafica Pazienti (Cloudflare D1)
   getPazienti(query = '') {
     const param = query ? `?q=${encodeURIComponent(query)}` : '';
