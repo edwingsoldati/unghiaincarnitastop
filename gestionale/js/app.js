@@ -4,11 +4,11 @@
 
 import { api } from './api.js';
 import { state, showToast } from './state.js';
-import { AgendaView } from './views/agenda.view.js?v=20261109_calendly_canali';
-import { PazientiView } from './views/pazienti.view.js?v=20261109_calendly_canali';
+import { AgendaView } from './views/agenda.view.js?v=20261112_turbo';
+import { PazientiView } from './views/pazienti.view.js?v=20261112_turbo';
 import { PreventivoView } from './views/preventivo.view.js';
 import { DocumentiView } from './views/documenti.view.js?v=20261109_crm_concludi';
-import { CRMView } from './views/crm.view.js?v=20261109_crm_concludi';
+import { CRMView } from './views/crm.view.js?v=20261112_turbo';
 import { StatisticheView } from './views/statistiche.view.js';
 import { MobileUI } from './mobile.js';
 import { Auth } from './auth.js';

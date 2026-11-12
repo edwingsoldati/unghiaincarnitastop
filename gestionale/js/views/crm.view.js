@@ -12,7 +12,7 @@ export const CRMView = {
 
   init() {
     this.renderContainer();
-    this.loadCRMData();
+    this.loadCRMData({ skipCalendlySync: true });
   },
 
   renderContainer() {
@@ -221,17 +221,20 @@ export const CRMView = {
     this.renderList();
   },
 
-  async loadCRMData() {
+  async loadCRMData(opts = {}) {
     try {
-      // Rete di sicurezza Calendly (max una volta ogni 10 minuti): interventi prenotati → "Operazione pianificata"
-      if (!this._ultimoSyncCalendly || Date.now() - this._ultimoSyncCalendly > 600000) {
-        this._ultimoSyncCalendly = Date.now();
-        await api.syncInterventiCalendly().catch(() => null);
-      }
       const data = await api.getCRM();
       this.crmList = data.pazienti || [];
       this.aggiornaBadgeSidebar();
       this.renderList();
+
+      // Rete di sicurezza Calendly in background (non blocca il caricamento né l'avvio dell'Agenda)
+      if (!opts.skipCalendlySync && (!this._ultimoSyncCalendly || Date.now() - this._ultimoSyncCalendly > 600000)) {
+        this._ultimoSyncCalendly = Date.now();
+        api.syncInterventiCalendly().then(r => {
+          if (r && r.aggiornati > 0) this.loadCRMData({ skipCalendlySync: true });
+        }).catch(() => null);
+      }
     } catch (e) {
       const container = document.getElementById('crm-list-container');
       if (container) {

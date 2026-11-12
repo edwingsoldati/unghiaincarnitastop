@@ -248,6 +248,7 @@ export const AgendaView = {
     const tbody = document.getElementById('agenda-table-body');
     const countEl = document.getElementById('agenda-count-pazienti');
     const labelEl = document.getElementById('agenda-label-giorno');
+    const refreshBtn = document.getElementById('agenda-refresh-btn');
 
     const isToday = (dateISO === this.getTodayISORoma());
     // Se passiamo a un giorno diverso da oggi, mostra sempre tutti gli appuntamenti
@@ -259,8 +260,30 @@ export const AgendaView = {
     }
 
     if (labelEl) labelEl.textContent = this.formatDateLabel(dateISO);
-    if (tbody) {
+
+    // 1. Render istantaneo da cache locale se disponibile (0 ms di attesa visiva)
+    let hasCached = false;
+    try {
+      const rawCache = localStorage.getItem('uis_agenda_cache_' + dateISO);
+      if (rawCache) {
+        const cachedAppts = JSON.parse(rawCache);
+        if (Array.isArray(cachedAppts)) {
+          hasCached = true;
+          this.lastAppointments = cachedAppts;
+          state.appointments = cachedAppts;
+          if (countEl) countEl.textContent = cachedAppts.length;
+          this.renderTableAppointments(cachedAppts);
+        }
+      }
+    } catch (_) {}
+
+    if (!hasCached && tbody) {
       tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding:24px; color:var(--text-muted);">Sincronizzazione appuntamenti Calendly per il ${dateISO}...</td></tr>`;
+    }
+
+    if (refreshBtn) {
+      refreshBtn.disabled = true;
+      refreshBtn.innerHTML = `<span>⏳ Allineo...</span>`;
     }
 
     try {
@@ -268,14 +291,26 @@ export const AgendaView = {
       const appts = data.appointments || [];
       this.lastAppointments = appts;
       state.appointments = appts;
-      if (appts.some(a => a.paziente_id)) window.PazientiView?.loadPazienti(true);
+      try {
+        localStorage.setItem('uis_agenda_cache_' + dateISO, JSON.stringify(appts));
+      } catch (_) {}
+      // Ricarica l'elenco pazienti solo se è stato effettivamente creato un paziente nuovo
+      if (appts.some(a => a.paziente_nuovo)) window.PazientiView?.loadPazienti(true);
       if (countEl) countEl.textContent = appts.length;
 
       this.renderTableAppointments(appts);
 
     } catch (err) {
-      if (tbody) {
+      if (!hasCached && tbody) {
         tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding:24px; color:var(--status-danger-text);">Errore durante la lettura da Calendly: ${err.message}</td></tr>`;
+      }
+    } finally {
+      if (refreshBtn) {
+        refreshBtn.disabled = false;
+        refreshBtn.innerHTML = `
+          <svg style="width:12px;height:12px;" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
+          <span>Sincronizza</span>
+        `;
       }
     }
   },
@@ -626,8 +661,13 @@ export const AgendaView = {
     if (!confirm('Vuoi sincronizzare gli appuntamenti e tracciare la provenienza degli ultimi 60 giorni da Calendly verso il database?')) return;
     showToast('Sincronizzazione storico Calendly in corso...', 'info');
     try {
-      const res = await api.backfillCalendly(60);
-      showToast(`✓ Sincronizzati ${res.appuntamenti_processati || 0} appuntamenti (${res.con_gclid || 0} con Google Ads)`, 'success');
+      let totProc = 0;
+      for (let i = 0; i < 6; i++) {
+        const res = await api.backfillCalendly(60);
+        totProc += (res.appuntamenti_processati_ora || res.appuntamenti_processati || 0);
+        if (!res.rimanenti || res.rimanenti <= 0) break;
+      }
+      showToast(`✓ Storico Calendly sincronizzato (${totProc} nuovi eventi elaborati)`, 'success');
       this.loadAgenda(this.currentDateISO);
       window.PazientiView?.loadPazienti(true);
     } catch (e) {
@@ -669,7 +709,10 @@ export const AgendaView = {
     window.app.navigate('pazienti');
     const PV = window.PazientiView;
     try {
-      await PV.loadPazienti();
+      const giaInLista = PV.pazientiList && PV.pazientiList.some(p => Number(p.id) === Number(raw.paziente_id));
+      if (!giaInLista) {
+        await PV.loadPazienti();
+      }
       await PV.selezionaPazienteById(raw.paziente_id, extraCalendly);
       if (PV.selectedPatient && PV.selectedPatient.id === raw.paziente_id) {
         state.activePatient = PV.selectedPatient;
