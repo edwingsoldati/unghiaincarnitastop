@@ -2,32 +2,31 @@
 <html lang="it">
 <head>
 <!-- CONSENT MODE v2 — deve restare PRIMA di Google Tag Manager.
-     analytics_storage, ad_storage e ad_user_data attivi di default per garantire
-     il tracciamento immediato su GA4 e Google Ads fin dal primo caricamento;
-     si disattivano se il visitatore clicca "Rifiuta" sul banner.
-     ad_personalization resta SEMPRE negato: niente pubblicità personalizzata su un sito sanitario. -->
+     Default impostato a "denied" (negato) in conformità GDPR e policy sanitarie;
+     si attiva ("granted") solo se il visitatore ha cliccato "Accetta" sul banner cookie.
+     ad_personalization resta SEMPRE negato. -->
 <script>
 window.dataLayer = window.dataLayer || [];
 function gtag(){dataLayer.push(arguments);}
 gtag('consent', 'default', {
-  ad_storage: 'granted',
-  ad_user_data: 'granted',
+  ad_storage: 'denied',
+  ad_user_data: 'denied',
   ad_personalization: 'denied',
-  analytics_storage: 'granted',
+  analytics_storage: 'denied',
   functionality_storage: 'granted',
   security_storage: 'granted'
 });
 (function(){
   var c = null;
   try { c = localStorage.getItem('uis_cookie_consent'); } catch (e) {}
-  if (c === 'rejected') {
+  if (c === 'accepted') {
     gtag('consent', 'update', {
-      ad_storage: 'denied',
-      ad_user_data: 'denied',
+      ad_storage: 'granted',
+      ad_user_data: 'granted',
       ad_personalization: 'denied',
-      analytics_storage: 'denied'
+      analytics_storage: 'granted'
     });
-    gtag('set', 'ads_data_redaction', true);
+    gtag('set', 'ads_data_redaction', false);
   }
 })();
 </script>
